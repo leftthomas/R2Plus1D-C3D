@@ -11,18 +11,18 @@ import model
 train_data = datasets.CIFAR10(root='data/CIFAR10', train=True, transform=transforms.ToTensor(), download=True)
 test_data = datasets.CIFAR10(root='data/CIFAR10', train=False, transform=transforms.ToTensor(), download=False)
 
-train_loader = DataLoader(dataset=train_data, batch_size=16, shuffle=True)
-test_loader = DataLoader(dataset=test_data, batch_size=16, shuffle=True)
+train_loader = DataLoader(dataset=train_data, batch_size=64, shuffle=True)
+test_loader = DataLoader(dataset=test_data, batch_size=64, shuffle=True)
 
 net = model.Net()
 if torch.cuda.is_available():
     net.cuda()
 
-criterion = nn.MSELoss()
-optimizer = optim.SGD(net.parameters(), lr=1e-4)
+criterion = nn.NLLLoss()
+optimizer = optim.Adam(params=net.parameters())
 
 
-def train():
+for epoch in range(1, 100):
     net.train()
     for batch_idx, (data, target) in enumerate(train_loader):
         if torch.cuda.is_available():
@@ -38,8 +38,6 @@ def train():
                 epoch, batch_idx * len(data), len(train_loader.dataset),
                        100. * batch_idx / len(train_loader), loss.data[0]))
 
-
-def test():
     net.eval()
     test_loss = 0
     correct = 0
@@ -56,8 +54,3 @@ def test():
     print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
         test_loss, correct, len(test_loader.dataset),
         100. * correct / len(test_loader.dataset)))
-
-
-for epoch in range(1, 100):
-    train()
-    test()

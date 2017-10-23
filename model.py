@@ -27,6 +27,9 @@ class Net(nn.Module):
         self.conv7 = nn.Conv2d(in_channels=channel_rate, out_channels=3, kernel_size=3, padding=1, dilation=1)
         self.bn7 = nn.BatchNorm2d(num_features=3)
 
+        self.fc1 = nn.Linear(in_features=32 * 32 * 3, out_features=16 * 16 * 1)
+        self.fc2 = nn.Linear(in_features=16 * 16 * 1, out_features=10)
+
     def forward(self, x):
         x = F.leaky_relu(self.bn1(self.conv1(x)))
         x = F.leaky_relu(self.bn2(self.conv2(x)))
@@ -35,8 +38,12 @@ class Net(nn.Module):
         x = F.leaky_relu(self.bn5(self.conv5(x)))
         x = F.leaky_relu(self.bn6(self.conv6(x)))
         x = F.leaky_relu(self.bn7(self.conv7(x)))
-        x = F.dropout2d(x)
-        x = F.softmax(x)
+
+        x = x.view(-1, 32 * 32 * 3)
+        x = self.fc1(x)
+        x = F.dropout(x)
+        x = self.fc2(x)
+        x = F.log_softmax(x)
         return x
 
 
