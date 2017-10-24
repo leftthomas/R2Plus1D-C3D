@@ -8,11 +8,13 @@ from torch.utils.data import DataLoader
 
 import model
 
+# train_data = datasets.MNIST(root='data/MNIST', train=True, transform=transforms.ToTensor(), download=True)
+# test_data = datasets.MNIST(root='data/MNIST', train=False, transform=transforms.ToTensor(), download=False)
 train_data = datasets.CIFAR10(root='data/CIFAR10', train=True, transform=transforms.ToTensor(), download=True)
 test_data = datasets.CIFAR10(root='data/CIFAR10', train=False, transform=transforms.ToTensor(), download=False)
 
-train_loader = DataLoader(dataset=train_data, batch_size=64, shuffle=True)
-test_loader = DataLoader(dataset=test_data, batch_size=64, shuffle=True)
+train_loader = DataLoader(dataset=train_data, batch_size=32, shuffle=True)
+test_loader = DataLoader(dataset=test_data, batch_size=32, shuffle=True)
 
 net = model.Net()
 if torch.cuda.is_available():
@@ -39,18 +41,14 @@ for epoch in range(1, 100):
                        100. * batch_idx / len(train_loader), loss.data[0]))
 
     net.eval()
-    test_loss = 0
     correct = 0
     for data, target in test_loader:
         if torch.cuda.is_available():
             data, target = data.cuda(), target.cuda()
         data, target = Variable(data, volatile=True), Variable(target)
         output = net(data)
-        test_loss += criterion(output, target, size_average=False).data[0]  # sum up batch loss
         pred = output.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
 
-    test_loss /= len(test_loader.dataset)
-    print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-        test_loss, correct, len(test_loader.dataset),
-        100. * correct / len(test_loader.dataset)))
+    print('\nTest set: Accuracy: {}/{} ({:.0f}%)\n'.format(correct, len(test_loader.dataset),
+                                                           100. * correct / len(test_loader.dataset)))

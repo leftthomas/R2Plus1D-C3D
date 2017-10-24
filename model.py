@@ -1,13 +1,13 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
-channel_rate = 16
+channel_rate = 32
 
 
 class Net(nn.Module):
     def __init__(self):
         super().__init__()
-        self.conv1 = nn.Conv2d(in_channels=3, out_channels=channel_rate, kernel_size=3, padding=1, dilation=1)
+        self.conv1 = nn.Conv2d(in_channels=1, out_channels=channel_rate, kernel_size=3, padding=1, dilation=1)
         self.bn1 = nn.BatchNorm2d(num_features=channel_rate)
         self.conv2 = nn.Conv2d(in_channels=channel_rate, out_channels=2 * channel_rate, kernel_size=3, padding=1,
                                dilation=2)
@@ -24,11 +24,11 @@ class Net(nn.Module):
         self.conv6 = nn.Conv2d(in_channels=2 * channel_rate, out_channels=channel_rate, kernel_size=3, padding=1,
                                dilation=2)
         self.bn6 = nn.BatchNorm2d(num_features=channel_rate)
-        self.conv7 = nn.Conv2d(in_channels=channel_rate, out_channels=3, kernel_size=3, padding=1, dilation=1)
-        self.bn7 = nn.BatchNorm2d(num_features=3)
+        self.conv7 = nn.Conv2d(in_channels=channel_rate, out_channels=1, kernel_size=3, padding=1, dilation=1)
+        self.bn7 = nn.BatchNorm2d(num_features=1)
 
-        self.fc1 = nn.Linear(in_features=32 * 32 * 3, out_features=16 * 16 * 1)
-        self.fc2 = nn.Linear(in_features=16 * 16 * 1, out_features=10)
+        self.fc1 = nn.Linear(in_features=28 * 28 * 1, out_features=14 * 14 * 1)
+        self.fc2 = nn.Linear(in_features=14 * 14 * 1, out_features=10)
 
     def forward(self, x):
         x = F.leaky_relu(self.bn1(self.conv1(x)))
@@ -39,7 +39,7 @@ class Net(nn.Module):
         x = F.leaky_relu(self.bn6(self.conv6(x)))
         x = F.leaky_relu(self.bn7(self.conv7(x)))
 
-        x = x.view(-1, 32 * 32 * 3)
+        x = x.view(-1, 28 * 28 * 1)
         x = self.fc1(x)
         x = F.dropout(x)
         x = self.fc2(x)
