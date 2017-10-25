@@ -10,8 +10,12 @@ import model
 
 # train_data = datasets.MNIST(root='data/MNIST', train=True, transform=transforms.ToTensor(), download=True)
 # test_data = datasets.MNIST(root='data/MNIST', train=False, transform=transforms.ToTensor(), download=False)
-train_data = datasets.CIFAR10(root='data/CIFAR10', train=True, transform=transforms.ToTensor(), download=True)
-test_data = datasets.CIFAR10(root='data/CIFAR10', train=False, transform=transforms.ToTensor(), download=False)
+# train_data = datasets.CIFAR10(root='data/CIFAR10', train=True, transform=transforms.ToTensor(), download=False)
+# test_data = datasets.CIFAR10(root='data/CIFAR10', train=False, transform=transforms.ToTensor(), download=False)
+# train_data = datasets.CIFAR100(root='data/CIFAR100', train=True, transform=transforms.ToTensor(), download=False)
+# test_data = datasets.CIFAR100(root='data/CIFAR100', train=False, transform=transforms.ToTensor(), download=False)
+train_data = datasets.STL10(root='data/STL10', split='train', transform=transforms.ToTensor(), download=False)
+test_data = datasets.STL10(root='data/STL10', split='test', transform=transforms.ToTensor(), download=False)
 
 train_loader = DataLoader(dataset=train_data, batch_size=32, shuffle=True)
 test_loader = DataLoader(dataset=test_data, batch_size=32, shuffle=True)
@@ -23,8 +27,7 @@ if torch.cuda.is_available():
 criterion = nn.NLLLoss()
 optimizer = optim.Adam(params=net.parameters())
 
-
-for epoch in range(1, 100):
+for epoch in range(1, 21):
     net.train()
     for batch_idx, (data, target) in enumerate(train_loader):
         if torch.cuda.is_available():
