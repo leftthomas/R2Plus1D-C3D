@@ -59,7 +59,6 @@ class Net(nn.Module):
         x = self.fc2(x)
         x = F.dropout(x)
         x = self.fc3(x)
-        x = F.log_softmax(x)
         return x
 
 

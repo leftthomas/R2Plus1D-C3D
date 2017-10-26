@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import torch.optim.lr_scheduler as lr_scheduler
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
 from torch.autograd import Variable
@@ -8,14 +9,23 @@ from torch.utils.data import DataLoader
 
 import model
 
-# train_data = datasets.MNIST(root='data/MNIST', train=True, transform=transforms.ToTensor(), download=True)
-# test_data = datasets.MNIST(root='data/MNIST', train=False, transform=transforms.ToTensor(), download=False)
-# train_data = datasets.CIFAR10(root='data/CIFAR10', train=True, transform=transforms.ToTensor(), download=False)
-# test_data = datasets.CIFAR10(root='data/CIFAR10', train=False, transform=transforms.ToTensor(), download=False)
-# train_data = datasets.CIFAR100(root='data/CIFAR100', train=True, transform=transforms.ToTensor(), download=False)
-# test_data = datasets.CIFAR100(root='data/CIFAR100', train=False, transform=transforms.ToTensor(), download=False)
-train_data = datasets.STL10(root='data/STL10', split='train', transform=transforms.ToTensor(), download=False)
-test_data = datasets.STL10(root='data/STL10', split='test', transform=transforms.ToTensor(), download=False)
+normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+# train_data = datasets.MNIST(root='data/MNIST', train=True, transform=transforms.Compose(
+#     [transforms.RandomHorizontalFlip(), transforms.ToTensor(), normalize]), download=True)
+# test_data = datasets.MNIST(root='data/MNIST', train=False, transform=transforms.Compose(
+#     [transforms.RandomHorizontalFlip(), transforms.ToTensor(), normalize]), download=False)
+# train_data = datasets.CIFAR10(root='data/CIFAR10', train=True, transform=transforms.Compose(
+#     [transforms.RandomHorizontalFlip(), transforms.ToTensor(), normalize]), download=False)
+# test_data = datasets.CIFAR10(root='data/CIFAR10', train=False, transform=transforms.Compose(
+#     [transforms.RandomHorizontalFlip(), transforms.ToTensor(), normalize]), download=False)
+# train_data = datasets.CIFAR100(root='data/CIFAR100', train=True, transform=transforms.Compose(
+#     [transforms.RandomHorizontalFlip(), transforms.ToTensor(), normalize]), download=False)
+# test_data = datasets.CIFAR100(root='data/CIFAR100', train=False, transform=transforms.Compose(
+#     [transforms.RandomHorizontalFlip(), transforms.ToTensor(), normalize]), download=False)
+train_data = datasets.STL10(root='data/STL10', split='train', transform=transforms.Compose(
+    [transforms.RandomHorizontalFlip(), transforms.ToTensor(), normalize]), download=False)
+test_data = datasets.STL10(root='data/STL10', split='test', transform=transforms.Compose(
+    [transforms.RandomHorizontalFlip(), transforms.ToTensor(), normalize]), download=False)
 
 train_loader = DataLoader(dataset=train_data, batch_size=32, shuffle=True)
 test_loader = DataLoader(dataset=test_data, batch_size=32, shuffle=True)
@@ -24,11 +34,13 @@ net = model.Net()
 if torch.cuda.is_available():
     net.cuda()
 
-criterion = nn.NLLLoss()
-optimizer = optim.Adam(params=net.parameters())
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.RMSprop(params=net.parameters(), lr=0.1, weight_decay=1e-4, momentum=0.9)
 
-for epoch in range(1, 21):
+scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[5, 10, 15, 22], gamma=0.1)
+for epoch in range(1, 31):
     net.train()
+    scheduler.step()
     for batch_idx, (data, target) in enumerate(train_loader):
         if torch.cuda.is_available():
             data, target = data.cuda(), target.cuda()
