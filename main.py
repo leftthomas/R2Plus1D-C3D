@@ -35,7 +35,7 @@ if torch.cuda.is_available():
     net.cuda()
 
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.RMSprop(params=net.parameters(), lr=0.1, weight_decay=1e-4, momentum=0.9)
+optimizer = optim.SGD(params=net.parameters(), lr=0.1, momentum=0.9, weight_decay=1e-4)
 
 scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[5, 10, 15, 22], gamma=0.1)
 for epoch in range(1, 31):
