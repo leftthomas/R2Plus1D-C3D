@@ -1,70 +1,101 @@
 import torch
-import torch.nn as nn
-import torch.optim as optim
-import torch.optim.lr_scheduler as lr_scheduler
-import torchvision.datasets as datasets
-import torchvision.transforms as transforms
+import torchnet as tnt
 from torch.autograd import Variable
-from torch.utils.data import DataLoader
+from torch.optim import Adam
+from torchnet.engine import Engine
+from torchnet.logger import VisdomPlotLogger, VisdomLogger
+from tqdm import tqdm
 
-import model
+import config
+import utils
+from capsnet import CapsuleNet, CapsuleLoss
 
-normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-# normalize = transforms.Normalize(mean=[0.1307], std=[0.3081])
-# train_data = datasets.MNIST(root='data/MNIST', train=False, transform=transforms.Compose(
-#     [transforms.ToTensor(), normalize]), download=True)
-# test_data = datasets.MNIST(root='data/MNIST', train=False, transform=transforms.Compose(
-#     [transforms.ToTensor(), normalize]), download=False)
-train_data = datasets.CIFAR10(root='data/CIFAR10', train=True, transform=transforms.Compose(
-    [transforms.RandomHorizontalFlip(), transforms.ToTensor(), normalize]), download=False)
-test_data = datasets.CIFAR10(root='data/CIFAR10', train=False, transform=transforms.Compose(
-    [transforms.RandomHorizontalFlip(), transforms.ToTensor(), normalize]), download=False)
-# train_data = datasets.CIFAR100(root='data/CIFAR100', train=True, transform=transforms.Compose(
-#     [transforms.RandomHorizontalFlip(), transforms.ToTensor(), normalize]), download=False)
-# test_data = datasets.CIFAR100(root='data/CIFAR100', train=False, transform=transforms.Compose(
-#     [transforms.RandomHorizontalFlip(), transforms.ToTensor(), normalize]), download=False)
-# train_data = datasets.STL10(root='data/STL10', split='train', transform=transforms.Compose(
-#     [transforms.RandomHorizontalFlip(), transforms.ToTensor(), normalize]), download=False)
-# test_data = datasets.STL10(root='data/STL10', split='test', transform=transforms.Compose(
-#     [transforms.RandomHorizontalFlip(), transforms.ToTensor(), normalize]), download=False)
 
-train_loader = DataLoader(dataset=train_data, batch_size=16, shuffle=True)
-test_loader = DataLoader(dataset=test_data, batch_size=16, shuffle=True)
+def processor(sample):
+    data, labels, training = sample
 
-net = model.Net()
-if torch.cuda.is_available():
-    net.cuda()
+    data = utils.augmentation(data.float())
 
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.SGD(params=net.parameters(), lr=0.01, momentum=0.5, weight_decay=1e-4)
+    data = Variable(data)
+    labels = Variable(labels)
+    if torch.cuda.is_available():
+        data = data.cuda()
+        labels = labels.cuda()
 
-scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[15, 22], gamma=0.1)
-for epoch in range(1, 31):
-    net.train()
-    scheduler.step()
-    for batch_idx, (data, target) in enumerate(train_loader):
-        if torch.cuda.is_available():
-            data, target = data.cuda(), target.cuda()
-        data, target = Variable(data), Variable(target)
-        optimizer.zero_grad()
-        output = net(data)
-        loss = criterion(output, target)
-        loss.backward()
-        optimizer.step()
-        if (batch_idx % 10 == 0) and (batch_idx != 0):
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                epoch, batch_idx * len(data), len(train_loader.dataset),
-                       100. * batch_idx / len(train_loader), loss.data[0]))
+    classes = model(data)
+    loss = capsule_loss(classes, labels)
 
-    net.eval()
-    correct = 0
-    for data, target in test_loader:
-        if torch.cuda.is_available():
-            data, target = data.cuda(), target.cuda()
-        data, target = Variable(data, volatile=True), Variable(target)
-        output = net(data)
-        pred = output.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
-        correct += pred.eq(target.data.view_as(pred)).cpu().sum()
+    return loss, classes
 
-    print('\nTest set: Accuracy: {}/{} ({:.2f}%)\n'.format(correct, len(test_loader.dataset),
-                                                           100. * correct / len(test_loader.dataset)))
+
+def on_sample(state):
+    state['sample'].append(state['train'])
+
+
+def reset_meters():
+    meter_accuracy.reset()
+    meter_loss.reset()
+    confusion_meter.reset()
+
+
+def on_forward(state):
+    meter_accuracy.add(state['output'].data, state['sample'][1])
+    confusion_meter.add(state['output'].data, state['sample'][1])
+    meter_loss.add(state['loss'].data[0])
+
+
+def on_start_epoch(state):
+    reset_meters()
+    state['iterator'] = tqdm(state['iterator'])
+
+
+def on_end_epoch(state):
+    print('[Epoch %d] Training Loss: %.4f (Accuracy: %.2f%%)' % (
+        state['epoch'], meter_loss.value()[0], meter_accuracy.value()[0]))
+
+    train_loss_logger.log(state['epoch'], meter_loss.value()[0])
+    train_accuracy_logger.log(state['epoch'], meter_accuracy.value()[0])
+
+    reset_meters()
+
+    engine.test(processor, utils.get_iterator(False))
+    test_loss_logger.log(state['epoch'], meter_loss.value()[0])
+    test_accuracy_logger.log(state['epoch'], meter_accuracy.value()[0])
+    confusion_logger.log(confusion_meter.value())
+
+    print('[Epoch %d] Testing Loss: %.4f (Accuracy: %.2f%%)' % (
+        state['epoch'], meter_loss.value()[0], meter_accuracy.value()[0]))
+
+    torch.save(model.state_dict(), 'epochs/epoch_%d.pt' % state['epoch'])
+
+
+if __name__ == '__main__':
+
+    model = CapsuleNet()
+    if torch.cuda.is_available():
+        model.cuda()
+
+    print("# parameters:", sum(param.numel() for param in model.parameters()))
+
+    optimizer = Adam(model.parameters())
+
+    engine = Engine()
+    meter_loss = tnt.meter.AverageValueMeter()
+    meter_accuracy = tnt.meter.ClassErrorMeter(accuracy=True)
+    confusion_meter = tnt.meter.ConfusionMeter(config.NUM_CLASSES, normalized=True)
+
+    train_loss_logger = VisdomPlotLogger('line', opts={'title': 'Train Loss'})
+    train_accuracy_logger = VisdomPlotLogger('line', opts={'title': 'Train Accuracy'})
+    test_loss_logger = VisdomPlotLogger('line', opts={'title': 'Test Loss'})
+    test_accuracy_logger = VisdomPlotLogger('line', opts={'title': 'Test Accuracy'})
+    confusion_logger = VisdomLogger('heatmap', opts={'title': 'Confusion Matrix',
+                                                     'columnnames': list(range(config.NUM_CLASSES)),
+                                                     'rownames': list(range(config.NUM_CLASSES))})
+    capsule_loss = CapsuleLoss()
+
+    engine.hooks['on_sample'] = on_sample
+    engine.hooks['on_forward'] = on_forward
+    engine.hooks['on_start_epoch'] = on_start_epoch
+    engine.hooks['on_end_epoch'] = on_end_epoch
+
+    engine.train(processor, utils.get_iterator(True), maxepoch=config.NUM_EPOCHS, optimizer=optimizer)
