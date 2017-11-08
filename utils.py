@@ -1,7 +1,7 @@
 import numpy as np
 import torch
-import torchnet as tnt
 import torchvision.transforms as transforms
+from torch.utils.data import DataLoader
 from torchvision.datasets.cifar import CIFAR10
 
 import config
@@ -22,14 +22,11 @@ def augmentation(x, max_shift=2):
 
 
 def get_iterator(mode):
-    dataset = CIFAR10(root='data/CIFAR10', train=mode, transform=transforms.ToTensor(), download=True)
+    data = CIFAR10(root='data/CIFAR10', train=mode, transform=transforms.ToTensor(), download=True)
     # dataset = CIFAR100(root='data/CIFAR100', train=mode, transform=transforms.ToTensor(), download=True)
     # dataset = STL10(root='data/STL10', split='train', transform=transforms.ToTensor(), download=True)
-    data = getattr(dataset, 'train_data' if mode else 'test_data')
-    labels = getattr(dataset, 'train_labels' if mode else 'test_labels')
-    tensor_dataset = tnt.dataset.TensorDataset([data, labels])
 
-    return tensor_dataset.parallel(batch_size=config.BATCH_SIZE, num_workers=4, shuffle=mode)
+    return DataLoader(dataset=data, batch_size=config.BATCH_SIZE, shuffle=mode, num_workers=4)
 
 
 if __name__ == "__main__":
