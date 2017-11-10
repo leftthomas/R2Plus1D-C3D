@@ -2,7 +2,7 @@
 Image Classification
 
 ## Requirements
-* [Anaconda5.0.1](https://www.anaconda.com/download/)
+* [Anaconda](https://www.anaconda.com/download/)
 * PyTorch
 ```
 conda install pytorch torchvision -c soumith
