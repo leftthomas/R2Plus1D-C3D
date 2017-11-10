@@ -22,7 +22,8 @@ def augmentation(x, max_shift=2):
 
 
 def get_iterator(mode):
-    data = CIFAR10(root='data/CIFAR10', train=mode, transform=transforms.ToTensor(), download=True)
+    tr = transforms.Compose([transforms.RandomCrop(size=24), transforms.ToTensor()])
+    data = CIFAR10(root='data/CIFAR10', train=mode, transform=tr, download=True)
     # dataset = CIFAR100(root='data/CIFAR100', train=mode, transform=transforms.ToTensor(), download=True)
     # dataset = STL10(root='data/STL10', split='train', transform=transforms.ToTensor(), download=True)
 

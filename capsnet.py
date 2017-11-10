@@ -10,18 +10,15 @@ class CapsuleNet(nn.Module):
         super(CapsuleNet, self).__init__()
 
         self.conv1 = nn.Conv2d(in_channels=3, out_channels=256, kernel_size=9, stride=1)
-        self.primary_capsules = CapsuleLayer(num_capsules=8, num_route_nodes=-1, in_channels=256, out_channels=32,
+        self.primary_capsules = CapsuleLayer(num_capsules=8, num_route_nodes=-1, in_channels=256, out_channels=64,
                                              kernel_size=9, stride=2)
-        self.hidden_capsules = CapsuleLayer(num_capsules=10, num_route_nodes=32 * 8 * 8, in_channels=8,
-                                            out_channels=16)
-        self.class_capsules = CapsuleLayer(num_capsules=config.NUM_CLASSES, num_route_nodes=10,
-                                           in_channels=16,
+        self.class_capsules = CapsuleLayer(num_capsules=config.NUM_CLASSES, num_route_nodes=32 * 4 * 4,
+                                           in_channels=8,
                                            out_channels=16)
 
     def forward(self, x):
         x = F.relu(self.conv1(x), inplace=True)
         x = self.primary_capsules(x)
-        x = self.hidden_capsules(x).squeeze().transpose(0, 1)
         x = self.class_capsules(x).squeeze().transpose(0, 1)
 
         classes = (x ** 2).sum(dim=-1) ** 0.5
