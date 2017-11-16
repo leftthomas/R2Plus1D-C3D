@@ -75,7 +75,7 @@ if __name__ == '__main__':
     if torch.cuda.is_available():
         model.cuda()
 
-    model.load_state_dict(torch.load('epochs/epoch_10.pt'))
+    model.load_state_dict(torch.load('epochs/epoch_200.pt'))
     print("# parameters:", sum(param.numel() for param in model.parameters()))
 
     optimizer = Adam(model.parameters())
