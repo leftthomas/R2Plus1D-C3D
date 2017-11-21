@@ -23,10 +23,10 @@ python -m visdom.server & python main.py
 ```
 Visdom now can be accessed by going to `127.0.0.1:8097` in your browser, or your own host address if specified.
 
-## Benchmarks
+## Benchmarks(STL10)
 
 Default PyTorch Adam optimizer hyperparameters were used with no learning 
-rate scheduling. Epochs with batch size of 30 takes ~15 minutes on a NVIDIA GTX 1070 GPU.
+rate scheduling. Epochs with batch size of 60 takes ~3 minutes on a NVIDIA GTX TiTAN GPU.
 
 - Loss/Accuracy Graphs
 <table>
