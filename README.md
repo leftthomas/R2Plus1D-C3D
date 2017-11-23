@@ -1,5 +1,5 @@
-# CapsuleGAN
-CapsuleGAN
+# SquashCapsuleNet
+SquashCapsuleNet
 
 ## Requirements
 * [Anaconda](https://www.anaconda.com/download/)
