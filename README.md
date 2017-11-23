@@ -1,5 +1,5 @@
-# ImageClassification
-Image Classification
+# CapsuleGAN
+CapsuleGAN
 
 ## Requirements
 * [Anaconda](https://www.anaconda.com/download/)
