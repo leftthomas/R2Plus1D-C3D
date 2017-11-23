@@ -20,6 +20,9 @@ pip install tqdm
 ## Usage
 ```
 python -m visdom.server & python main.py
+optional arguments:
+--data_type      dataset type [default value is 'MNIST'](choices:['MNIST', 'CIFAR10', 'CIFAR100', 'STL10', 'SVHN'])
+--num_epochs     train epochs number [default value is 100]
 ```
 Visdom now can be accessed by going to `127.0.0.1:8097` in your browser, or your own host address if specified.
 
