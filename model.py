@@ -29,14 +29,14 @@ class SquashCapsuleNet(nn.Module):
         x = self.lrelu(self.conv1(x))
         x = self.lrelu(self.conv2(x))
 
-        x = self.conv3(x)
-        # capsules squash
-        x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=4, dim=1)], dim=1)
-        x = self.conv4(x)
-        x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=8, dim=1)], dim=1)
+        x = self.lrelu(self.conv3(x))
+        # x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=4, dim=1)], dim=1)
+        x = self.lrelu(self.conv4(x))
+        # x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=8, dim=1)], dim=1)
         x = self.conv5(x)
+        # capsules squash
         x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=16, dim=1)], dim=1)
-        x = self.conv6(x)
+        x = self.lrelu(self.conv6(x))
 
         x = (x.view(x.size(0), self.num_class, -1)).norm(dim=-1)
         return F.sigmoid(x)
