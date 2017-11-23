@@ -1,4 +1,7 @@
+import argparse
+
 import torch
+import torch.nn as nn
 import torchnet as tnt
 from torch.autograd import Variable
 from torch.optim import Adam
@@ -6,15 +9,12 @@ from torchnet.engine import Engine
 from torchnet.logger import VisdomPlotLogger, VisdomLogger
 from tqdm import tqdm
 
-import config
 import utils
-from capsnet import CapsuleNet, CapsuleLoss
+from model import SquashCapsuleNet
 
 
 def processor(sample):
     data, labels, training = sample
-
-    data = utils.augmentation(data.float())
 
     data = Variable(data)
     labels = Variable(labels)
@@ -23,7 +23,7 @@ def processor(sample):
         labels = labels.cuda()
 
     classes = model(data)
-    loss = capsule_loss(classes, labels)
+    loss = loss_criterion(classes, labels)
 
     return loss, classes
 
@@ -58,7 +58,7 @@ def on_end_epoch(state):
 
     reset_meters()
 
-    engine.test(processor, utils.get_iterator(False))
+    engine.test(processor, utils.get_iterator(False, DATA_TYPE))
     test_loss_logger.log(state['epoch'], meter_loss.value()[0])
     test_accuracy_logger.log(state['epoch'], meter_accuracy.value()[0])
     confusion_logger.log(confusion_meter.value())
@@ -71,11 +71,29 @@ def on_end_epoch(state):
 
 if __name__ == '__main__':
 
-    model = CapsuleNet()
-    if torch.cuda.is_available():
-        model.cuda()
+    parser = argparse.ArgumentParser(description='Train Capsule Classfication')
+    parser.add_argument('--data_type', default='MNIST', type=str,
+                        choices=['MNIST', 'CIFAR10', 'CIFAR100', 'STL10', 'SVHN'],
+                        help='dataset type')
+    parser.add_argument('--num_epochs', default=100, type=int, help='train epochs number')
 
-    # model.load_state_dict(torch.load('epochs/epoch_200.pt'))
+    opt = parser.parse_args()
+
+    NUM_EPOCHS = opt.num_epochs
+    DATA_TYPE = opt.data_type
+
+    if DATA_TYPE == 'MNIST':
+        in_channels = 1
+    else:
+        in_channels = 3
+    if DATA_TYPE == 'CIFAR100':
+        CLASSES = 100
+    else:
+        CLASSES = 10
+    model = SquashCapsuleNet(in_channels, CLASSES)
+    if torch.cuda.is_available():
+        model = model.cuda()
+
     print("# parameters:", sum(param.numel() for param in model.parameters()))
 
     optimizer = Adam(model.parameters())
@@ -83,20 +101,20 @@ if __name__ == '__main__':
     engine = Engine()
     meter_loss = tnt.meter.AverageValueMeter()
     meter_accuracy = tnt.meter.ClassErrorMeter(accuracy=True)
-    confusion_meter = tnt.meter.ConfusionMeter(config.NUM_CLASSES, normalized=True)
+    confusion_meter = tnt.meter.ConfusionMeter(CLASSES, normalized=True)
 
     train_loss_logger = VisdomPlotLogger('line', opts={'title': 'Train Loss'})
     train_accuracy_logger = VisdomPlotLogger('line', opts={'title': 'Train Accuracy'})
     test_loss_logger = VisdomPlotLogger('line', opts={'title': 'Test Loss'})
     test_accuracy_logger = VisdomPlotLogger('line', opts={'title': 'Test Accuracy'})
     confusion_logger = VisdomLogger('heatmap', opts={'title': 'Confusion Matrix',
-                                                     'columnnames': list(range(config.NUM_CLASSES)),
-                                                     'rownames': list(range(config.NUM_CLASSES))})
-    capsule_loss = CapsuleLoss()
+                                                     'columnnames': list(range(CLASSES)),
+                                                     'rownames': list(range(CLASSES))})
+    loss_criterion = nn.CrossEntropyLoss()
 
     engine.hooks['on_sample'] = on_sample
     engine.hooks['on_forward'] = on_forward
     engine.hooks['on_start_epoch'] = on_start_epoch
     engine.hooks['on_end_epoch'] = on_end_epoch
 
-    engine.train(processor, utils.get_iterator(True), maxepoch=config.NUM_EPOCHS, optimizer=optimizer)
+    engine.train(processor, utils.get_iterator(True, DATA_TYPE), maxepoch=NUM_EPOCHS, optimizer=optimizer)
