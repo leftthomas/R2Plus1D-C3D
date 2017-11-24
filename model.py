@@ -36,9 +36,9 @@ class SquashCapsuleNet(nn.Module):
         x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=8, dim=1)], dim=1)
         x = self.conv5(x)
         x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=16, dim=1)], dim=1)
-        x = self.conv6(x)
 
-        x = (x.view(x.size(0), self.num_class, -1)).norm(dim=-1)
+        x = self.lrelu(self.conv6(x))
+        x = (x.view(x.size(0), self.num_class, -1)).mean(dim=-1)
         return F.sigmoid(x)
 
 
