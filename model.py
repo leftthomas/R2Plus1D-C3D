@@ -25,7 +25,7 @@ class SquashCapsuleNet(nn.Module):
                                groups=16)
         self.conv6 = nn.Conv2d(in_channels=256, out_channels=128, kernel_size=5, stride=1, padding=4, dilation=2,
                                groups=4)
-        self.conv7 = nn.Conv2d(in_channels=128, out_channels=in_channels * num_class, kernel_size=7, stride=1,
+        self.conv7 = nn.Conv2d(in_channels=128, out_channels=num_class, kernel_size=7, stride=1,
                                padding=3, dilation=1, groups=1)
         self.num_class = num_class
 
@@ -44,7 +44,7 @@ class SquashCapsuleNet(nn.Module):
         x = self.conv6(x)
         x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=4, dim=1)], dim=1)
         x = self.conv7(x)
-        x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=1, dim=1)], dim=1)
+        # x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=1, dim=1)], dim=1)
         x = (x.view(x.size(0), self.num_class, -1)).mean(dim=-1)
         return F.sigmoid(x)
 
