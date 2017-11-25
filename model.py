@@ -18,7 +18,7 @@ class SquashCapsuleNet(nn.Module):
                                groups=4)
         self.bn3 = nn.BatchNorm2d(num_features=512)
         self.conv4 = nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=3, dilation=3,
-                               groups=8)
+                               groups=16)
         self.bn4 = nn.BatchNorm2d(num_features=512)
         self.conv5 = nn.Conv2d(in_channels=512, out_channels=256, kernel_size=3, stride=1, padding=3, dilation=3,
                                groups=4)
@@ -37,7 +37,7 @@ class SquashCapsuleNet(nn.Module):
         x = self.bn3(self.conv3(x))
         x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=4, dim=1)], dim=1)
         x = self.bn4(self.conv4(x))
-        x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=8, dim=1)], dim=1)
+        x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=16, dim=1)], dim=1)
         x = self.bn5(self.conv5(x))
         x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=4, dim=1)], dim=1)
 
