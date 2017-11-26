@@ -15,45 +15,56 @@ class SquashCapsuleNet(nn.Module):
         self.conv1 = nn.Conv2d(in_channels=in_channels, out_channels=128, kernel_size=7, stride=1, padding=3,
                                dilation=1,
                                groups=1)
+        self.bn1 = nn.BatchNorm2d(128)
         self.conv2 = nn.Conv2d(in_channels=128, out_channels=256, kernel_size=5, stride=1, padding=4, dilation=2,
                                groups=1)
+        self.bn2 = nn.BatchNorm2d(256)
         self.conv3 = nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=1, padding=3, dilation=3,
                                groups=1)
+        self.bn3 = nn.BatchNorm2d(256)
         self.conv4 = nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=1, padding=3, dilation=3,
                                groups=1)
+        self.bn4 = nn.BatchNorm2d(256)
         self.conv5 = nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=1, padding=3, dilation=3,
                                groups=1)
+        self.bn5 = nn.BatchNorm2d(256)
         self.conv6 = nn.Conv2d(in_channels=256, out_channels=128, kernel_size=5, stride=1, padding=4, dilation=2,
                                groups=1)
-        self.conv7 = nn.Conv2d(in_channels=128, out_channels=num_class, kernel_size=7, stride=1,
-                               padding=3, dilation=1, groups=1)
+        self.bn6 = nn.BatchNorm2d(128)
         self.lrelu = nn.LeakyReLU(0.2, inplace=True)
-        self.num_class = num_class
+        self.avgpool = nn.AvgPool2d(kernel_size=1, stride=1)
+        self.classifier = nn.Linear(128, num_class)
 
     def forward(self, x):
         # capsules squash
         x = self.conv1(x)
+        x = self.bn1(x)
         x = self.lrelu(x)
         # x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=1, dim=1)], dim=1)
         x = self.conv2(x)
+        x = self.bn2(x)
         x = self.lrelu(x)
         # x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=4, dim=1)], dim=1)
         x = self.conv3(x)
+        x = self.bn3(x)
         x = self.lrelu(x)
         # x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=16, dim=1)], dim=1)
         x = self.conv4(x)
+        x = self.bn4(x)
         x = self.lrelu(x)
         # x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=16, dim=1)], dim=1)
         x = self.conv5(x)
+        x = self.bn5(x)
         x = self.lrelu(x)
         # x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=16, dim=1)], dim=1)
         x = self.conv6(x)
+        x = self.bn6(x)
         x = self.lrelu(x)
         # x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=4, dim=1)], dim=1)
-        x = self.conv7(x)
-        x = self.lrelu(x)
-        # x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=1, dim=1)], dim=1)
-        x = (x.view(x.size(0), self.num_class, -1)).mean(dim=-1)
+        x = self.avgpool(x)
+        x = x.view(x.size(0), -1)
+        x = self.classifier(x)
+
         return F.sigmoid(x)
 
 
