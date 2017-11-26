@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 import utils
 from averagevaluemeter import AverageValueMeter
-from model import DPN92
+from model import VGG
 
 
 def processor(sample):
@@ -93,7 +93,7 @@ if __name__ == '__main__':
     else:
         CLASSES = 10
     # model = SquashCapsuleNet(in_channels, CLASSES)
-    model = DPN92()
+    model = VGG('VGG19')
     if torch.cuda.is_available():
         model = model.cuda()
 
