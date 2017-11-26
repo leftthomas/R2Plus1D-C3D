@@ -29,12 +29,16 @@ class SquashCapsuleNet(nn.Module):
     def forward(self, x):
         batch_size = x.size(0)
         x = self.lrelu(self.bn1(self.conv1(x)))
-        x = self.lrelu(self.bn2(self.conv2(x)))
-        x = self.lrelu(self.bn3(self.conv3(x)))
-        x = self.lrelu(self.bn4(self.conv4(x)))
-        x = self.lrelu(self.bn5(self.conv5(x)))
         # capsules squash
-        # x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=32, dim=1)], dim=1)
+        x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=2, dim=1)], dim=1)
+        x = self.lrelu(self.bn2(self.conv2(x)))
+        x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=4, dim=1)], dim=1)
+        x = self.lrelu(self.bn3(self.conv3(x)))
+        x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=8, dim=1)], dim=1)
+        x = self.lrelu(self.bn4(self.conv4(x)))
+        x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=16, dim=1)], dim=1)
+        x = self.lrelu(self.bn5(self.conv5(x)))
+        x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=32, dim=1)], dim=1)
 
         x = self.adaavgpool(x)
         x = x.view(batch_size, -1)
