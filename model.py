@@ -8,36 +8,44 @@ def squash(tensor, dim=1):
     return scale * tensor / torch.sqrt(squared_norm)
 
 
-cfg = {
-    'VGG19': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512, 512, 'M', 512, 512, 512, 512, 'M'],
-}
-
-
 class SquashCapsuleNet(nn.Module):
     def __init__(self, in_channels, num_class):
         super(SquashCapsuleNet, self).__init__()
-        self.features = self.make_layers(in_channels, cfg['VGG19'])
-        self.classifier = nn.Linear(512, num_class)
+        self.conv1 = nn.Conv2d(in_channels=in_channels, out_channels=128, kernel_size=7, stride=1, padding=3,
+                               dilation=1,
+                               groups=1)
+        self.conv2 = nn.Conv2d(in_channels=128, out_channels=256, kernel_size=5, stride=1, padding=4, dilation=2,
+                               groups=4)
+        self.conv3 = nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=2, padding=3, dilation=3,
+                               groups=16)
+        self.conv4 = nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=2, padding=3, dilation=3,
+                               groups=16)
+        self.conv5 = nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=2, padding=3, dilation=3,
+                               groups=16)
+        self.conv6 = nn.Conv2d(in_channels=256, out_channels=128, kernel_size=5, stride=1, padding=4, dilation=2,
+                               groups=4)
+        self.conv7 = nn.Conv2d(in_channels=128, out_channels=num_class, kernel_size=7, stride=1,
+                               padding=3, dilation=1, groups=1)
+        self.num_class = num_class
 
     def forward(self, x):
-        out = self.features(x)
-        out = out.view(out.size(0), -1)
-        out = self.classifier(out)
-        return out
-
-    @staticmethod
-    def make_layers(in_channels, cfg):
-        layers = []
-        for x in cfg:
-            if x == 'M':
-                layers += [nn.MaxPool2d(kernel_size=2, stride=2)]
-            else:
-                layers += [nn.Conv2d(in_channels, x, kernel_size=3, padding=1),
-                           nn.BatchNorm2d(x),
-                           nn.LeakyReLU(0.2, inplace=True)]
-                in_channels = x
-        layers += [nn.AvgPool2d(kernel_size=1, stride=1)]
-        return nn.Sequential(*layers)
+        # capsules squash
+        x = self.conv1(x)
+        x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=1, dim=1)], dim=1)
+        x = self.conv2(x)
+        x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=4, dim=1)], dim=1)
+        x = self.conv3(x)
+        x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=16, dim=1)], dim=1)
+        x = self.conv4(x)
+        x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=16, dim=1)], dim=1)
+        x = self.conv5(x)
+        x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=16, dim=1)], dim=1)
+        x = self.conv6(x)
+        x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=4, dim=1)], dim=1)
+        x = self.conv7(x)
+        x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=1, dim=1)], dim=1)
+        x = (x.view(x.size(0), self.num_class, -1)).mean(dim=-1)
+        return x
 
 
 if __name__ == "__main__":
