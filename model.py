@@ -1,5 +1,4 @@
 import torch
-import torch.nn.functional as F
 from torch import nn
 
 
@@ -24,7 +23,7 @@ class SquashCapsuleNet(nn.Module):
         out = self.features(x)
         out = out.view(out.size(0), -1)
         out = self.classifier(out)
-        return F.sigmoid(out)
+        return out
 
     @staticmethod
     def make_layers(in_channels, cfg):
