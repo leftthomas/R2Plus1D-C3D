@@ -24,11 +24,13 @@ class SquashCapsuleNet(nn.Module):
                                groups=16)
         self.conv6 = nn.Conv2d(in_channels=256, out_channels=128, kernel_size=5, stride=1, padding=4, dilation=2,
                                groups=4)
-        self.conv7 = nn.Conv2d(in_channels=128, out_channels=num_class, kernel_size=7, stride=1,
-                               padding=3, dilation=1, groups=1)
-        self.num_class = num_class
+
+        self.adaavgpool = nn.AdaptiveAvgPool2d(1)
+        self.classifier = nn.Sequential(nn.Conv2d(128, 256, kernel_size=1), nn.LeakyReLU(0.2),
+                                        nn.Conv2d(256, num_class, kernel_size=1))
 
     def forward(self, x):
+        batch_size = x.size(0)
         # capsules squash
         x = self.conv1(x)
         x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=1, dim=1)], dim=1)
@@ -42,9 +44,10 @@ class SquashCapsuleNet(nn.Module):
         x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=16, dim=1)], dim=1)
         x = self.conv6(x)
         x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=4, dim=1)], dim=1)
-        x = self.conv7(x)
-        x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=1, dim=1)], dim=1)
-        x = (x.view(x.size(0), self.num_class, -1)).mean(dim=-1)
+
+        x = self.adaavgpool(x)
+        x = self.classifier(x)
+        x = x.view(batch_size, -1)
         return x
 
 
