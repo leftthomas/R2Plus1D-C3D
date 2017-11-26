@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-cfg = {
+config = {
     'VGG16': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M'],
     'VGG19': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512, 512, 'M', 512, 512, 512, 512, 'M'],
 }
@@ -26,7 +26,7 @@ class SquashLayer(nn.Module):
 class SquashCapsuleNet(nn.Module):
     def __init__(self, in_channels, num_class, vgg_name):
         super(SquashCapsuleNet, self).__init__()
-        self.features = self.make_layers(in_channels, cfg[vgg_name])
+        self.features = self.make_layers(in_channels, config[vgg_name])
         self.classifier = nn.Linear(512, num_class)
 
     def forward(self, x):
