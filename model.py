@@ -44,7 +44,7 @@ class SquashCapsuleNet(nn.Module):
             else:
                 layers += [nn.Conv2d(in_channels, x, kernel_size=3, padding=1),
                            nn.BatchNorm2d(x),
-                           nn.LeakyReLU(0.2, inplace=True)]
+                           nn.PReLU()]
                 in_channels = x
         layers += [nn.AdaptiveAvgPool2d(1)]
         return nn.Sequential(*layers)
