@@ -34,7 +34,7 @@ class SquashCapsuleNet(nn.Module):
         x = self.lrelu(self.bn4(self.conv4(x)))
         x = self.lrelu(self.bn5(self.conv5(x)))
         # capsules squash
-        x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=1, dim=1)], dim=1)
+        x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=16, dim=1)], dim=1)
 
         x = self.adaavgpool(x)
         x = x.view(batch_size, -1)
