@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 import utils
 from averagevaluemeter import AverageValueMeter
-from model import SquashCapsuleNet
+from model import DPN92
 
 
 def processor(sample):
@@ -92,7 +92,8 @@ if __name__ == '__main__':
         CLASSES = 100
     else:
         CLASSES = 10
-    model = SquashCapsuleNet(in_channels, CLASSES)
+    # model = SquashCapsuleNet(in_channels, CLASSES)
+    model = DPN92()
     if torch.cuda.is_available():
         model = model.cuda()
 
