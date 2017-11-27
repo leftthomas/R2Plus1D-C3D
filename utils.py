@@ -19,8 +19,8 @@ def get_iterator(mode, data_type, using_data_augmentation):
             ])
         elif data_type == 'CIFAR10':
             transform_train = transforms.Compose([
-                # transforms.RandomCrop(32, padding=4),
-                # transforms.RandomHorizontalFlip(),
+                transforms.RandomCrop(32, padding=4),
+                transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
                 transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616)),
             ])
