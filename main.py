@@ -59,7 +59,7 @@ def on_end_epoch(state):
 
     reset_meters()
 
-    engine.test(processor, utils.get_iterator(False, DATA_TYPE))
+    engine.test(processor, utils.get_iterator(False, DATA_TYPE, USING_DATA_AUGMENTATION))
 
     test_loss_logger.log(state['epoch'], meter_loss.value())
     test_accuracy_logger.log(state['epoch'], meter_accuracy.value()[0])
@@ -77,12 +77,14 @@ if __name__ == '__main__':
     parser.add_argument('--data_type', default='MNIST', type=str,
                         choices=['MNIST', 'CIFAR10', 'CIFAR100', 'STL10', 'SVHN'],
                         help='dataset type')
+    parser.add_argument('--using_data_augmentation', default=True, type=bool, help='is using data augmentation')
     parser.add_argument('--num_epochs', default=100, type=int, help='train epochs number')
 
     opt = parser.parse_args()
 
     NUM_EPOCHS = opt.num_epochs
     DATA_TYPE = opt.data_type
+    USING_DATA_AUGMENTATION = opt.using_data_augmentation
 
     if DATA_TYPE == 'MNIST':
         in_channels = 1
@@ -119,4 +121,5 @@ if __name__ == '__main__':
     engine.hooks['on_start_epoch'] = on_start_epoch
     engine.hooks['on_end_epoch'] = on_end_epoch
 
-    engine.train(processor, utils.get_iterator(True, DATA_TYPE), maxepoch=NUM_EPOCHS, optimizer=optimizer)
+    engine.train(processor, utils.get_iterator(True, DATA_TYPE, USING_DATA_AUGMENTATION), maxepoch=NUM_EPOCHS,
+                 optimizer=optimizer)

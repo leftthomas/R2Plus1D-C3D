@@ -54,5 +54,5 @@ if __name__ == "__main__":
     a = torch.FloatTensor([[0, 1, 2], [3, 4, 5]])
     b = squash(a)
     print(b)
-    d = SquashCapsuleNet(in_channels=1, num_class=10)
+    d = SquashCapsuleNet(in_channels=1, num_class=10, vgg_name='VGG19')
     print(d)
