@@ -47,6 +47,55 @@ def get_iterator(mode, data_type):
     return DataLoader(dataset=data, batch_size=64, shuffle=mode, num_workers=4)
 
 
+def get_mean_std(data_type):
+    if data_type == 'MNIST':
+        train_set = MNIST(root='data/MNIST', train=True, download=True, transform=transforms.ToTensor())
+        print(list(train_set.train_data.size()))
+        print(train_set.train_data.float().mean() / 255)
+        print(train_set.train_data.float().std() / 255)
+        # [60000, 28, 28]
+        # 0.1306604762738429
+        # 0.30810780717887876
+    elif data_type == 'CIFAR10':
+        train_set = CIFAR10(root='data/CIFAR10', train=True, download=True, transform=transforms.ToTensor())
+        print(train_set.train_data.shape)
+        print(train_set.train_data.mean(axis=(0, 1, 2)) / 255)
+        print(train_set.train_data.std(axis=(0, 1, 2)) / 255)
+        # (50000, 32, 32, 3)
+        # [0.49139968  0.48215841  0.44653091]
+        # [0.24703223  0.24348513  0.26158784]
+    elif data_type == 'CIFAR100':
+        train_set = CIFAR100(root='data/CIFAR100', train=True, download=True, transform=transforms.ToTensor())
+        print(train_set.train_data.shape)
+        print(train_set.train_data.mean(axis=(0, 1, 2)) / 255)
+        print(train_set.train_data.std(axis=(0, 1, 2)) / 255)
+        # (50000, 32, 32, 3)
+        # [0.50707516  0.48654887  0.44091784]
+        # [0.26733429  0.25643846  0.27615047]
+    elif data_type == 'STL10':
+        train_set = STL10(root='data/STL10', split='train', download=True, transform=transforms.ToTensor())
+        print(train_set.train_data.shape)
+        print(train_set.train_data.mean(axis=(0, 1, 2)) / 255)
+        print(train_set.train_data.std(axis=(0, 1, 2)) / 255)
+        # (50000, 32, 32, 3)
+        # [0.50707516  0.48654887  0.44091784]
+        # [0.26733429  0.25643846  0.27615047]
+    else:
+        # SVHN
+        train_set = SVHN(root='data/SVHN', split='train', download=True, transform=transforms.ToTensor())
+        print(train_set.data.shape)
+        print(train_set.data.mean(axis=(0, 1, 2)) / 255)
+        print(train_set.data.std(axis=(0, 1, 2)) / 255)
+        # (50000, 32, 32, 3)
+        # [0.50707516  0.48654887  0.44091784]
+        # [0.26733429  0.25643846  0.27615047]
+
+
 if __name__ == "__main__":
+    get_mean_std('MNIST')
+    get_mean_std('CIFAR10')
+    get_mean_std('CIFAR100')
+    get_mean_std('STL10')
+    get_mean_std('SVHN')
     t = get_iterator(True, 'MNIST')
     print(t)
