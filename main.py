@@ -94,7 +94,7 @@ if __name__ == '__main__':
         CLASSES = 100
     else:
         CLASSES = 10
-    model = SquashCapsuleNet(in_channels, CLASSES, 'VGG16')
+    model = SquashCapsuleNet(in_channels, CLASSES)
     if torch.cuda.is_available():
         model = model.cuda()
 

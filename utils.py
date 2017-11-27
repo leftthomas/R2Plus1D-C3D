@@ -10,6 +10,7 @@ def get_iterator(mode, data_type, using_data_augmentation):
     if using_data_augmentation:
         if data_type == 'MNIST':
             transform_train = transforms.Compose([
+                transforms.RandomCrop(28, padding=2),
                 transforms.ToTensor(),
                 transforms.Normalize((0.1307,), (0.3081,)),
             ])
@@ -30,6 +31,8 @@ def get_iterator(mode, data_type, using_data_augmentation):
             ])
         elif data_type == 'CIFAR100':
             transform_train = transforms.Compose([
+                transforms.RandomCrop(32, padding=2),
+                transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
                 transforms.Normalize((0.5071, 0.4865, 0.4409), (0.2673, 0.2564, 0.2762)),
             ])
@@ -39,6 +42,8 @@ def get_iterator(mode, data_type, using_data_augmentation):
             ])
         elif data_type == 'STL10':
             transform_train = transforms.Compose([
+                transforms.RandomCrop(96, padding=6),
+                transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
                 transforms.Normalize((0.4467, 0.4398, 0.4066), (0.2603, 0.2566, 0.2713)),
             ])
@@ -49,6 +54,7 @@ def get_iterator(mode, data_type, using_data_augmentation):
         else:
             # SVHN
             transform_train = transforms.Compose([
+                transforms.RandomCrop(32, padding=2),
                 transforms.ToTensor(),
                 transforms.Normalize((0.4377, 0.4438, 0.4728), (0.1980, 0.2010, 0.1970)),
             ])
