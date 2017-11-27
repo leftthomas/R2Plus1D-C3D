@@ -24,12 +24,15 @@ class SquashLayer(nn.Module):
 
 
 class ResBlock(nn.Module):
-    def __init__(self, in_channels, out_channels):
+    def __init__(self, in_channels, out_channels, is_downsample):
         super(ResBlock, self).__init__()
         self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=1, padding=1)
         self.bn = nn.BatchNorm2d(num_features=out_channels)
         self.relu = nn.ReLU(inplace=True)
-        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=2, padding=1)
+        if is_downsample:
+            self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=2, padding=1)
+        else:
+            self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -45,11 +48,14 @@ class SquashCapsuleNet(nn.Module):
     def __init__(self, in_channels, num_class):
         super(SquashCapsuleNet, self).__init__()
         # self.conv = nn.Conv2d(in_channels, 64, kernel_size=5, stride=1, padding=2)
-        self.rb1 = ResBlock(in_channels, 64)
-        self.rb2 = ResBlock(64, 128)
-        self.rb3 = ResBlock(128, 256)
-        self.rb4 = ResBlock(256, 512)
-        self.rb5 = ResBlock(512, 512)
+        self.rb1 = ResBlock(in_channels, 64, True)
+        self.rb2 = ResBlock(64, 128, True)
+        self.rb3 = ResBlock(128, 256, False)
+        self.rb4 = ResBlock(256, 256, True)
+        self.rb5 = ResBlock(256, 512, False)
+        self.rb6 = ResBlock(512, 512, True)
+        self.rb7 = ResBlock(512, 512, False)
+        self.rb8 = ResBlock(512, 512, True)
         self.classifier = nn.Linear(512, num_class)
 
     def forward(self, x):
@@ -58,6 +64,9 @@ class SquashCapsuleNet(nn.Module):
         x = self.rb3(x)
         x = self.rb4(x)
         x = self.rb5(x)
+        x = self.rb6(x)
+        x = self.rb7(x)
+        x = self.rb8(x)
         x = x.view(x.size(0), -1)
         x = self.classifier(x)
         return x
