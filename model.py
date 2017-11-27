@@ -44,6 +44,7 @@ class ResBlock(nn.Module):
 class SquashCapsuleNet(nn.Module):
     def __init__(self, in_channels, num_class):
         super(SquashCapsuleNet, self).__init__()
+        # self.conv = nn.Conv2d(in_channels, 64, kernel_size=5, stride=1, padding=2)
         self.rb1 = ResBlock(in_channels, 64)
         self.rb2 = ResBlock(64, 128)
         self.rb3 = ResBlock(128, 256)
@@ -60,7 +61,6 @@ class SquashCapsuleNet(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.classifier(x)
         return x
-
 
 #
 # class SquashCapsuleNet(nn.Module):
