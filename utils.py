@@ -74,9 +74,9 @@ def get_mean_std(data_type):
         # [0.26733429  0.25643846  0.27615047]
     elif data_type == 'STL10':
         train_set = STL10(root='data/STL10', split='train', download=True, transform=transforms.ToTensor())
-        print(train_set.train_data.shape)
-        print(train_set.train_data.mean(axis=(0, 1, 2)) / 255)
-        print(train_set.train_data.std(axis=(0, 1, 2)) / 255)
+        print(train_set.data.shape)
+        print(train_set.data.mean(axis=(0, 1, 2)) / 255)
+        print(train_set.data.std(axis=(0, 1, 2)) / 255)
         # (50000, 32, 32, 3)
         # [0.50707516  0.48654887  0.44091784]
         # [0.26733429  0.25643846  0.27615047]
