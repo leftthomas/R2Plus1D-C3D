@@ -106,7 +106,7 @@ if __name__ == '__main__':
             CLASSES = 10
             class_name = utils.SVHN_CLASS_NAME
 
-    model = SquashCapsuleNet(in_channels, CLASSES)
+    model = SquashCapsuleNet(in_channels, CLASSES, DATA_TYPE)
     if torch.cuda.is_available():
         model = model.cuda()
 
