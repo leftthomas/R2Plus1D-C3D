@@ -56,11 +56,11 @@ class CapsuleLayer(nn.Module):
 
 
 config = {
-    'MNIST': [64, '64D', 128, '128D', 256, 256, 256, '256D', 512, 512, 512, '512D'],
-    'CIFAR10': [64, '64D', 128, '128D', 256, 256, 256, '256D', 512, 512, 512, '512D'],
-    'CIFAR100': [64, '64D', 128, '128D', 256, 256, 256, '256D', 512, 512, 512, '512D'],
-    'STL10': [64, '64D', 128, '128D', 256, 256, 256, '256D', 512, 512, 512, '512D'],
-    'SVHN': [64, '64D', 128, '128D', 256, 256, 256, '256D', 512, 512, 512, '512D'],
+    'MNIST': [64, '64D', 128, '128D', 256, 256, 256, '256D', 512, 512, 512],
+    'CIFAR10': [64, '64D', 128, '128D', 256, 256, 256, '256D', 512, 512, 512],
+    'CIFAR100': [64, '64D', 128, '128D', 256, 256, 256, '256D', 512, 512, 512],
+    'STL10': [64, '64D', 128, '128D', 256, 256, 256, '256D', 512, 512, 512],
+    'SVHN': [64, '64D', 128, '128D', 256, 256, 256, '256D', 512, 512, 512],
 }
 
 
@@ -71,7 +71,7 @@ class SquashCapsuleNet(nn.Module):
 
         self.primary_capsules = CapsuleLayer(num_capsules=8, num_route_nodes=-1, in_channels=512, out_channels=32,
                                              kernel_size=1, stride=1)
-        self.classifier_capsules = CapsuleLayer(num_capsules=num_class, num_route_nodes=32 * 2 * 2, in_channels=8,
+        self.classifier_capsules = CapsuleLayer(num_capsules=num_class, num_route_nodes=32 * 4 * 4, in_channels=8,
                                                 out_channels=16)
 
     def forward(self, x):
@@ -97,7 +97,7 @@ class SquashCapsuleNet(nn.Module):
                            nn.BatchNorm2d(x),
                            nn.ReLU(inplace=True)]
             in_channels = x
-        layers += [nn.AdaptiveAvgPool2d(2)]
+        layers += [nn.AdaptiveAvgPool2d(4)]
         return nn.Sequential(*layers)
 
 
