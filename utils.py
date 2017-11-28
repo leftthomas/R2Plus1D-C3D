@@ -5,11 +5,23 @@ from torchvision.datasets.mnist import MNIST
 from torchvision.datasets.stl10 import STL10
 from torchvision.datasets.svhn import SVHN
 
-MNIST_CLASS_NAME = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9')
-CIFAR10_CLASS_NAME = ('airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
-CIFAR100_CLASS_NAME = ('airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
-STL10_CLASS_NAME = ('airplane', 'bird', 'car', 'cat', 'deer', 'dog', 'horse', 'monkey', 'ship', 'truck')
-SVHN_CLASS_NAME = ('1', '2', '3', '4', '5', '6', '7', '8', '9', '0')
+MNIST_CLASS_NAME = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+CIFAR10_CLASS_NAME = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
+CIFAR100_CLASS_NAME = [
+    'apple', 'aquarium_fish', 'baby', 'bear', 'beaver', 'bed', 'bee', 'beetle', 'bicycle', 'bottle', 'bowl', 'boy',
+    'bridge', 'bus', 'butterfly', 'camel', 'can', 'castle', 'caterpillar', 'cattle', 'chair', 'chimpanzee', 'clock',
+    'cloud', 'cockroach', 'couch', 'crab', 'crocodile', 'cup', 'dinosaur', 'dolphin', 'elephant', 'flatfish', 'forest',
+    'fox', 'girl', 'hamster', 'house', 'kangaroo', 'keyboard', 'lamp', 'lawn_mower', 'leopard', 'lion', 'lizard',
+    'lobster',
+    'man', 'maple_tree', 'motorcycle', 'mountain', 'mouse', 'mushroom', 'oak_tree', 'orange', 'orchid', 'otter',
+    'palm_tree', 'pear', 'pickup_truck', 'pine_tree', 'plain', 'plate', 'poppy', 'porcupine', 'possum', 'rabbit',
+    'raccoon',
+    'ray', 'road', 'rocket', 'rose', 'sea', 'seal', 'shark', 'shrew', 'skunk', 'skyscraper', 'snail', 'snake', 'spider',
+    'squirrel', 'streetcar', 'sunflower', 'sweet_pepper', 'table', 'tank', 'telephone', 'television', 'tiger',
+    'tractor',
+    'train', 'trout', 'tulip', 'turtle', 'wardrobe', 'whale', 'willow_tree', 'wolf', 'woman', 'worm']
+STL10_CLASS_NAME = ['airplane', 'bird', 'car', 'cat', 'deer', 'dog', 'horse', 'monkey', 'ship', 'truck']
+SVHN_CLASS_NAME = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
 
 
 def get_iterator(mode, data_type, using_data_augmentation):

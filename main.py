@@ -88,12 +88,24 @@ if __name__ == '__main__':
 
     if DATA_TYPE == 'MNIST':
         in_channels = 1
+        CLASSES = 10
+        class_name = utils.MNIST_CLASS_NAME
     else:
         in_channels = 3
-    if DATA_TYPE == 'CIFAR100':
-        CLASSES = 100
-    else:
-        CLASSES = 10
+        if DATA_TYPE == 'CIFAR10':
+            CLASSES = 10
+            class_name = utils.CIFAR10_CLASS_NAME
+        elif DATA_TYPE == 'CIFAR100':
+            CLASSES = 100
+            class_name = utils.CIFAR100_CLASS_NAME
+        elif DATA_TYPE == 'STL10':
+            CLASSES = 10
+            class_name = utils.STL10_CLASS_NAME
+        else:
+            # DATA_TYPE == 'SVHN'
+            CLASSES = 10
+            class_name = utils.SVHN_CLASS_NAME
+
     model = SquashCapsuleNet(in_channels, CLASSES)
     if torch.cuda.is_available():
         model = model.cuda()
@@ -112,8 +124,8 @@ if __name__ == '__main__':
     test_loss_logger = VisdomPlotLogger('line', opts={'title': 'Test Loss'})
     test_accuracy_logger = VisdomPlotLogger('line', opts={'title': 'Test Accuracy'})
     confusion_logger = VisdomLogger('heatmap', opts={'title': 'Confusion Matrix',
-                                                     'columnnames': list(range(CLASSES)),
-                                                     'rownames': list(range(CLASSES))})
+                                                     'columnnames': class_name,
+                                                     'rownames': class_name})
     loss_criterion = nn.CrossEntropyLoss()
 
     engine.hooks['on_sample'] = on_sample
