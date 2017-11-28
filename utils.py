@@ -5,6 +5,12 @@ from torchvision.datasets.mnist import MNIST
 from torchvision.datasets.stl10 import STL10
 from torchvision.datasets.svhn import SVHN
 
+MNIST_CLASS_NAME = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9')
+CIFAR10_CLASS_NAME = ('airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+CIFAR100_CLASS_NAME = ('airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+STL10_CLASS_NAME = ('airplane', 'bird', 'car', 'cat', 'deer', 'dog', 'horse', 'monkey', 'ship', 'truck')
+SVHN_CLASS_NAME = ('1', '2', '3', '4', '5', '6', '7', '8', '9', '0')
+
 
 def get_iterator(mode, data_type, using_data_augmentation):
     if using_data_augmentation:
