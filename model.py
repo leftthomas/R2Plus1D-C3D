@@ -49,7 +49,8 @@ class SquashCapsuleNet(nn.Module):
         self.rb5 = ResBlock(256 + 128, 512, False)
         self.rb6 = ResBlock(512, 512, True)
         self.avgpool = nn.AvgPool2d(kernel_size=1, stride=2)
-        self.classifier = nn.Linear(512, num_class)
+        self.adavgpool = nn.AdaptiveAvgPool2d(output_size=1)
+        self.classifier = nn.Linear(512 + 256, num_class)
 
     def forward(self, x):
         rb0 = self.avgpool(x)
@@ -66,7 +67,8 @@ class SquashCapsuleNet(nn.Module):
         x = self.rb5(torch.cat((x, rb2), dim=1))
         x = self.rb6(x)
 
-        x = x.view(torch.cat((x, rb4), dim=1).size(0), -1)
+        x = self.adavgpool(torch.cat((x, rb4), dim=1))
+        x = x.view(x.size(0), -1)
         x = self.classifier(x)
         return x
 
