@@ -43,10 +43,10 @@ class SquashCapsuleNet(nn.Module):
     def __init__(self, in_channels, num_class):
         super(SquashCapsuleNet, self).__init__()
         self.rb1 = ResBlock(in_channels, 64, True)
-        self.rb2 = ResBlock(65, 128, True)
-        self.rb3 = ResBlock(192, 256, False)
+        self.rb2 = ResBlock(64 + in_channels, 128, True)
+        self.rb3 = ResBlock(128 + 64, 256, False)
         self.rb4 = ResBlock(256, 256, True)
-        self.rb5 = ResBlock(384, 512, False)
+        self.rb5 = ResBlock(256 + 128, 512, False)
         self.rb6 = ResBlock(512, 512, True)
         self.avgpool = nn.AvgPool2d(kernel_size=1, stride=2)
         self.classifier = nn.Linear(512, num_class)
