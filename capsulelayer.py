@@ -92,7 +92,9 @@ class CapsuleConv2d(nn.Module):
         self.padding = padding
         self.num_iterations = num_iterations
         self.weight = Parameter(
-            torch.randn(out_channels // out_length, in_channels // in_length, *kernel_size, in_length, out_length))
+            torch.randn(out_channels // out_length, in_channels // in_length, 1,
+                        self.kernel_size[0] * self.kernel_size[1],
+                        in_length, out_length))
 
     def forward(self, input):
         if input.dim() != 4:
@@ -114,10 +116,8 @@ class CapsuleConv2d(nn.Module):
                 for j in range(W_in - self.kernel_size[1] + 2 - self.stride[1]):
                     window = plane[:, :, i * self.stride[0]:i * self.stride[0] + self.kernel_size[0],
                              j * self.stride[1]:j * self.stride[1] + self.kernel_size[1]]
-                    capsulelinear(window, self.weight[:, :, ])
-                    out[:, f, i, j] = np.sum(input_pad[:, :, i * S: i * S + HH, j * S: j * S + WW] * w[c, :, :, :],
-                                             axis=(1, 2, 3))
-
+                    plane_out = capsulelinear(window, self.weight[0, 0], self.num_iterations)
+                    out[:, 0:self.out_channels // self.out_length, i, j] = plane_out
         return out
 
     def __repr__(self):
