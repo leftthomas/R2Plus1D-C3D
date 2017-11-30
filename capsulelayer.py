@@ -1,5 +1,6 @@
 import torch
 import torch.nn.functional as F
+from skimage.util import view_as_windows
 from torch import nn
 from torch.autograd import Variable
 from torch.nn.modules.utils import _pair
@@ -9,22 +10,6 @@ from torch.nn.parameter import Parameter
 class CapsuleConv2d(nn.Module):
     r"""Applies a 2D capsule convolution over an input signal composed of several input
     planes.
-
-    In the simplest case, the output value of the layer with input size
-    :math:`(N, C_{in}, H, W)` and output :math:`(N, C_{out}, H_{out}, W_{out})`
-    can be precisely described as:
-
-    .. math::
-
-        \begin{array}{ll}
-        out(N_i, C_{out_j})  = \sum_{{k}=0}^{C_{in}-1} weight(C_{out_j}, k)  \star input(N_i, k)
-        \end{array}
-
-    where :math:`\star` is the valid 2D `cross-correlation`_ operator
-
-    | :attr:`stride` controls the stride for the cross-correlation.
-    | If :attr:`padding` is non-zero, then the input is implicitly zero-padded
-      on both sides for :attr:`padding` number of points.
 
     The parameters :attr:`kernel_size`, :attr:`stride`, :attr:`padding` can either be:
 
@@ -41,10 +26,13 @@ class CapsuleConv2d(nn.Module):
 
     Args:
         in_channels (int): Number of channels in the input image
-        out_channels (int): Number of channels produced by the convolution
-        kernel_size (int or tuple): Size of the convolving kernel
-        stride (int or tuple, optional): Stride of the convolution
+        out_channels (int): Number of channels produced by the capsule convolution
+        kernel_size (int or tuple): Size of the capsule convolving kernel
+        in_length (int): length of each input sample's each capsule
+        out_length (int): length of each output sample's each capsule
+        stride (int or tuple, optional): Stride of the capsule convolution
         padding (int or tuple, optional): Zero-padding added to both sides of the input
+        num_iterations (int, optional): number of routing iterations
 
     Shape:
         - Input: :math:`(N, C_{in}, H_{in}, W_{in})`
@@ -54,7 +42,9 @@ class CapsuleConv2d(nn.Module):
 
     Attributes:
         weight (Tensor): the learnable weights of the module of shape
-                         (out_channels, in_channels, kernel_size[0], kernel_size[1])
+                         (out_channels // out_length, in_channels // in_length, 1,
+                        kernel_size[0] * kernel_size[1],
+                        in_length, out_length)
 
     Examples::
 
@@ -112,18 +102,20 @@ class CapsuleConv2d(nn.Module):
             out = out.cuda()
         input_pad[:, :, self.padding[0]:self.padding[0] + H_in, self.padding[1]:self.padding[1] + W_in] = input
 
-        input_planes = input_pad.chunk(num_chunks=self.in_channels // self.in_length, dim=1)
-        for index in range(self.out_channels // self.out_length):
-            for i, plane in enumerate(input_planes):
-                for j in range(H_out):
-                    for k in range(W_out):
-                        window = plane[:, :, j * self.stride[0]:j * self.stride[0] + self.kernel_size[0],
-                                 k * self.stride[1]:k * self.stride[1] + self.kernel_size[1]]
-                        window = window.contiguous().view(window.size(0), window.size(1), -1).transpose(1, 2)
-                        plane_out = route(window, self.weight[index, i], self.num_iterations)
-                        out[:, index * self.out_length:(index + 1) * self.out_length, j, k] = \
-                            out[:, index * self.out_length:(index + 1) * self.out_length, j, k].add(
-                                plane_out.transpose(1, 2).squeeze(-1))
+        # input_planes = input_pad.chunk(num_chunks=self.in_channels // self.in_length, dim=1)
+        # for index in range(self.out_channels // self.out_length):
+        #     for i, plane in enumerate(input_planes):
+        #         for j in range(H_out):
+        #             for k in range(W_out):
+        #                 window = plane[:, :, j * self.stride[0]:j * self.stride[0] + self.kernel_size[0],
+        #                          k * self.stride[1]:k * self.stride[1] + self.kernel_size[1]]
+        #                 window = window.contiguous().view(window.size(0), window.size(1), -1).transpose(1, 2)
+        #                 plane_out = route(window, self.weight[index, i], self.num_iterations)
+        #                 out[:, index * self.out_length:(index + 1) * self.out_length, j, k] = \
+        #                     out[:, index * self.out_length:(index + 1) * self.out_length, j, k].add(
+        #                         plane_out.transpose(1, 2).squeeze(-1))
+        print(input_pad[0, 0])
+        view_as_windows(input_pad, window_shape=(), step=self.stride)
         return out
 
     def __repr__(self):
@@ -139,19 +131,19 @@ class CapsuleLinear(nn.Module):
     r"""Applies a fully connection capsules to the incoming data
 
      Args:
-         in_capsules: number of each input sample's capsules
-         out_capsules: number of each output sample's capsules
-         in_length: length of each input sample's each capsule
-         out_length: length of each output sample's each capsule
-         num_iterations: number of routing iterations
+         in_capsules (int): number of each input sample's capsules
+         out_capsules (int): number of each output sample's capsules
+         in_length (int): length of each input sample's each capsule
+         out_length (int): length of each output sample's each capsule
+         num_iterations (int, optional): number of routing iterations
 
      Shape:
          - Input: :math:`(N, in\_capsules, in\_length)`
          - Output: :math:`(N, out\_capsules, out\_length)`
 
      Attributes:
-         weight: the learnable weights of the module of shape
-             (out_capsules x in_capsules x in_length x out_length)
+         weight (Tensor): the learnable weights of the module of shape
+             (out_capsules, in_capsules, in_length, out_length)
 
      Examples::
          >>> import capsulelayer
@@ -180,7 +172,7 @@ class CapsuleLinear(nn.Module):
 
 
 def route(input, weight, num_iterations):
-    priors = input[None, :, :, None, :] @ weight[:, None, :, :, :]
+    priors = torch.matmul(input[None, :, :, None, :], weight[:, None, :, :, :])
     logits = Variable(torch.zeros(*priors.size()))
     if torch.cuda.is_available():
         logits = logits.cuda()
