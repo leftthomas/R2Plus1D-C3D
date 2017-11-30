@@ -30,10 +30,10 @@ class SquashCapsuleNet(nn.Module):
     @staticmethod
     def make_layers(in_channels, cfg):
         layers = []
-        layers += [nn.Conv2d(in_channels, 64, kernel_size=3, padding=1, stride=1),
-                   nn.BatchNorm2d(64),
+        layers += [nn.Conv2d(in_channels, 32, kernel_size=3, padding=1, stride=1),
+                   nn.BatchNorm2d(32),
                    nn.ReLU(inplace=True)]
-        in_channels = 64
+        in_channels = 32
         for x in cfg:
             if type(x) == str:
                 x = int(x.replace('D', ''))
