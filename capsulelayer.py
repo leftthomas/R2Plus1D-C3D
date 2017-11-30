@@ -123,7 +123,7 @@ class CapsuleConv2d(nn.Module):
                         plane_out = route(window, self.weight[index, i], self.num_iterations)
                         out[:, index * self.out_length:(index + 1) * self.out_length, j, k] = \
                             out[:, index * self.out_length:(index + 1) * self.out_length, j, k].add(
-                                plane_out.transpose(1, 2))
+                                plane_out.transpose(1, 2).squeeze(-1))
         return out
 
     def __repr__(self):
