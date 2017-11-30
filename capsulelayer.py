@@ -113,7 +113,24 @@ class CapsuleConv2d(nn.Module):
         #                 out[:, index * self.out_length:(index + 1) * self.out_length, j, k] = \
         #                     out[:, index * self.out_length:(index + 1) * self.out_length, j, k].add(
         #                         plane_out.transpose(1, 2).squeeze(-1))
-        # print(input[0, 0])
+
+
+
+        A = torch.arange(0, 2 * 3 * 4 * 4).resize_(2, 3, 4, 4) + 1
+        print(A)
+        B = [1, 2, 2]  # Sample blocksize (rows x columns)
+        skip = [1, 2, 2]
+        input_windows = A.unfold(1, B[0], skip[0]).unfold(2, B[1], skip[1]).unfold(3, B[2], skip[2])
+        print(input_windows)
+        # view the windows as (kh * kw)
+        input_windows = input_windows.contiguous().view(*input_windows.size()[:-3], -1)
+        print(input_windows)
+
+        # get all image windows of size (kh, kw) and stride (sh, sw)
+        input_windows = input.unfold(2, self.kernel_size[0], self.stride[0]).unfold(3, self.kernel_size[1],
+                                                                                    self.stride[1])
+        # view the windows as (kh * kw)
+        input_windows = input_windows.contiguous().view(*input_windows.size()[:-2], -1)
 
         return out
 
