@@ -1,6 +1,5 @@
 import torch
 import torch.nn.functional as F
-from skimage.util import view_as_windows
 from torch import nn
 from torch.autograd import Variable
 from torch.nn.modules.utils import _pair
@@ -95,14 +94,14 @@ class CapsuleConv2d(nn.Module):
         N, C_in, H_in, W_in = input.size()
         H_out = 1 + (H_in + 2 * self.padding[0] - self.kernel_size[0]) // self.stride[0]
         W_out = 1 + (W_in + 2 * self.padding[1] - self.kernel_size[1]) // self.stride[1]
-        input_pad = Variable(torch.zeros(N, C_in, H_in + 2 * self.padding[0], W_in + 2 * self.padding[1]))
+        input = F.pad(input, (self.padding[1], self.padding[1], self.padding[0], self.padding[0]))
+
         out = Variable(torch.zeros((N, self.out_channels, H_out, W_out)))
         if torch.cuda.is_available():
-            input_pad = input_pad.cuda()
+            input = input.cuda()
             out = out.cuda()
-        input_pad[:, :, self.padding[0]:self.padding[0] + H_in, self.padding[1]:self.padding[1] + W_in] = input
 
-        # input_planes = input_pad.chunk(num_chunks=self.in_channels // self.in_length, dim=1)
+        # input_planes = input.chunk(num_chunks=self.in_channels // self.in_length, dim=1)
         # for index in range(self.out_channels // self.out_length):
         #     for i, plane in enumerate(input_planes):
         #         for j in range(H_out):
@@ -114,8 +113,8 @@ class CapsuleConv2d(nn.Module):
         #                 out[:, index * self.out_length:(index + 1) * self.out_length, j, k] = \
         #                     out[:, index * self.out_length:(index + 1) * self.out_length, j, k].add(
         #                         plane_out.transpose(1, 2).squeeze(-1))
-        print(input_pad[0, 0])
-        view_as_windows(input_pad, window_shape=(), step=self.stride)
+        # print(input[0, 0])
+
         return out
 
     def __repr__(self):
