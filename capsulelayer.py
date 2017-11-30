@@ -67,8 +67,10 @@ class CapsuleConv2d(nn.Module):
         >>> input = Variable(torch.randn(20, 16, 50, 100))
         >>> output = m(input)
         >>> print(output.size())
+        torch.Size([20, 33, 24, 49])
         >>> output = m1(input)
         >>> print(output.size())
+        torch.Size([20, 33, 28, 100])
     """
 
     def __init__(self, in_channels, out_channels, kernel_size, in_length, out_length, stride=1,
@@ -111,13 +113,17 @@ class CapsuleConv2d(nn.Module):
         input_pad[:, :, self.padding[0]:self.padding[0] + H_in, self.padding[1]:self.padding[1] + W_in] = input
 
         input_planes = input_pad.chunk(num_chunks=self.in_channels // self.in_length, dim=1)
-        for plane in input_planes:
-            for i in range(H_in - self.kernel_size[0] + 2 - self.stride[0]):
-                for j in range(W_in - self.kernel_size[1] + 2 - self.stride[1]):
-                    window = plane[:, :, i * self.stride[0]:i * self.stride[0] + self.kernel_size[0],
-                             j * self.stride[1]:j * self.stride[1] + self.kernel_size[1]]
-                    plane_out = capsulelinear(window, self.weight[0, 0], self.num_iterations)
-                    out[:, 0:self.out_channels // self.out_length, i, j] = plane_out
+        for index in range(self.out_channels // self.out_length):
+            for i, plane in enumerate(input_planes):
+                for j in range(H_out):
+                    for k in range(W_out):
+                        window = plane[:, :, j * self.stride[0]:j * self.stride[0] + self.kernel_size[0],
+                                 k * self.stride[1]:k * self.stride[1] + self.kernel_size[1]]
+                        window = window.contiguous().view(window.size(0), window.size(1), -1).transpose(1, 2)
+                        plane_out = route(window, self.weight[index, i], self.num_iterations)
+                        out[:, index * self.out_length:(index + 1) * self.out_length, j, k] = \
+                            out[:, index * self.out_length:(index + 1) * self.out_length, j, k].add(
+                                plane_out.transpose(1, 2))
         return out
 
     def __repr__(self):
@@ -165,7 +171,7 @@ class CapsuleLinear(nn.Module):
         self.weight = Parameter(torch.randn(out_capsules, in_capsules, in_length, out_length))
 
     def forward(self, input):
-        return capsulelinear(input, self.weight, self.num_iterations)
+        return route(input, self.weight, self.num_iterations)
 
     def __repr__(self):
         return self.__class__.__name__ + ' (' \
@@ -173,7 +179,7 @@ class CapsuleLinear(nn.Module):
                + str(self.out_capsules) + ')'
 
 
-def capsulelinear(input, weight, num_iterations):
+def route(input, weight, num_iterations):
     priors = input[None, :, :, None, :] @ weight[:, None, :, :, :]
     logits = Variable(torch.zeros(*priors.size()))
     if torch.cuda.is_available():
