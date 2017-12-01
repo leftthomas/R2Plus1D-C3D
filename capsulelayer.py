@@ -176,7 +176,7 @@ def route_conv2d(input, num_iterations):
         outputs = squash((probs * input).sum(dim=-2, keepdim=True).mean(dim=-3, keepdim=True))
         if r != num_iterations - 1:
             delta_logits = (input * outputs).sum(dim=-1, keepdim=True)
-            probs += delta_logits.exp()
+            probs = probs + delta_logits.exp()
     return outputs.squeeze(dim=-2).squeeze(dim=-2)
 
 
