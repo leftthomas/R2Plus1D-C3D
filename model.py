@@ -1,4 +1,3 @@
-import torch
 import torch.nn.functional as F
 from torch import nn
 
@@ -22,9 +21,9 @@ class SquashCapsuleNet(nn.Module):
 
     def forward(self, x):
         out = self.features(x)
-        out = out.view(out.size(0), out.size(1), -1)
-        out = torch.cat(out.chunk(num_chunks=out.size(1) // 8, dim=1), dim=2)
-        out = out.transpose(1, 2)
+        out = out.view(*out.size()[:2], -1)
+        out = out.transpose(-1, -2)
+        out = out.contiguous().view(out.size(0), -1, 8)
         out = self.classifier(out)
 
         classes = (out ** 2).sum(dim=-1) ** 0.5

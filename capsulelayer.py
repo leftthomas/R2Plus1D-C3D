@@ -44,6 +44,10 @@ class CapsuleConv2d(nn.Module):
                          (out_channels // out_length, in_channels // in_length * kernel_size[0] * kernel_size[1],
                         out_length, in_length)
 
+    ------------------------------------------------------------------------------------------------
+    !!!!!!!!!     PAY ATTENTION: MAKE SURE CapsuleConv2d's OUTPUT CAPSULE's LENGTH EQUALS
+                               THE NEXT CapsuleConv2d's INPUT CAPSULE's LENGTH            !!!!!!!!!!
+    ------------------------------------------------------------------------------------------------
     Examples::
 
         >>> import capsulelayer
