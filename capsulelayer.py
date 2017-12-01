@@ -41,9 +41,8 @@ class CapsuleConv2d(nn.Module):
 
     Attributes:
         weight (Tensor): the learnable weights of the module of shape
-                         (out_channels // out_length, in_channels // in_length, 1,
-                        kernel_size[0] * kernel_size[1],
-                        in_length, out_length)
+                         (out_channels // out_length, in_channels // in_length * kernel_size[0] * kernel_size[1],
+                        out_length, in_length)
 
     Examples::
 
@@ -83,36 +82,25 @@ class CapsuleConv2d(nn.Module):
         self.padding = padding
         self.num_iterations = num_iterations
         self.weight = Parameter(
-            torch.randn(out_channels // out_length,
-                        (in_channels // in_length) * self.kernel_size[0] * self.kernel_size[1], out_length, in_length))
+            torch.randn(out_channels // out_length, (in_channels // in_length) * kernel_size[0] * kernel_size[1],
+                        out_length, in_length))
 
     def forward(self, input):
         if input.dim() != 4:
             raise ValueError("Expected 4D tensor as input, got {}D tensor instead.".format(input.dim()))
 
-        N, C_in, H_in, W_in = input.size()
-        H_out = 1 + (H_in + 2 * self.padding[0] - self.kernel_size[0]) // self.stride[0]
-        W_out = 1 + (W_in + 2 * self.padding[1] - self.kernel_size[1]) // self.stride[1]
         input = F.pad(input, (self.padding[1], self.padding[1], self.padding[0], self.padding[0]))
 
-        #
-        #
-        # input_windows = torch.arange(0, 2 * 5 * 4 * 4).resize_(2, 5, 4, 4) + 1
-        # # print(input_windows)
-        # B = [2, 2, 3]
-        # skip = [1, 2, 2]
-        # input_windows = input_windows.unfold(2, B[1], skip[1]).unfold(3, B[2], skip[2]).unfold(1, B[0], skip[0])
-        # input_windows = input_windows.contiguous().view(*input_windows.size()[:-3], -1, input_windows.size(-1))
-        # input_windows = input_windows.view(*input_windows.size()[:2], -1, *input_windows.size()[-2:]).transpose(1, 2)
-        # input_windows = input_windows.contiguous().view(*input_windows.size()[:2], -1, input_windows.size(-1))
-        # # print(input_windows)
-        # a = input_windows.unsqueeze(dim=-1).unsqueeze(dim=1)
-        # print(a)
-        # b = torch.arange(0, 2 * 24 * 3 * 2).resize_(2, 24, 3, 2) + 1
-        # print(b)
-        # b = b.unsqueeze(dim=1).unsqueeze(dim=0)
-        # priors = b.matmul(a)
-        # print(priors)
+        a = torch.arange(0, 2 * 3 * 4).resize_(2, 3, 4) + 1
+        print(a)
+        b = torch.arange(2 * 3 * 4, 2 * 3 * 4 + 1 * 1 * 4).resize_(1, 1, 4) + 1
+        print(b)
+        c = a * b
+        print(c)
+
+
+
+
 
 
         input_windows = input.unfold(2, self.kernel_size[0], self.stride[0]). \
@@ -124,11 +112,10 @@ class CapsuleConv2d(nn.Module):
 
         input_windows = input_windows.unsqueeze(dim=-1).unsqueeze(dim=1)
         weight = self.weight.unsqueeze(dim=1).unsqueeze(dim=0)
-        priors = weight.matmul(input_windows)
+        priors = weight.matmul(input_windows).squeeze(dim=-1)
+        priors = priors.view(*priors.size()[:3], self.in_channels // self.in_length, -1, priors.size(-1))
 
-        out = Variable(torch.zeros((N, self.out_channels, H_out, W_out)))
-        if torch.cuda.is_available():
-            out = out.cuda()
+        out = route_conv2d(priors, self.num_iterations)
         return out
 
     def __repr__(self):
@@ -138,6 +125,18 @@ class CapsuleConv2d(nn.Module):
             s += ', padding={padding}'
         s += ')'
         return s.format(name=self.__class__.__name__, **self.__dict__)
+
+
+def route_conv2d(input, num_iterations):
+    probs = Variable(torch.ones(*input.size()[:-1])).unsqueeze(dim=-1)
+    if torch.cuda.is_available():
+        probs = probs.cuda()
+    for r in range(num_iterations):
+        outputs = squash((probs * input).sum(dim=-2, keepdim=True).mean(dim=-3, keepdim=True))
+        if r != num_iterations - 1:
+            delta_logits = (input * outputs).sum(dim=-1, keepdim=True)
+            probs += delta_logits.exp()
+    return outputs.squeeze(dim=-2).squeeze(dim=-2).transpose(1, 2)
 
 
 class CapsuleLinear(nn.Module):
@@ -176,7 +175,7 @@ class CapsuleLinear(nn.Module):
         self.weight = Parameter(torch.randn(out_capsules, in_capsules, in_length, out_length))
 
     def forward(self, input):
-        return route(input, self.weight, self.num_iterations)
+        return route_linear(input, self.weight, self.num_iterations)
 
     def __repr__(self):
         return self.__class__.__name__ + ' (' \
@@ -184,7 +183,7 @@ class CapsuleLinear(nn.Module):
                + str(self.out_capsules) + ')'
 
 
-def route(input, weight, num_iterations):
+def route_linear(input, weight, num_iterations):
     priors = torch.matmul(input[None, :, :, None, :], weight[:, None, :, :, :])
     logits = Variable(torch.zeros(*priors.size()))
     if torch.cuda.is_available():
@@ -199,13 +198,13 @@ def route(input, weight, num_iterations):
     return outputs.squeeze(dim=2).squeeze(dim=2).transpose(0, 1)
 
 
-def squash(tensor, dim=-1):
-    squared_norm = (tensor ** 2).sum(dim=dim, keepdim=True)
-    scale = squared_norm / (1 + squared_norm)
-    return scale * tensor / torch.sqrt(squared_norm)
-
-
 def softmax(tensor, dim=1):
     transposed_input = tensor.transpose(dim, len(tensor.size()) - 1)
     softmaxed_output = F.softmax(transposed_input.contiguous().view(-1, transposed_input.size(-1)))
     return softmaxed_output.view(*transposed_input.size()).transpose(dim, len(tensor.size()) - 1)
+
+
+def squash(tensor, dim=-1):
+    squared_norm = (tensor ** 2).sum(dim=dim, keepdim=True)
+    scale = squared_norm / (1 + squared_norm)
+    return scale * tensor / torch.sqrt(squared_norm)
