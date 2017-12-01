@@ -35,7 +35,7 @@ class SquashCapsuleNet(nn.Module):
         layers = []
         layers += [nn.Conv2d(in_channels, 16, kernel_size=3, padding=1, stride=1),
                    nn.BatchNorm2d(16),
-                   nn.ReLU(inplace=True)]
+                   nn.ReLU()]
         in_channels = 16
         for x in cfg:
             if type(x) == str:
