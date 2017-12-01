@@ -116,22 +116,26 @@ class CapsuleConv2d(nn.Module):
 
 
 
-        A = torch.arange(0, 2 * 3 * 4 * 4).resize_(2, 3, 4, 4) + 1
-        print(A)
-        B = [1, 2, 2]  # Sample blocksize (rows x columns)
-        skip = [1, 2, 2]
-        input_windows = A.unfold(1, B[0], skip[0]).unfold(2, B[1], skip[1]).unfold(3, B[2], skip[2])
-        print(input_windows)
-        # view the windows as (kh * kw)
+        # A = torch.arange(0, 1 * 5 * 4 * 4).resize_(1, 5, 4, 4) + 1
+        # print(A)
+        # B = [2, 2, 3]  # Sample blocksize (rows x columns)
+        # skip = [1, 2, 2]
+        # # input_windows = A.unfold(2, B[1], skip[1]).unfold(3, B[2], skip[2]).unfold(1, B[0], skip[0])
+        # A = A.unfold(2, B[1], skip[1])
+        # A = A.unfold(3, B[2], skip[2])
+        # A = A.unfold(1, B[0], skip[0])
+        # # view the windows as (kh * kw)
+        # input_windows = A.contiguous().view(*A.size()[:-3], -1)
+        # input_windows = input_windows.view(*input_windows.size()[:2], -1, input_windows.size(-1)).transpose(1, 2)
+        # input_windows = input_windows.contiguous().view(*input_windows.size()[:2], -1)
+        # print(input_windows)
+
+        input_windows = input.unfold(2, self.kernel_size[0], self.stride[0]). \
+            unfold(3, self.kernel_size[1], self.stride[1]).unfold(1, self.in_length, self.in_length)
+
         input_windows = input_windows.contiguous().view(*input_windows.size()[:-3], -1)
-        print(input_windows)
-
-        # get all image windows of size (kh, kw) and stride (sh, sw)
-        input_windows = input.unfold(2, self.kernel_size[0], self.stride[0]).unfold(3, self.kernel_size[1],
-                                                                                    self.stride[1])
-        # view the windows as (kh * kw)
-        input_windows = input_windows.contiguous().view(*input_windows.size()[:-2], -1)
-
+        input_windows = input_windows.view(*input_windows.size()[:2], -1, input_windows.size(-1)).transpose(1, 2)
+        input_windows = input_windows.contiguous().view(*input_windows.size()[:2], -1)
         return out
 
     def __repr__(self):
