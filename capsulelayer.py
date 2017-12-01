@@ -89,19 +89,10 @@ class CapsuleConv2d(nn.Module):
         if input.dim() != 4:
             raise ValueError("Expected 4D tensor as input, got {}D tensor instead.".format(input.dim()))
 
+        N, C_in, H_in, W_in = input.size()
+        H_out = 1 + (H_in + 2 * self.padding[0] - self.kernel_size[0]) // self.stride[0]
+        W_out = 1 + (W_in + 2 * self.padding[1] - self.kernel_size[1]) // self.stride[1]
         input = F.pad(input, (self.padding[1], self.padding[1], self.padding[0], self.padding[0]))
-
-        a = torch.arange(0, 2 * 3 * 4).resize_(2, 3, 4) + 1
-        print(a)
-        b = torch.arange(2 * 3 * 4, 2 * 3 * 4 + 1 * 1 * 4).resize_(1, 1, 4) + 1
-        print(b)
-        c = a * b
-        print(c)
-
-
-
-
-
 
         input_windows = input.unfold(2, self.kernel_size[0], self.stride[0]). \
             unfold(3, self.kernel_size[1], self.stride[1]).unfold(1, self.in_length, self.in_length)
@@ -116,6 +107,8 @@ class CapsuleConv2d(nn.Module):
         priors = priors.view(*priors.size()[:3], self.in_channels // self.in_length, -1, priors.size(-1))
 
         out = route_conv2d(priors, self.num_iterations)
+        out = out.transpose(-1, -2)
+        out = out.contiguous().view(out.size(0), -1, H_out, W_out)
         return out
 
     def __repr__(self):
@@ -125,18 +118,6 @@ class CapsuleConv2d(nn.Module):
             s += ', padding={padding}'
         s += ')'
         return s.format(name=self.__class__.__name__, **self.__dict__)
-
-
-def route_conv2d(input, num_iterations):
-    probs = Variable(torch.ones(*input.size()[:-1])).unsqueeze(dim=-1)
-    if torch.cuda.is_available():
-        probs = probs.cuda()
-    for r in range(num_iterations):
-        outputs = squash((probs * input).sum(dim=-2, keepdim=True).mean(dim=-3, keepdim=True))
-        if r != num_iterations - 1:
-            delta_logits = (input * outputs).sum(dim=-1, keepdim=True)
-            probs += delta_logits.exp()
-    return outputs.squeeze(dim=-2).squeeze(dim=-2).transpose(1, 2)
 
 
 class CapsuleLinear(nn.Module):
@@ -181,6 +162,18 @@ class CapsuleLinear(nn.Module):
         return self.__class__.__name__ + ' (' \
                + str(self.in_capsules) + ' -> ' \
                + str(self.out_capsules) + ')'
+
+
+def route_conv2d(input, num_iterations):
+    probs = Variable(torch.ones(*input.size()[:-1])).unsqueeze(dim=-1)
+    if torch.cuda.is_available():
+        probs = probs.cuda()
+    for r in range(num_iterations):
+        outputs = squash((probs * input).sum(dim=-2, keepdim=True).mean(dim=-3, keepdim=True))
+        if r != num_iterations - 1:
+            delta_logits = (input * outputs).sum(dim=-1, keepdim=True)
+            probs += delta_logits.exp()
+    return outputs.squeeze(dim=-2).squeeze(dim=-2)
 
 
 def route_linear(input, weight, num_iterations):
