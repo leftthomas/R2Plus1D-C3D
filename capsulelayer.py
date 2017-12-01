@@ -83,9 +83,8 @@ class CapsuleConv2d(nn.Module):
         self.padding = padding
         self.num_iterations = num_iterations
         self.weight = Parameter(
-            torch.randn(out_channels // out_length, in_channels // in_length, 1,
-                        self.kernel_size[0] * self.kernel_size[1],
-                        in_length, out_length))
+            torch.randn(out_channels // out_length,
+                        (in_channels // in_length) * self.kernel_size[0] * self.kernel_size[1], out_length, in_length))
 
     def forward(self, input):
         if input.dim() != 4:
@@ -96,46 +95,40 @@ class CapsuleConv2d(nn.Module):
         W_out = 1 + (W_in + 2 * self.padding[1] - self.kernel_size[1]) // self.stride[1]
         input = F.pad(input, (self.padding[1], self.padding[1], self.padding[0], self.padding[0]))
 
-        out = Variable(torch.zeros((N, self.out_channels, H_out, W_out)))
-        if torch.cuda.is_available():
-            input = input.cuda()
-            out = out.cuda()
-
-        # input_planes = input.chunk(num_chunks=self.in_channels // self.in_length, dim=1)
-        # for index in range(self.out_channels // self.out_length):
-        #     for i, plane in enumerate(input_planes):
-        #         for j in range(H_out):
-        #             for k in range(W_out):
-        #                 window = plane[:, :, j * self.stride[0]:j * self.stride[0] + self.kernel_size[0],
-        #                          k * self.stride[1]:k * self.stride[1] + self.kernel_size[1]]
-        #                 window = window.contiguous().view(window.size(0), window.size(1), -1).transpose(1, 2)
-        #                 plane_out = route(window, self.weight[index, i], self.num_iterations)
-        #                 out[:, index * self.out_length:(index + 1) * self.out_length, j, k] = \
-        #                     out[:, index * self.out_length:(index + 1) * self.out_length, j, k].add(
-        #                         plane_out.transpose(1, 2).squeeze(-1))
-
-
-
-        # A = torch.arange(0, 1 * 5 * 4 * 4).resize_(1, 5, 4, 4) + 1
-        # print(A)
-        # B = [2, 2, 3]  # Sample blocksize (rows x columns)
+        #
+        #
+        # input_windows = torch.arange(0, 2 * 5 * 4 * 4).resize_(2, 5, 4, 4) + 1
+        # # print(input_windows)
+        # B = [2, 2, 3]
         # skip = [1, 2, 2]
-        # # input_windows = A.unfold(2, B[1], skip[1]).unfold(3, B[2], skip[2]).unfold(1, B[0], skip[0])
-        # A = A.unfold(2, B[1], skip[1])
-        # A = A.unfold(3, B[2], skip[2])
-        # A = A.unfold(1, B[0], skip[0])
-        # # view the windows as (kh * kw)
-        # input_windows = A.contiguous().view(*A.size()[:-3], -1)
-        # input_windows = input_windows.view(*input_windows.size()[:2], -1, input_windows.size(-1)).transpose(1, 2)
-        # input_windows = input_windows.contiguous().view(*input_windows.size()[:2], -1)
-        # print(input_windows)
+        # input_windows = input_windows.unfold(2, B[1], skip[1]).unfold(3, B[2], skip[2]).unfold(1, B[0], skip[0])
+        # input_windows = input_windows.contiguous().view(*input_windows.size()[:-3], -1, input_windows.size(-1))
+        # input_windows = input_windows.view(*input_windows.size()[:2], -1, *input_windows.size()[-2:]).transpose(1, 2)
+        # input_windows = input_windows.contiguous().view(*input_windows.size()[:2], -1, input_windows.size(-1))
+        # # print(input_windows)
+        # a = input_windows.unsqueeze(dim=-1).unsqueeze(dim=1)
+        # print(a)
+        # b = torch.arange(0, 2 * 24 * 3 * 2).resize_(2, 24, 3, 2) + 1
+        # print(b)
+        # b = b.unsqueeze(dim=1).unsqueeze(dim=0)
+        # priors = b.matmul(a)
+        # print(priors)
+
 
         input_windows = input.unfold(2, self.kernel_size[0], self.stride[0]). \
             unfold(3, self.kernel_size[1], self.stride[1]).unfold(1, self.in_length, self.in_length)
 
-        input_windows = input_windows.contiguous().view(*input_windows.size()[:-3], -1)
-        input_windows = input_windows.view(*input_windows.size()[:2], -1, input_windows.size(-1)).transpose(1, 2)
-        input_windows = input_windows.contiguous().view(*input_windows.size()[:2], -1)
+        input_windows = input_windows.contiguous().view(*input_windows.size()[:-3], -1, input_windows.size(-1))
+        input_windows = input_windows.view(*input_windows.size()[:2], -1, *input_windows.size()[-2:]).transpose(1, 2)
+        input_windows = input_windows.contiguous().view(*input_windows.size()[:2], -1, input_windows.size(-1))
+
+        input_windows = input_windows.unsqueeze(dim=-1).unsqueeze(dim=1)
+        weight = self.weight.unsqueeze(dim=1).unsqueeze(dim=0)
+        priors = weight.matmul(input_windows)
+
+        out = Variable(torch.zeros((N, self.out_channels, H_out, W_out)))
+        if torch.cuda.is_available():
+            out = out.cuda()
         return out
 
     def __repr__(self):
