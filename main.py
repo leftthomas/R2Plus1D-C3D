@@ -74,7 +74,7 @@ def on_end_epoch(state):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Train Capsule Classfication')
-    parser.add_argument('--data_type', default='MNIST', type=str,
+    parser.add_argument('--data_type', default='CIFAR10', type=str,
                         choices=['MNIST', 'CIFAR10', 'CIFAR100', 'STL10', 'SVHN'],
                         help='dataset type')
     parser.add_argument('--using_data_augmentation', default=True, type=bool, help='is using data augmentation')

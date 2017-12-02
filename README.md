@@ -21,7 +21,7 @@ pip install tqdm
 ```
 python -m visdom.server & python main.py
 optional arguments:
---data_type                   dataset type [default value is 'MNIST'](choices:['MNIST', 'CIFAR10', 'CIFAR100', 'STL10', 'SVHN'])
+--data_type                   dataset type [default value is 'CIFAR10'](choices:['MNIST', 'CIFAR10', 'CIFAR100', 'STL10', 'SVHN'])
 --using_data_augmentation     is using data augmentation [default value is True]
 --num_epochs                  train epochs number [default value is 100]
 ```

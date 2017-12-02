@@ -16,7 +16,7 @@ class SquashCapsuleNet(nn.Module):
     def __init__(self, in_channels, num_class, data_type):
         super(SquashCapsuleNet, self).__init__()
         self.features = self.make_layers(in_channels, config[data_type])
-        self.classifier = CapsuleLinear(in_capsules=2 * 2 * 64 // 8, out_capsules=num_class, in_length=8,
+        self.classifier = CapsuleLinear(in_capsules=4 * 4 * 64 // 8, out_capsules=num_class, in_length=8,
                                         out_length=16)
 
     def forward(self, x):
@@ -33,9 +33,7 @@ class SquashCapsuleNet(nn.Module):
     @staticmethod
     def make_layers(in_channels, cfg):
         layers = []
-        layers += [nn.Conv2d(in_channels, 16, kernel_size=3, padding=1, stride=1),
-                   nn.BatchNorm2d(16),
-                   nn.ReLU()]
+        layers += [CapsuleConv2d(in_channels, 16, kernel_size=3, in_length=3, out_length=8, padding=1)]
         in_channels = 16
         for x in cfg:
             if type(x) == str:
@@ -44,7 +42,6 @@ class SquashCapsuleNet(nn.Module):
             else:
                 layers += [CapsuleConv2d(in_channels, x, kernel_size=3, in_length=8, out_length=8, padding=1)]
             in_channels = x
-        layers += [nn.AdaptiveAvgPool2d(2)]
         return nn.Sequential(*layers)
 
 
