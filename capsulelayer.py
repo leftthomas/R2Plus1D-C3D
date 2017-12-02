@@ -66,7 +66,7 @@ class CapsuleConv2d(nn.Module):
     """
 
     def __init__(self, in_channels, out_channels, kernel_size, in_length, out_length, stride=1,
-                 padding=0, num_iterations=3):
+                 padding=0, num_iterations=8):
         super(CapsuleConv2d, self).__init__()
         if in_channels % in_length != 0:
             raise ValueError('in_channels must be divisible by in_length')
