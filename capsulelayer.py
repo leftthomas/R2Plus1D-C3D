@@ -98,6 +98,8 @@ class CapsuleConv2d(nn.Module):
         W_out = 1 + (W_in + 2 * self.padding[1] - self.kernel_size[1]) // self.stride[1]
         input = F.pad(input, (self.padding[1], self.padding[1], self.padding[0], self.padding[0]))
 
+        # it could be optimized, because it require many memory,
+        # and the matrix multiplication also could be optimized to speed up
         input_windows = input.unfold(2, self.kernel_size[0], self.stride[0]). \
             unfold(3, self.kernel_size[1], self.stride[1]).unfold(1, self.in_length, self.in_length)
 
