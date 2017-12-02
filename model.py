@@ -4,11 +4,11 @@ from torch import nn
 from capsulelayer import CapsuleLinear, CapsuleConv2d
 
 config = {
-    'MNIST': [16, '16D', 32, '32D', 64, '64D'],
-    'CIFAR10': [16, '16D', 32, '32D', 64, '64D'],
-    'CIFAR100': [16, '16D', 32, '32D', 64, '64D'],
-    'STL10': [16, '16D', 32, '32D', 64, '64D'],
-    'SVHN': [16, '16D', 32, '32D', 64, '64D'],
+    'MNIST': [32, '32D', 64, '64D', 128, '128D'],
+    'CIFAR10': [32, '32D', 64, '64D', 128, '128D'],
+    'CIFAR100': [32, '32D', 64, '64D', 128, '128D'],
+    'STL10': [32, '32D', 64, '64D', 128, '128D'],
+    'SVHN': [32, '32D', 64, '64D', 128, '128D'],
 }
 
 
@@ -16,7 +16,7 @@ class SquashCapsuleNet(nn.Module):
     def __init__(self, in_channels, num_class, data_type):
         super(SquashCapsuleNet, self).__init__()
         self.features = self.make_layers(in_channels, config[data_type])
-        self.classifier = CapsuleLinear(in_capsules=2 * 2 * 64 // 8, out_capsules=num_class, in_length=8,
+        self.classifier = CapsuleLinear(in_capsules=2 * 2 * 128 // 8, out_capsules=num_class, in_length=8,
                                         out_length=16)
 
     def forward(self, x):

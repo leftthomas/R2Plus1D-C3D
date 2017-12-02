@@ -117,7 +117,7 @@ def get_iterator(mode, data_type, using_data_augmentation):
             data = SVHN(root='data/SVHN', split='train', transform=transform_train, download=True)
         else:
             data = SVHN(root='data/SVHN', split='test', transform=transform_test, download=True)
-    return DataLoader(dataset=data, batch_size=64, shuffle=mode, num_workers=4)
+    return DataLoader(dataset=data, batch_size=32, shuffle=mode, num_workers=4)
 
 
 def get_mean_std(data_type):
