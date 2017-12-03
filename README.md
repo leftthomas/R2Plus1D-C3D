@@ -16,6 +16,22 @@ pip install git+https://github.com/pytorch/tnt.git@master
 ```
 pip install tqdm
 ```
+* NCCL
+
+Go to NVIDIA NCCL home page and download NCCL network version. Then run following command:
+```
+sudo dpkg -i nvidia-machine-learning-repo-<version>.deb
+sudo apt update
+sudo apt-get install libnccl2=2.1.2-1+cuda8.0 libnccl-dev=2.1.2-1+cuda8.0
+```
+* fastrlock
+```
+pip install fastrlock
+```
+* pyinn
+```
+pip install git+https://github.com/szagoruyko/pyinn.git@master
+```
 
 ## Usage
 ```

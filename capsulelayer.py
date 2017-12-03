@@ -1,3 +1,4 @@
+import pyinn as P
 import torch
 import torch.nn.functional as F
 from torch import nn
@@ -66,7 +67,7 @@ class CapsuleConv2d(nn.Module):
     """
 
     def __init__(self, in_channels, out_channels, kernel_size, in_length, out_length, stride=1,
-                 padding=0, num_iterations=8):
+                 padding=0, num_iterations=3):
         super(CapsuleConv2d, self).__init__()
         if in_channels % in_length != 0:
             raise ValueError('in_channels must be divisible by in_length')
@@ -96,10 +97,12 @@ class CapsuleConv2d(nn.Module):
         N, C_in, H_in, W_in = input.size()
         H_out = 1 + (H_in + 2 * self.padding[0] - self.kernel_size[0]) // self.stride[0]
         W_out = 1 + (W_in + 2 * self.padding[1] - self.kernel_size[1]) // self.stride[1]
-        input = F.pad(input, (self.padding[1], self.padding[1], self.padding[0], self.padding[0]))
+
+        dst = P.im2col(input, self.kernel_size, self.stride, self.padding)
 
         # it could be optimized, because it require many memory,
         # and the matrix multiplication also could be optimized to speed up
+        input = F.pad(input, (self.padding[1], self.padding[1], self.padding[0], self.padding[0]))
         input_windows = input.unfold(2, self.kernel_size[0], self.stride[0]). \
             unfold(3, self.kernel_size[1], self.stride[1]).unfold(1, self.in_length, self.in_length)
 
