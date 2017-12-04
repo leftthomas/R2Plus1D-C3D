@@ -108,7 +108,6 @@ class CapsuleConv2d(nn.Module):
         input_windows = input_windows.transpose(-2, -3)
 
         input_windows = input_windows.contiguous().view(*input_windows.size()[:2], -1, input_windows.size(-1))
-        # use torch.equal(input_windows.data, input_windows.data) to see whether they are same
         input_windows = input_windows.unsqueeze(dim=-1).unsqueeze(dim=1)
         weight = self.weight.unsqueeze(dim=1).unsqueeze(dim=0)
         priors = weight.matmul(input_windows).squeeze(dim=-1)
