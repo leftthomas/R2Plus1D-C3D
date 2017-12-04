@@ -75,7 +75,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Train Capsule Classfication')
     parser.add_argument('--data_type', default='CIFAR10', type=str,
-                        choices=['MNIST', 'CIFAR10', 'CIFAR100', 'STL10', 'SVHN'],
+                        choices=['MNIST', 'CIFAR10', 'CIFAR100', 'STL10'],
                         help='dataset type')
     parser.add_argument('--using_data_augmentation', default=True, type=bool, help='is using data augmentation')
     parser.add_argument('--num_epochs', default=100, type=int, help='train epochs number')
@@ -98,13 +98,10 @@ if __name__ == '__main__':
         elif DATA_TYPE == 'CIFAR100':
             CLASSES = 100
             class_name = utils.CIFAR100_CLASS_NAME
-        elif DATA_TYPE == 'STL10':
+        else:
+            # DATA_TYPE == 'STL10':
             CLASSES = 10
             class_name = utils.STL10_CLASS_NAME
-        else:
-            # DATA_TYPE == 'SVHN'
-            CLASSES = 10
-            class_name = utils.SVHN_CLASS_NAME
 
     model = SquashCapsuleNet(in_channels, CLASSES, DATA_TYPE)
     if torch.cuda.is_available():

@@ -3,7 +3,6 @@ from torch.utils.data import DataLoader
 from torchvision.datasets.cifar import CIFAR100, CIFAR10
 from torchvision.datasets.mnist import MNIST
 from torchvision.datasets.stl10 import STL10
-from torchvision.datasets.svhn import SVHN
 
 MNIST_CLASS_NAME = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 CIFAR10_CLASS_NAME = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
@@ -21,7 +20,6 @@ CIFAR100_CLASS_NAME = [
     'tractor',
     'train', 'trout', 'tulip', 'turtle', 'wardrobe', 'whale', 'willow_tree', 'wolf', 'woman', 'worm']
 STL10_CLASS_NAME = ['airplane', 'bird', 'car', 'cat', 'deer', 'dog', 'horse', 'monkey', 'ship', 'truck']
-SVHN_CLASS_NAME = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
 
 
 def get_iterator(mode, data_type, using_data_augmentation):
@@ -58,7 +56,8 @@ def get_iterator(mode, data_type, using_data_augmentation):
                 transforms.ToTensor(),
                 transforms.Normalize((0.5071, 0.4865, 0.4409), (0.2673, 0.2564, 0.2762)),
             ])
-        elif data_type == 'STL10':
+        else:
+            # data_type == 'STL10'
             transform_train = transforms.Compose([
                 transforms.RandomCrop(96, padding=6),
                 transforms.RandomHorizontalFlip(),
@@ -68,17 +67,6 @@ def get_iterator(mode, data_type, using_data_augmentation):
             transform_test = transforms.Compose([
                 transforms.ToTensor(),
                 transforms.Normalize((0.4467, 0.4398, 0.4066), (0.2603, 0.2566, 0.2713)),
-            ])
-        else:
-            # SVHN
-            transform_train = transforms.Compose([
-                transforms.RandomCrop(32, padding=2),
-                transforms.ToTensor(),
-                transforms.Normalize((0.4377, 0.4438, 0.4728), (0.1980, 0.2010, 0.1970)),
-            ])
-            transform_test = transforms.Compose([
-                transforms.ToTensor(),
-                transforms.Normalize((0.4377, 0.4438, 0.4728), (0.1980, 0.2010, 0.1970)),
             ])
     else:
         transform_train = transforms.Compose([
@@ -106,17 +94,12 @@ def get_iterator(mode, data_type, using_data_augmentation):
         else:
             data = CIFAR100(root='data/CIFAR100', train=mode, transform=transform_test, download=True)
 
-    elif data_type == 'STL10':
+    else:
+        # data_type == 'STL10'
         if mode:
             data = STL10(root='data/STL10', split='train', transform=transform_train, download=True)
         else:
             data = STL10(root='data/STL10', split='test', transform=transform_test, download=True)
-    else:
-        # SVHN
-        if mode:
-            data = SVHN(root='data/SVHN', split='train', transform=transform_train, download=True)
-        else:
-            data = SVHN(root='data/SVHN', split='test', transform=transform_test, download=True)
     return DataLoader(dataset=data, batch_size=16, shuffle=mode, num_workers=4)
 
 
@@ -145,7 +128,8 @@ def get_mean_std(data_type):
         # (50000, 32, 32, 3)
         # [0.50707516  0.48654887  0.44091784]
         # [0.26733429  0.25643846  0.27615047]
-    elif data_type == 'STL10':
+    else:
+        # data_type == 'STL10':
         train_set = STL10(root='data/STL10', split='train', download=True, transform=transforms.ToTensor())
         print(train_set.data.shape)
         train_set.data = train_set.data.reshape((5000, 3, 96, 96))
@@ -155,17 +139,6 @@ def get_mean_std(data_type):
         # (5000, 3, 96, 96)
         # [0.44671062  0.43980984  0.40664645]
         # [0.26034098  0.25657727  0.27126738]
-    else:
-        # SVHN
-        train_set = SVHN(root='data/SVHN', split='train', download=True, transform=transforms.ToTensor())
-        print(train_set.data.shape)
-        train_set.data = train_set.data.reshape((73257, 3, 32, 32))
-        train_set.data = train_set.data.transpose((0, 2, 3, 1))  # convert to HWC
-        print(train_set.data.mean(axis=(0, 1, 2)) / 255)
-        print(train_set.data.std(axis=(0, 1, 2)) / 255)
-        # (73257, 3, 32, 32)
-        # [0.4376821   0.4437697   0.47280442]
-        # [0.19803012  0.20101562  0.19703614]
 
 
 if __name__ == "__main__":
@@ -173,6 +146,5 @@ if __name__ == "__main__":
     get_mean_std('CIFAR10')
     get_mean_std('CIFAR100')
     get_mean_std('STL10')
-    get_mean_std('SVHN')
     t = get_iterator(True, 'MNIST', True)
     print(t)
