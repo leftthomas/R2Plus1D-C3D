@@ -33,7 +33,6 @@ class CapsuleConv2d(nn.Module):
         stride (int or tuple, optional): Stride of the capsule convolution
         padding (int or tuple, optional): Zero-padding added to both sides of the input
         num_iterations (int, optional): number of routing iterations
-        pyinn_speedup (bool, optional): use pyinn to speed up im2col operation
 
     Shape:
         - Input: :math:`(N, C_{in}, H_{in}, W_{in})`
@@ -68,7 +67,7 @@ class CapsuleConv2d(nn.Module):
     """
 
     def __init__(self, in_channels, out_channels, kernel_size, in_length, out_length, stride=1,
-                 padding=0, num_iterations=3, pyinn_speedup=False):
+                 padding=0, num_iterations=3):
         super(CapsuleConv2d, self).__init__()
         if in_channels % in_length != 0:
             raise ValueError('in_channels must be divisible by in_length')
@@ -87,7 +86,6 @@ class CapsuleConv2d(nn.Module):
         self.stride = stride
         self.padding = padding
         self.num_iterations = num_iterations
-        self.pyinn_speedup = pyinn_speedup
         self.weight = Parameter(
             torch.randn(out_channels // out_length, (in_channels // in_length) * kernel_size[0] * kernel_size[1],
                         out_length, in_length))
@@ -100,22 +98,14 @@ class CapsuleConv2d(nn.Module):
         H_out = 1 + (H_in + 2 * self.padding[0] - self.kernel_size[0]) // self.stride[0]
         W_out = 1 + (W_in + 2 * self.padding[1] - self.kernel_size[1]) // self.stride[1]
 
-        if self.pyinn_speedup:
-            input_windows = P.im2col(input, self.kernel_size, self.stride, self.padding)
-            input_windows = input_windows.view(*input_windows.size()[:2], -1, *input_windows.size()[-2:])
-            input_windows = input_windows.view(*input_windows.size()[:3], -1).transpose(1, -1)
-            input_windows = input_windows.contiguous().view(*input_windows.size()[:-1],
-                                                            self.in_channels // self.in_length, self.in_length)
-            input_windows = input_windows.transpose(-2, -3)
-        else:
-            # it could be optimized, because it require many memory,
-            # and the matrix multiplication also could be optimized to speed up
-            input = F.pad(input, (self.padding[1], self.padding[1], self.padding[0], self.padding[0]))
-            input_windows = input.unfold(2, self.kernel_size[0], self.stride[0]). \
-                unfold(3, self.kernel_size[1], self.stride[1]).unfold(1, self.in_length, self.in_length)
-            input_windows = input_windows.contiguous().view(*input_windows.size()[:-3], -1, input_windows.size(-1))
-            input_windows = input_windows.view(*input_windows.size()[:2], -1, *input_windows.size()[-2:]).transpose(1,
-                                                                                                                    2)
+        # it could be optimized, because it require many memory,
+        # and the matrix multiplication also could be optimized to speed up
+        input_windows = P.im2col(input, self.kernel_size, self.stride, self.padding)
+        input_windows = input_windows.view(*input_windows.size()[:2], -1, *input_windows.size()[-2:])
+        input_windows = input_windows.view(*input_windows.size()[:3], -1).transpose(1, -1)
+        input_windows = input_windows.contiguous().view(*input_windows.size()[:-1], self.in_channels // self.in_length,
+                                                        self.in_length)
+        input_windows = input_windows.transpose(-2, -3)
 
         input_windows = input_windows.contiguous().view(*input_windows.size()[:2], -1, input_windows.size(-1))
         # use torch.equal(input_windows.data, input_windows.data) to see whether they are same
