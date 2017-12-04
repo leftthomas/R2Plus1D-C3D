@@ -86,22 +86,13 @@ if __name__ == '__main__':
     DATA_TYPE = opt.data_type
     USING_DATA_AUGMENTATION = opt.using_data_augmentation
 
+    class_name = utils.CLASS_NAME[DATA_TYPE]
+    in_channels = 3
+    CLASSES = 10
     if DATA_TYPE == 'MNIST':
         in_channels = 1
-        CLASSES = 10
-        class_name = utils.MNIST_CLASS_NAME
-    else:
-        in_channels = 3
-        if DATA_TYPE == 'CIFAR10':
-            CLASSES = 10
-            class_name = utils.CIFAR10_CLASS_NAME
-        elif DATA_TYPE == 'CIFAR100':
-            CLASSES = 100
-            class_name = utils.CIFAR100_CLASS_NAME
-        else:
-            # DATA_TYPE == 'STL10':
-            CLASSES = 10
-            class_name = utils.STL10_CLASS_NAME
+    if DATA_TYPE == 'CIFAR100':
+        CLASSES = 100
 
     model = SquashCapsuleNet(in_channels, CLASSES, DATA_TYPE)
     if torch.cuda.is_available():
