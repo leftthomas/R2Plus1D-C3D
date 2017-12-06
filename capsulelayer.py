@@ -189,9 +189,7 @@ def route_linear(input, weight, num_iterations):
     if torch.cuda.is_available():
         logits = logits.cuda()
     for i in range(num_iterations):
-        probs = softmax(logits, dim=2)
-
-        print(torch.equal(F.softmax(logits, dim=2), probs))
+        probs = F.softmax(logits, dim=2)
 
         outputs = squash((probs * priors).sum(dim=2, keepdim=True))
 
@@ -199,12 +197,6 @@ def route_linear(input, weight, num_iterations):
             delta_logits = (priors * outputs).sum(dim=-1, keepdim=True)
             logits = logits + delta_logits
     return outputs.squeeze(dim=2).squeeze(dim=2).transpose(0, 1)
-
-
-def softmax(tensor, dim=1):
-    transposed_input = tensor.transpose(dim, len(tensor.size()) - 1)
-    softmaxed_output = F.softmax(transposed_input.contiguous().view(-1, transposed_input.size(-1)))
-    return softmaxed_output.view(*transposed_input.size()).transpose(dim, len(tensor.size()) - 1)
 
 
 def squash(tensor, dim=-1):

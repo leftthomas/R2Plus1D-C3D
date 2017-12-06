@@ -1,7 +1,7 @@
 import torch.nn.functional as F
 from torch import nn
 
-from capsulelayer import CapsuleConv2d, CapsuleLinear
+from capsulelayer import CapsuleConv2d
 
 config = {
     # each ceil form: out_channels, out_length, (D)[means do CapsuleConv2d at stride=2]
@@ -18,19 +18,16 @@ class SquashCapsuleNet(nn.Module):
     def __init__(self, in_channels, num_class, data_type):
         super(SquashCapsuleNet, self).__init__()
         self.features = self.make_layers(in_channels, config[data_type])
-        # self.classifier = CapsuleConv2d(in_channels=256, out_channels=32 * num_class, kernel_size=2, in_length=32,
-        #                                 out_length=32)
-        self.classifier = CapsuleLinear(in_capsules=32, out_capsules=num_class, in_length=32, out_length=32)
+        self.classifier = CapsuleConv2d(in_channels=256, out_channels=32 * num_class, kernel_size=2, in_length=32,
+                                        out_length=32)
 
     def forward(self, x):
         out = self.features(x)
-        # out = self.classifier(out)
+        out = self.classifier(out)
 
         out = out.view(*out.size()[:2], -1)
         out = out.transpose(-1, -2)
         out = out.contiguous().view(out.size(0), -1, 32)
-
-        out = self.classifier(out)
 
         classes = (out ** 2).sum(dim=-1) ** 0.5
         classes = F.softmax(classes, dim=-1)
