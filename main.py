@@ -53,7 +53,7 @@ def on_end_epoch(state):
     print('[Epoch %d] Training Loss: %.4f (Accuracy: %.2f%%)' % (
         state['epoch'], meter_loss.value()[0], meter_accuracy.value()[0]))
 
-    train_loss_logger.log(state['epoch'], meter_loss.value())
+    train_loss_logger.log(state['epoch'], meter_loss.value()[0])
     train_accuracy_logger.log(state['epoch'], meter_accuracy.value()[0])
 
     reset_meters()
