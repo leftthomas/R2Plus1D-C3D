@@ -74,7 +74,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Train Capsule Classfication')
     parser.add_argument('--data_type', default='CIFAR10', type=str,
-                        choices=['MNIST', 'FashionMNIST', 'CIFAR10', 'CIFAR100', 'STL10'],
+                        choices=['MNIST', 'FashionMNIST', 'SVHN', 'CIFAR10', 'CIFAR100', 'STL10'],
                         help='dataset type')
     parser.add_argument('--using_data_augmentation', default=True, type=bool, help='is using data augmentation')
     parser.add_argument('--num_epochs', default=100, type=int, help='train epochs number')
