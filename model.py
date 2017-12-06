@@ -30,7 +30,7 @@ class SquashCapsuleNet(nn.Module):
         out = out.contiguous().view(out.size(0), -1, 32)
 
         classes = (out ** 2).sum(dim=-1) ** 0.5
-        classes = F.softmax(classes)
+        classes = F.softmax(classes, dim=-1)
         return classes
 
     @staticmethod

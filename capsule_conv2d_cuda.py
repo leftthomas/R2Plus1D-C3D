@@ -1,10 +1,20 @@
 from torch.autograd import Function
 
 
-class Conv2dCapsule(Function):
+def capsuleconv2d(input, weight, stride, padding, ):
+    if input is not None and input.dim() != 4:
+        raise ValueError("Expected 4D tensor as input, got {}D tensor instead.".format(input.dim()))
+
+    f = _ConvNd(_pair(stride), _pair(padding), _pair(dilation), False,
+                _pair(0), groups, torch.backends.cudnn.benchmark,
+                torch.backends.cudnn.deterministic, torch.backends.cudnn.enabled)
+    return f(input, weight, bias)
+
+
+class CapsuleConv2d(Function):
     def __init__(self, weight, in_channels, kernel_size, in_length, out_length, stride,
                  padding, num_iterations):
-        super(Conv2dCapsule, self).__init__()
+        super(CapsuleConv2d, self).__init__()
         self.weight = weight
         self.in_channels = in_channels
         self.kernel_size = kernel_size
@@ -16,12 +26,11 @@ class Conv2dCapsule(Function):
 
     @staticmethod
     def forward(self, input):
-        self.input_size = input.size()[-2:]
-        return im2col_batch(input, self.kernel_size, self.stride, self.padding)
+        return input
 
     @staticmethod
     def backward(self, grad_output):
-        return col2im_batch(grad_output, self.kernel_size, self.stride, self.padding, self.input_size)
+        return grad_output
 
 
-print(Conv2dCapsule()(input1, input2))
+print(CapsuleConv2d()(input1, input2))
