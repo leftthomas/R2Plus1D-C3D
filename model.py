@@ -20,7 +20,7 @@ class SquashCapsuleNet(nn.Module):
         self.features = self.make_layers(in_channels, config[data_type])
         # self.classifier = CapsuleConv2d(in_channels=256, out_channels=32 * num_class, kernel_size=2, in_length=32,
         #                                 out_length=32)
-        self.classifier = CapsuleLinear(in_capsules=256 * 4, out_capsules=num_class, in_length=32, out_length=32)
+        self.classifier = CapsuleLinear(in_capsules=32, out_capsules=num_class, in_length=32, out_length=32)
 
     def forward(self, x):
         out = self.features(x)
