@@ -10,7 +10,6 @@ from torchnet.logger import VisdomPlotLogger, VisdomLogger
 from tqdm import tqdm
 
 import utils
-from averagevaluemeter import AverageValueMeter
 from model import SquashCapsuleNet
 
 
@@ -75,7 +74,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Train Capsule Classfication')
     parser.add_argument('--data_type', default='CIFAR10', type=str,
-                        choices=['MNIST', 'CIFAR10', 'CIFAR100', 'STL10'],
+                        choices=['MNIST', 'FashionMNIST', 'CIFAR10', 'CIFAR100', 'STL10'],
                         help='dataset type')
     parser.add_argument('--using_data_augmentation', default=True, type=bool, help='is using data augmentation')
     parser.add_argument('--num_epochs', default=100, type=int, help='train epochs number')
@@ -89,7 +88,7 @@ if __name__ == '__main__':
     class_name = utils.CLASS_NAME[DATA_TYPE]
     in_channels = 3
     CLASSES = 10
-    if DATA_TYPE == 'MNIST':
+    if DATA_TYPE == 'MNIST' or DATA_TYPE == 'FashionMNIST':
         in_channels = 1
     if DATA_TYPE == 'CIFAR100':
         CLASSES = 100
@@ -103,7 +102,7 @@ if __name__ == '__main__':
     optimizer = Adam(model.parameters())
 
     engine = Engine()
-    meter_loss = AverageValueMeter()
+    meter_loss = tnt.meter.AverageValueMeter()
     meter_accuracy = tnt.meter.ClassErrorMeter(accuracy=True)
     confusion_meter = tnt.meter.ConfusionMeter(CLASSES, normalized=True)
 
