@@ -190,6 +190,9 @@ def route_linear(input, weight, num_iterations):
         logits = logits.cuda()
     for i in range(num_iterations):
         probs = softmax(logits, dim=2)
+
+        print(torch.equal(F.softmax(logits, dim=2), probs))
+
         outputs = squash((probs * priors).sum(dim=2, keepdim=True))
 
         if i != num_iterations - 1:
