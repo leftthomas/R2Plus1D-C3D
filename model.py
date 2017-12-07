@@ -5,12 +5,12 @@ from capsulelayer import CapsuleConv2d
 
 config = {
     # each ceil form: out_channels, out_length, (D)[means do CapsuleConv2d at stride=2]
-    'MNIST': ['32-8', '32-8D', '64-16', '64-16D', '128-16', '128-16D', '256-32', '256-32D'],
-    'FashionMNIST': ['32-8', '32-8D', '64-16', '64-16D', '128-16', '128-16D', '256-32', '256-32D'],
-    'SVHN': ['32-8', '32-8D', '64-16', '64-16D', '128-16', '128-16D', '256-32', '256-32D'],
-    'CIFAR10': ['32-8', '32-8D', '64-16', '64-16D', '128-16', '128-16D', '256-32', '256-32D'],
-    'CIFAR100': ['32-8', '32-8D', '64-16', '64-16D', '128-16', '128-16D', '256-32', '256-32D'],
-    'STL10': ['32-8', '32-8D', '64-16', '64-16D', '128-16', '128-16D', '256-32', '256-32D'],
+    'MNIST': ['32-8', '32-8D', '64-16', '64-16D', '128-16', '128-16D'],
+    'FashionMNIST': ['32-8', '32-8D', '64-16', '64-16D', '128-16', '128-16D'],
+    'SVHN': ['32-8', '32-8D', '64-16', '64-16D', '128-16', '128-16D'],
+    'CIFAR10': ['32-8', '32-8D', '64-16', '64-16D', '128-16', '128-16D'],
+    'CIFAR100': ['32-8', '32-8D', '64-16', '64-16D', '128-16', '128-16D'],
+    'STL10': ['32-8', '32-8D', '64-16', '64-16D', '128-16', '128-16D'],
 }
 
 
@@ -18,8 +18,8 @@ class SquashCapsuleNet(nn.Module):
     def __init__(self, in_channels, num_class, data_type):
         super(SquashCapsuleNet, self).__init__()
         self.features = self.make_layers(in_channels, config[data_type])
-        self.classifier = CapsuleConv2d(in_channels=256, out_channels=32 * num_class, kernel_size=2, in_length=32,
-                                        out_length=32)
+        self.classifier = CapsuleConv2d(in_channels=128, out_channels=16 * num_class, kernel_size=4, in_length=16,
+                                        out_length=16)
 
     def forward(self, x):
         out = self.features(x)
@@ -27,7 +27,7 @@ class SquashCapsuleNet(nn.Module):
 
         out = out.view(*out.size()[:2], -1)
         out = out.transpose(-1, -2)
-        out = out.contiguous().view(out.size(0), -1, 32)
+        out = out.contiguous().view(out.size(0), -1, 16)
 
         classes = (out ** 2).sum(dim=-1) ** 0.5
         classes = F.softmax(classes, dim=-1)
