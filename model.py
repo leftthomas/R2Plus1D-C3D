@@ -1,6 +1,6 @@
 import torch.nn.functional as F
 from torch import nn
-from torch.nn import Conv2d
+
 from capsulelayer import CapsuleConv2d, CapsuleLinear
 
 config = {
@@ -43,15 +43,13 @@ class SquashCapsuleNet(nn.Module):
             if out_length.endswith('D'):
                 out_length = int(out_length.replace('D', ''))
                 layers += [
-                    # CapsuleConv2d(in_channels, out_channels, kernel_size=3, in_length=in_length, out_length=out_length,
-                    #               padding=1, stride=2)]
-                    Conv2d(in_channels, out_channels, kernel_size=3, padding=1, stride=2)]
+                    CapsuleConv2d(in_channels, out_channels, kernel_size=3, in_length=in_length, out_length=out_length,
+                                  padding=0, stride=2)]
             else:
                 out_length = int(out_length)
                 layers += [
-                    # CapsuleConv2d(in_channels, out_channels, kernel_size=3, in_length=in_length, out_length=out_length,
-                    #               padding=1)]
-                    Conv2d(in_channels, out_channels, kernel_size=3, padding=1, stride=1)]
+                    CapsuleConv2d(in_channels, out_channels, kernel_size=3, in_length=in_length, out_length=out_length,
+                                  padding=0)]
             in_channels = out_channels
             in_length = out_length
         return nn.Sequential(*layers)
