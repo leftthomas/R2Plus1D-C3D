@@ -37,6 +37,7 @@ class SquashCapsuleNet(nn.Module):
     def make_layers(in_channels, cfg):
         layers = []
         layers += [nn.Conv2d(in_channels, 64, kernel_size=9), nn.ReLU(inplace=True)]
+        in_channels = 64
         in_length = 8
         for x in cfg:
             out_channels, out_length = x.split('-')
