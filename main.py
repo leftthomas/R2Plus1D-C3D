@@ -94,8 +94,11 @@ if __name__ == '__main__':
         CLASSES = 100
 
     model = SquashCapsuleNet(in_channels, CLASSES, DATA_TYPE)
+    model.load_state_dict(torch.load('epochs/epoch_100.pt'))
+    loss_criterion = nn.CrossEntropyLoss()
     if torch.cuda.is_available():
-        model = model.cuda()
+        model.cuda()
+        loss_criterion.cuda()
 
     print("# parameters:", sum(param.numel() for param in model.parameters()))
 
@@ -113,8 +116,6 @@ if __name__ == '__main__':
     confusion_logger = VisdomLogger('heatmap', opts={'title': 'Confusion Matrix',
                                                      'columnnames': class_name,
                                                      'rownames': class_name})
-    loss_criterion = nn.CrossEntropyLoss()
-
     engine.hooks['on_sample'] = on_sample
     engine.hooks['on_forward'] = on_forward
     engine.hooks['on_start_epoch'] = on_start_epoch
