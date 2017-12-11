@@ -94,6 +94,7 @@ if __name__ == '__main__':
         CLASSES = 100
 
     model = SquashCapsuleNet(in_channels, CLASSES, DATA_TYPE)
+    model.load_state_dict(torch.load('epochs/epoch_126.pt'))
     loss_criterion = nn.CrossEntropyLoss()
     if torch.cuda.is_available():
         model.cuda()

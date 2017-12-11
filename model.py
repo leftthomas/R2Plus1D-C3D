@@ -48,8 +48,8 @@ class SquashCapsuleNet(nn.Module):
             else:
                 out_length = int(out_length)
                 layers += [
-                    CapsuleConv2d(in_channels, out_channels, kernel_size=5, in_length=in_length, out_length=out_length,
-                                  padding=2)]
+                    CapsuleConv2d(in_channels, out_channels, kernel_size=3, in_length=in_length, out_length=out_length,
+                                  padding=1)]
             in_channels = out_channels
             in_length = out_length
         return nn.Sequential(*layers)
