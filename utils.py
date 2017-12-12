@@ -138,7 +138,7 @@ class CapsuleLoss(nn.Module):
         right = F.relu(classes - 0.1, inplace=True) ** 2
 
         margin_loss = labels * left + 0.5 * (1. - labels) * right
-        margin_loss = margin_loss.sum()
+        margin_loss = margin_loss.mean()
 
         return margin_loss
 
