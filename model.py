@@ -8,7 +8,7 @@ config = {
     'MNIST': ['32-8', '32-8D', '64-16', '64-16D', '128-32', '128-32D'],
     'FashionMNIST': ['32-8', '32-8D', '64-16', '64-16D', '128-32', '128-32D'],
     'SVHN': ['32-8', '32-8D', '64-16', '64-16D', '128-32', '128-32D'],
-    'CIFAR10': ['32-8', '32-8D', '64-16', '64-16D', '128-32', '128-32D'],
+    'CIFAR10': ['32-8', '32-8D', '64-16', '64-16D', '128-32', '128-32D', '256-32', '256-32D'],
     'CIFAR100': ['32-8', '32-8D', '64-16', '64-16D', '128-32', '128-32D'],
     'STL10': ['32-8', '32-8D', '64-16', '64-16D', '128-32', '128-32D'],
 }
@@ -18,7 +18,7 @@ class SquashCapsuleNet(nn.Module):
     def __init__(self, in_channels, num_class, data_type):
         super(SquashCapsuleNet, self).__init__()
         self.features = self.make_layers(in_channels, config[data_type])
-        self.classifier = CapsuleLinear(in_capsules=4 * 4 * 128 // 32, out_capsules=num_class, in_length=32,
+        self.classifier = CapsuleLinear(in_capsules=2 * 2 * 256 // 32, out_capsules=num_class, in_length=32,
                                         out_length=32)
 
     def forward(self, x):
