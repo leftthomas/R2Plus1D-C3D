@@ -42,7 +42,8 @@ class CapsuleConv2d(nn.Module):
 
     Attributes:
         weight (Tensor): the learnable weights of the module of shape
-                         (out_channels // out_length, kernel_size[0] * kernel_size[1], out_length, in_length)
+                         (out_channels // out_length, in_channels // in_length * kernel_size[0] * kernel_size[1],
+                        out_length, in_length)
 
     ------------------------------------------------------------------------------------------------
     !!!!!!!!!     PAY ATTENTION: MAKE SURE CapsuleConv2d's OUTPUT CAPSULE's LENGTH EQUALS
@@ -86,7 +87,8 @@ class CapsuleConv2d(nn.Module):
         self.padding = padding
         self.num_iterations = num_iterations
         self.weight = Parameter(
-            torch.randn(out_channels // out_length, kernel_size[0] * kernel_size[1], out_length, in_length))
+            torch.randn(out_channels // out_length, (in_channels // in_length) * kernel_size[0] * kernel_size[1],
+                        out_length, in_length))
 
     def forward(self, input):
         if input.dim() != 4:
@@ -104,10 +106,12 @@ class CapsuleConv2d(nn.Module):
         input_windows = input_windows.contiguous().view(*input_windows.size()[:-1], self.in_channels // self.in_length,
                                                         self.in_length)
         input_windows = input_windows.transpose(-2, -3)
-        input_windows = input_windows.unsqueeze(dim=-1).unsqueeze(dim=1)
 
-        weight = self.weight.unsqueeze(dim=1).unsqueeze(dim=1).unsqueeze(dim=0)
+        input_windows = input_windows.contiguous().view(*input_windows.size()[:2], -1, input_windows.size(-1))
+        input_windows = input_windows.unsqueeze(dim=-1).unsqueeze(dim=1)
+        weight = self.weight.unsqueeze(dim=1).unsqueeze(dim=0)
         priors = weight.matmul(input_windows).squeeze(dim=-1)
+        priors = priors.view(*priors.size()[:3], self.in_channels // self.in_length, -1, priors.size(-1))
 
         out = route_conv2d(priors, self.num_iterations)
         out = out.transpose(-1, -2)
@@ -172,7 +176,7 @@ def route_conv2d(input, num_iterations):
     if torch.cuda.is_available():
         probs = probs.cuda()
     for r in range(num_iterations):
-        outputs = squash((probs * input).sum(dim=-2, keepdim=True).sum(dim=-3, keepdim=True))
+        outputs = squash((probs * input).sum(dim=-2, keepdim=True).mean(dim=-3, keepdim=True))
         if r != num_iterations - 1:
             delta_logits = (input * outputs).sum(dim=-1, keepdim=True)
             probs = probs + delta_logits.exp()
