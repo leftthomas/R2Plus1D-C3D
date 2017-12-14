@@ -176,7 +176,7 @@ def route_conv2d(input, num_iterations):
     if torch.cuda.is_available():
         probs = probs.cuda()
     for r in range(num_iterations):
-        outputs = squash((probs * input).sum(dim=-2, keepdim=True).mean(dim=-3, keepdim=True))
+        outputs = squash((probs * input).sum(dim=-2, keepdim=True).sum(dim=-3, keepdim=True))
         if r != num_iterations - 1:
             delta_logits = (input * outputs).sum(dim=-1, keepdim=True)
             probs = probs + delta_logits.exp()
