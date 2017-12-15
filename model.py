@@ -8,7 +8,7 @@ config = {
     'MNIST': ['32-8', '32-8D', '64-16', '64-16D', '128-32', '128-32D'],
     'FashionMNIST': ['32-8', '32-8D', '64-16', '64-16D', '128-32', '128-32D'],
     'SVHN': ['32-8', '32-8D', '64-16', '64-16D', '128-32', '128-32D'],
-    'CIFAR10': ['32-16', '32-16D', '64-16', '64-16D', '128-16', '128-16', '256-16', '256-16D'],
+    'CIFAR10': ['32-8', '32-8D', '64-16', '64-16D', '128-32', '128-32', '256-32', '256-32D'],
     'CIFAR100': ['32-8', '32-8D', '64-16', '64-16D', '128-32', '128-32D'],
     'STL10': ['32-8', '32-8D', '64-16', '64-16D', '128-32', '128-32D'],
 }
@@ -19,15 +19,15 @@ class SquashCapsuleNet(nn.Module):
         super(SquashCapsuleNet, self).__init__()
         self.features = self.make_layers(in_channels, config[data_type])
         self.classifier = nn.Sequential(
-            CapsuleLinear(in_capsules=4 * 4 * 256 // 16, out_capsules=32, in_length=16, out_length=16),
-            CapsuleLinear(in_capsules=32, out_capsules=num_class, in_length=16, out_length=16))
+            CapsuleLinear(in_capsules=4 * 4 * 256 // 32, out_capsules=32, in_length=32, out_length=32),
+            CapsuleLinear(in_capsules=32, out_capsules=num_class, in_length=32, out_length=32))
 
     def forward(self, x):
         out = self.features(x)
 
         out = out.view(*out.size()[:2], -1)
         out = out.transpose(-1, -2)
-        out = out.contiguous().view(out.size(0), -1, 16)
+        out = out.contiguous().view(out.size(0), -1, 32)
 
         out = self.classifier(out)
         classes = (out ** 2).sum(dim=-1) ** 0.5
