@@ -5,8 +5,7 @@ SquashCapsuleNet
 * [Anaconda](https://www.anaconda.com/download/)
 * PyTorch
 ```
-conda install pytorch torchvision -c soumith
-conda install pytorch torchvision cuda80 -c soumith # install it if you have installed cuda
+conda install pytorch torchvision -c pytorch
 ```
 * PyTorchNet
 ```
@@ -15,14 +14,6 @@ pip install git+https://github.com/pytorch/tnt.git@master
 * tqdm
 ```
 pip install tqdm
-```
-* NCCL
-
-Go to NVIDIA NCCL home page and download NCCL network version. Then run following command:
-```
-sudo dpkg -i nvidia-machine-learning-repo-<version>.deb
-sudo apt update
-sudo apt-get install libnccl2=2.1.2-1+cuda8.0 libnccl-dev=2.1.2-1+cuda8.0
 ```
 * fastrlock
 ```
