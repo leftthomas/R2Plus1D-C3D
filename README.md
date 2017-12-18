@@ -1,5 +1,5 @@
-# SquashCapsuleNet
-SquashCapsuleNet
+# CCNN
+Convolutional Capsule Neural Network
 
 ## Requirements
 * [Anaconda](https://www.anaconda.com/download/)
