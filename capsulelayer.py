@@ -143,7 +143,7 @@ class CapsuleLinear(nn.Module):
 
      Attributes:
          weight (Tensor): the learnable weights of the module of shape
-             (out_capsules, in_capsules, out_length, in_length)
+             (out_capsules, in_capsules, in_length, out_length)
 
      Examples::
          >>> import capsulelayer
@@ -160,12 +160,10 @@ class CapsuleLinear(nn.Module):
         self.in_capsules = in_capsules
         self.out_capsules = out_capsules
         self.num_iterations = num_iterations
-        self.weight = Parameter(torch.randn(out_capsules, in_capsules, out_length, in_length))
+        self.weight = Parameter(torch.randn(out_capsules, in_capsules, in_length, out_length))
 
     def forward(self, input):
-        input = input.unsqueeze(dim=-1).unsqueeze(dim=1)
-        weight = self.weight.unsqueeze(dim=0)
-        priors = weight.matmul(input).squeeze(dim=-1)
+        priors = input[None, :, :, None, :] @ self.weight[:, None, :, :, :]
         out = route_linear(priors, self.num_iterations)
         return out
 
@@ -192,12 +190,12 @@ def route_linear(input, num_iterations):
     if torch.cuda.is_available():
         logits = logits.cuda()
     for r in range(num_iterations):
-        probs = F.softmax(logits, dim=1)
+        probs = F.softmax(logits, dim=2)
         outputs = squash((probs * input).sum(dim=2, keepdim=True))
         if r != num_iterations - 1:
             delta_logits = (input * outputs).sum(dim=-1, keepdim=True)
             logits = logits + delta_logits
-    return outputs.squeeze(dim=-2)
+    return outputs.squeeze(dim=-2).squeeze(dim=-2).transpose(0, 1)
 
 
 def squash(tensor, dim=-1):
