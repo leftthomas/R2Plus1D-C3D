@@ -2,6 +2,7 @@ import argparse
 
 import torch
 import torchnet as tnt
+from torch import nn
 from torch.autograd import Variable
 from torch.optim import Adam
 from torchnet.engine import Engine
@@ -14,7 +15,6 @@ from model import SquashCapsuleNet
 
 def processor(sample):
     data, labels, training = sample
-    labels = torch.eye(CLASSES).index_select(dim=0, index=labels)
 
     data = Variable(data)
     labels = Variable(labels)
@@ -94,7 +94,7 @@ if __name__ == '__main__':
         CLASSES = 100
 
     model = SquashCapsuleNet(in_channels, CLASSES, DATA_TYPE)
-    loss_criterion = utils.CapsuleLoss()
+    loss_criterion = nn.CrossEntropyLoss()
     if torch.cuda.is_available():
         model.cuda()
         loss_criterion.cuda()

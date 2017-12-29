@@ -1,5 +1,3 @@
-import torch.nn as nn
-import torch.nn.functional as F
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from torchvision.datasets.cifar import CIFAR100, CIFAR10
@@ -127,20 +125,6 @@ def get_mean_std(data_type):
         print(train_set.train_data.shape)
         print(train_set.train_data.mean(axis=(0, 1, 2)) / 255)
         print(train_set.train_data.std(axis=(0, 1, 2)) / 255)
-
-
-class CapsuleLoss(nn.Module):
-    def __init__(self):
-        super(CapsuleLoss, self).__init__()
-
-    def forward(self, classes, labels):
-        left = F.relu(0.9 - classes, inplace=True) ** 2
-        right = F.relu(classes - 0.1, inplace=True) ** 2
-
-        margin_loss = labels * left + 0.5 * (1. - labels) * right
-        margin_loss = margin_loss.mean()
-
-        return margin_loss
 
 
 if __name__ == "__main__":
