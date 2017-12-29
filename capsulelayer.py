@@ -172,14 +172,15 @@ class CapsuleLinear(nn.Module):
 
 
 def route_conv2d(input, num_iterations):
-    probs = Variable(torch.ones(*input.size()))
+    logits = Variable(torch.zeros(*input.size()))
     if torch.cuda.is_available():
-        probs = probs.cuda()
+        logits = logits.cuda()
     for r in range(num_iterations):
+        probs = F.softmax(logits, dim=-2)
         outputs = squash((probs * input).sum(dim=-2, keepdim=True).sum(dim=-3, keepdim=True))
         if r != num_iterations - 1:
             delta_logits = (input * outputs).sum(dim=-1, keepdim=True)
-            probs = probs + delta_logits.exp()
+            logits = logits + delta_logits
     return outputs.squeeze(dim=-2).squeeze(dim=-2).transpose(0, 1)
 
 
