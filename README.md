@@ -1,5 +1,5 @@
-# CCNN
-Convolutional Capsule Neural Network
+# CCN
+Convolutional Capsule Network
 
 ## Requirements
 * [Anaconda](https://www.anaconda.com/download/)
