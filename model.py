@@ -36,7 +36,7 @@ class SquashCapsuleNet(nn.Module):
     @staticmethod
     def make_layers(in_channels, cfg):
         layers = []
-        in_length = in_channels
+        in_length = 1
         for x in cfg:
             out_channels, out_length = x.split('-')
             out_channels = int(out_channels)
