@@ -9,9 +9,6 @@ from torchvision import models, transforms
 
 
 class FeatureExtractor:
-    """ Class for extracting activations and 
-    registering gradients from targeted intermediate layers """
-
     def __init__(self, model, target_layers):
         self.model = model
         self.target_layers = target_layers
@@ -32,11 +29,6 @@ class FeatureExtractor:
 
 
 class ModelOutputs:
-    """ Class for making a forward pass, and getting:
-    1. The network output.
-    2. Activations from intermediate targeted layers.
-    3. Gradients from intermediate targeted layers. """
-
     def __init__(self, model, target_layers):
         self.model = model
         self.feature_extractor = FeatureExtractor(self.model.features, target_layers)
@@ -75,9 +67,9 @@ class GradCam:
         if index is None:
             index = np.argmax(output.cpu().data.numpy())
 
-        one_hot = np.zeros((1, output.size()[-1]), dtype=np.float32)
+        one_hot = torch.zeros(output.size())
         one_hot[0][index] = 1
-        one_hot = Variable(torch.from_numpy(one_hot))
+        one_hot = Variable(one_hot)
         if torch.cuda.is_available():
             one_hot = torch.sum(one_hot.cuda() * output)
         else:
