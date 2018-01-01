@@ -3,10 +3,8 @@ import argparse
 import cv2
 import numpy as np
 import torch
-from torch.autograd import Function
 from torch.autograd import Variable
 from torchvision import models
-from torchvision import utils
 
 
 class FeatureExtractor:
@@ -126,66 +124,6 @@ class GradCam:
         return cam
 
 
-class GuidedBackpropReLU(Function):
-
-    def forward(self, x, **kwargs):
-        positive_mask = (x > 0).type_as(x)
-        output = torch.addcmul(torch.zeros(x.size()).type_as(x), x, positive_mask)
-        self.save_for_backward(x, output)
-        return output
-
-    def backward(self, grad_output):
-        input, output = self.saved_tensors
-        positive_mask_1 = (input > 0).type_as(grad_output)
-        positive_mask_2 = (grad_output > 0).type_as(grad_output)
-        grad_input = torch.addcmul(torch.zeros(input.size()).type_as(input),
-                                   torch.addcmul(torch.zeros(input.size()).type_as(input), grad_output,
-                                                 positive_mask_1), positive_mask_2)
-        return grad_input
-
-
-class GuidedBackpropReLUModel:
-    def __init__(self, model):
-        self.model = model
-        self.model.eval()
-        if torch.cuda.is_available():
-            self.model = model.cuda()
-
-        # replace ReLU with GuidedBackpropReLU
-        for idx, module in self.model.features._modules.items():
-            if module.__class__.__name__ == 'ReLU':
-                self.model.features._modules[idx] = GuidedBackpropReLU()
-
-    def forward(self, x):
-        return self.model(x)
-
-    def __call__(self, x, index=None):
-        if torch.cuda.is_available():
-            output = self.forward(x.cuda())
-        else:
-            output = self.forward(x)
-
-        if index is None:
-            index = np.argmax(output.cpu().data.numpy())
-
-        one_hot = np.zeros((1, output.size()[-1]), dtype=np.float32)
-        one_hot[0][index] = 1
-        one_hot = Variable(torch.from_numpy(one_hot), requires_grad=True)
-        if torch.cuda.is_available():
-            one_hot = torch.sum(one_hot.cuda() * output)
-        else:
-            one_hot = torch.sum(one_hot * output)
-
-        # self.model.features.zero_grad()
-        # self.model.classifier.zero_grad()
-        one_hot.backward(retain_graph=True)
-
-        output = x.grad.cpu().data.numpy()
-        output = output[0, :, :, :]
-
-        return output
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Feature Visualization')
     parser.add_argument('--image_path', type=str, help='input image path')
@@ -205,14 +143,3 @@ if __name__ == '__main__':
     # Otherwise, targets the requested index.
     mask = grad_cam(image, TARGET_INDEX)
     show_cam_on_image(img, mask)
-
-    gb_model = GuidedBackpropReLUModel(model=net)
-    gb = gb_model(image, index=TARGET_INDEX)
-    utils.save_image(torch.from_numpy(gb), 'gb.jpg')
-
-    cam_mask = np.zeros(gb.shape)
-    for i in range(0, gb.shape[0]):
-        cam_mask[i, :, :] = mask
-
-    cam_gb = np.multiply(cam_mask, gb)
-    utils.save_image(torch.from_numpy(cam_gb), 'cam_gb.jpg')
