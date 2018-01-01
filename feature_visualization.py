@@ -3,13 +3,14 @@ import argparse
 import cv2
 import numpy as np
 import torch
+from PIL import Image
 from torch.autograd import Variable
-from torchvision import models
+from torchvision import models, transforms
 
 
 class FeatureExtractor:
     """ Class for extracting activations and 
-    registering gradients from targetted intermediate layers """
+    registering gradients from targeted intermediate layers """
 
     def __init__(self, model, target_layers):
         self.model = model
@@ -33,8 +34,8 @@ class FeatureExtractor:
 class ModelOutputs:
     """ Class for making a forward pass, and getting:
     1. The network output.
-    2. Activations from intermeddiate targetted layers.
-    3. Gradients from intermeddiate targetted layers. """
+    2. Activations from intermediate targeted layers.
+    3. Gradients from intermediate targeted layers. """
 
     def __init__(self, model, target_layers):
         self.model = model
@@ -50,21 +51,6 @@ class ModelOutputs:
         return target_activations, output
 
 
-def preprocess_image(img):
-    means = [0.485, 0.456, 0.406]
-    stds = [0.229, 0.224, 0.225]
-
-    preprocessed_img = img.copy()[:, :, ::-1]
-    for j in range(3):
-        preprocessed_img[:, :, j] = preprocessed_img[:, :, j] - means[j]
-        preprocessed_img[:, :, j] = preprocessed_img[:, :, j] / stds[j]
-    preprocessed_img = np.ascontiguousarray(np.transpose(preprocessed_img, (2, 0, 1)))
-    preprocessed_img = torch.from_numpy(preprocessed_img)
-    preprocessed_img.unsqueeze_(0)
-    x = Variable(preprocessed_img, requires_grad=True)
-    return x
-
-
 def show_cam_on_image(img, mask):
     heatmap = cv2.applyColorMap(np.uint8(255 * mask), cv2.COLORMAP_JET)
     heatmap = np.float32(heatmap) / 255
@@ -75,15 +61,10 @@ def show_cam_on_image(img, mask):
 
 class GradCam:
     def __init__(self, model, target_layer_names):
-        self.model = model
-        self.model.eval()
+        self.model = model.eval()
         if torch.cuda.is_available():
             self.model = model.cuda()
-
         self.extractor = ModelOutputs(self.model, target_layer_names)
-
-    def forward(self, x):
-        return self.model(x)
 
     def __call__(self, x, index=None):
         if torch.cuda.is_available():
@@ -96,7 +77,7 @@ class GradCam:
 
         one_hot = np.zeros((1, output.size()[-1]), dtype=np.float32)
         one_hot[0][index] = 1
-        one_hot = Variable(torch.from_numpy(one_hot), requires_grad=True)
+        one_hot = Variable(torch.from_numpy(one_hot))
         if torch.cuda.is_available():
             one_hot = torch.sum(one_hot.cuda() * output)
         else:
@@ -131,15 +112,16 @@ if __name__ == '__main__':
     opt = parser.parse_args()
     IMAGE_PATH = opt.image_path
     TARGET_INDEX = opt.target_index
+
+    img = Image.open(IMAGE_PATH)
+    img = transforms.Resize(size=224)(img)
+    image = transforms.ToTensor()(img)
+    image = Variable(image.unsqueeze(dim=0))
+
     net = models.vgg19(pretrained=True)
-
     grad_cam = GradCam(model=net, target_layer_names=["35"])
-
-    img = cv2.imread(IMAGE_PATH, cv2.CAP_MODE_RGB)
-    img = np.float32(cv2.resize(img, (224, 224))) / 255
-    image = preprocess_image(img)
 
     # If None, returns the map for the highest scoring category.
     # Otherwise, targets the requested index.
     mask = grad_cam(image, TARGET_INDEX)
-    show_cam_on_image(img, mask)
+    show_cam_on_image(image.squeeze(dim=0).data.numpy().transpose(1, 2, 0), mask)
