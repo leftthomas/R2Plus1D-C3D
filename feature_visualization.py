@@ -20,7 +20,7 @@ class FeatureExtractor:
     def __call__(self, x):
         outputs = []
         self.gradients = []
-        for name, module in self.model._modules.items():
+        for name, module in self.model.named_children():
             x = module(x)
             if name in self.target_layers:
                 x.register_hook(self.save_gradient)
@@ -91,7 +91,7 @@ class GradCam:
             cam += w * target[j, :, :]
 
         cam = np.maximum(cam, 0)
-        cam = cv2.resize(cam, (224, 224))
+        cam = cv2.resize(cam, IMAGE_SIZE)
         cam = cam - np.min(cam)
         cam = cam / np.max(cam)
         return cam
@@ -105,9 +105,10 @@ if __name__ == '__main__':
     IMAGE_PATH = opt.image_path
     TARGET_INDEX = opt.target_index
 
-    img = Image.open(IMAGE_PATH)
-    img = transforms.Resize(size=224)(img)
-    image = transforms.ToTensor()(img)
+    image = Image.open(IMAGE_PATH)
+    IMAGE_SIZE = image.size
+    image = transforms.Resize(IMAGE_SIZE)(image)
+    image = transforms.ToTensor()(image)
     image = Variable(image.unsqueeze(dim=0))
 
     net = models.vgg19(pretrained=True)
@@ -115,5 +116,4 @@ if __name__ == '__main__':
 
     # If None, returns the map for the highest scoring category.
     # Otherwise, targets the requested index.
-    mask = grad_cam(image, TARGET_INDEX)
-    show_cam_on_image(image.squeeze(dim=0).data.numpy().transpose(1, 2, 0), mask)
+    show_cam_on_image(image.squeeze(dim=0).data.numpy().transpose(1, 2, 0), grad_cam(image, TARGET_INDEX))
