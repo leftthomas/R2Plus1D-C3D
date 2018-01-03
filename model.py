@@ -18,7 +18,7 @@ class SquashCapsuleNet(nn.Module):
     def __init__(self, in_channels, num_class, data_type):
         super(SquashCapsuleNet, self).__init__()
         self.features = self.make_layers(in_channels, config[data_type])
-        self.classifier = CapsuleLinear(in_capsules=2 * 2 * 128 // 16, out_capsules=num_class, in_length=16,
+        self.classifier = CapsuleLinear(in_capsules=2 * 2 * 256 // 16, out_capsules=num_class, in_length=16,
                                         out_length=16)
 
     def forward(self, x):
