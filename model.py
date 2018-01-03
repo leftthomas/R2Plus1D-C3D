@@ -5,12 +5,12 @@ from capsulelayer import CapsuleConv2d, CapsuleLinear
 
 config = {
     # each ceil form: out_channels, out_length, (D)[means do CapsuleConv2d at stride=2]
-    'MNIST': ['32-4', '32-4D', '64-8', '64-8D', '128-16', '128-16D'],
-    'FashionMNIST': ['32-4', '32-4D', '64-8', '64-8D', '128-16', '128-16D'],
-    'SVHN': ['32-4', '32-4D', '64-8', '64-8D', '128-16', '128-16D'],
-    'CIFAR10': ['32-4', '32-4D', '64-8', '64-8D', '128-16', '128-16D'],
-    'CIFAR100': ['32-4', '32-4D', '64-8', '64-8D', '128-16', '128-16D'],
-    'STL10': ['32-4', '32-4D', '64-8', '64-8D', '128-16', '128-16D'],
+    'MNIST': ['32-4', '32-4D', '64-8', '64-8D', '128-16', '128-16', '128-16D', '256-16', '256-16', '256-16D'],
+    'FashionMNIST': ['32-4', '32-4D', '64-8', '64-8D', '128-16', '128-16', '128-16D', '256-16', '256-16', '256-16D'],
+    'SVHN': ['32-4', '32-4D', '64-8', '64-8D', '128-16', '128-16', '128-16D', '256-16', '256-16', '256-16D'],
+    'CIFAR10': ['32-4', '32-4D', '64-8', '64-8D', '128-16', '128-16', '128-16D', '256-16', '256-16', '256-16D'],
+    'CIFAR100': ['32-4', '32-4D', '64-8', '64-8D', '128-16', '128-16', '128-16D', '256-16', '256-16', '256-16D'],
+    'STL10': ['32-4', '32-4D', '64-8', '64-8D', '128-16', '128-16', '128-16D', '256-16', '256-16', '256-16D'],
 }
 
 
@@ -18,7 +18,7 @@ class SquashCapsuleNet(nn.Module):
     def __init__(self, in_channels, num_class, data_type):
         super(SquashCapsuleNet, self).__init__()
         self.features = self.make_layers(in_channels, config[data_type])
-        self.classifier = CapsuleLinear(in_capsules=4 * 4 * 128 // 16, out_capsules=num_class, in_length=16,
+        self.classifier = CapsuleLinear(in_capsules=2 * 2 * 128 // 16, out_capsules=num_class, in_length=16,
                                         out_length=16)
 
     def forward(self, x):
