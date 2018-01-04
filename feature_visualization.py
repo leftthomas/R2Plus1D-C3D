@@ -8,61 +8,30 @@ from torch.autograd import Variable
 from torchvision import models, transforms
 
 
-class FeatureExtractor:
-    def __init__(self, model, target_layers):
-        self.model = model
-        self.target_layers = target_layers
-        self.gradients = []
-
-    def save_gradient(self, grad):
-        self.gradients.append(grad)
-
-    def __call__(self, x):
-        outputs = []
-        self.gradients = []
-        for name, module in self.model.named_children():
-            x = module(x)
-            if name in self.target_layers:
-                x.register_hook(self.save_gradient)
-                outputs += [x]
-        return outputs, x
-
-
-class ModelOutputs:
-    def __init__(self, model, target_layers):
-        self.model = model
-        self.feature_extractor = FeatureExtractor(self.model.features, target_layers)
-
-    def get_gradients(self):
-        return self.feature_extractor.gradients
-
-    def __call__(self, x):
-        target_activations, output = self.feature_extractor(x)
-        output = output.view(output.size(0), -1)
-        output = self.model.classifier(output)
-        return target_activations, output
-
-
-def show_cam_on_image(img, mask):
-    heatmap = cv2.applyColorMap(np.uint8(255 * mask), cv2.COLORMAP_JET)
-    heatmap = np.float32(heatmap) / 255
-    cam = heatmap + np.float32(img)
-    cam = cam / np.max(cam)
-    cv2.imwrite("cam.jpg", np.uint8(255 * cam))
-
-
 class GradCam:
     def __init__(self, model, target_layer_names):
         self.model = model.eval()
         if torch.cuda.is_available():
             self.model = model.cuda()
-        self.extractor = ModelOutputs(self.model, target_layer_names)
+        self.target_layers = target_layer_names
+        self.gradients = []
+
+    def save_gradient(self, grad):
+        self.gradients.append(grad)
 
     def __call__(self, x, index=None):
         if torch.cuda.is_available():
-            features, output = self.extractor(x.cuda())
-        else:
-            features, output = self.extractor(x)
+            x = x.cuda()
+
+        features = []
+        self.gradients = []
+        for name, module in self.model.features.named_children():
+            x = module(x)
+            if name in self.target_layers:
+                x.register_hook(self.save_gradient)
+                features += [x]
+        output = x.view(x.size(0), -1)
+        output = self.model.classifier(output)
 
         if index is None:
             index = np.argmax(output.cpu().data.numpy())
@@ -79,7 +48,7 @@ class GradCam:
         self.model.classifier.zero_grad()
         one_hot.backward(retain_graph=True)
 
-        grads_val = self.extractor.get_gradients()[-1].cpu().data.numpy()
+        grads_val = self.gradients[-1].cpu().data.numpy()
 
         target = features[-1]
         target = target.cpu().data.numpy()[0, :]
@@ -97,6 +66,14 @@ class GradCam:
         return cam
 
 
+def show_cam_on_image(img, mask):
+    heatmap = cv2.applyColorMap(np.uint8(255 * mask), cv2.COLORMAP_JET)
+    heatmap = np.float32(heatmap) / 255
+    cam = heatmap + np.float32(img)
+    cam = cam / np.max(cam)
+    cv2.imwrite("cam.jpg", np.uint8(255 * cam))
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Feature Visualization')
     parser.add_argument('--image_path', type=str, help='input image path')
@@ -112,7 +89,7 @@ if __name__ == '__main__':
     image = Variable(image.unsqueeze(dim=0))
 
     net = models.vgg19(pretrained=True)
-    grad_cam = GradCam(model=net, target_layer_names=["35"])
+    grad_cam = GradCam(model=net, target_layer_names=['35'])
 
     # If None, returns the map for the highest scoring category.
     # Otherwise, targets the requested index.
