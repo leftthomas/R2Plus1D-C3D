@@ -72,8 +72,8 @@ class FashionMNISTCapsuleNet(nn.Module):
 
 
 models = {
-    'MNIST': MNISTCapsuleNet,
-    'FashionMNIST': FashionMNISTCapsuleNet,
+    'MNIST': MNISTCapsuleNet(),
+    'FashionMNIST': FashionMNISTCapsuleNet(),
     'SVHN': ['32-4', '32-4D', '64-8', '64-8D', '128-16', '128-16', '128-16D', '256-16', '256-16', '256-16D'],
     'CIFAR10': ['32-4', '32-4D', '64-8', '64-8D', '128-16', '128-16', '128-16D', '256-16', '256-16', '256-16D'],
     'CIFAR100': ['32-4', '32-4D', '64-8', '64-8D', '128-16', '128-16', '128-16D', '256-16', '256-16', '256-16D'],
