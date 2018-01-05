@@ -1,70 +1,54 @@
 import argparse
 
-import cv2
-import numpy as np
 import torch
+import torch.nn.functional as F
 from PIL import Image
 from torch.autograd import Variable
 from torchvision import models, transforms
 
 
 class GradCam:
-    def __init__(self, model, target_layer_names, target_category):
+    def __init__(self, model, target_layer, target_category):
         self.model = model.eval()
         if torch.cuda.is_available():
             self.model = model.cuda()
-        self.target_layers = target_layer_names
+        self.target_layer = target_layer
         self.target_category = target_category
-        self.features = []
-        self.gradients = []
+        self.features = None
+        self.gradients = None
 
     def save_gradient(self, grad):
-        self.gradients.append(grad)
+        self.gradients = grad
 
     def __call__(self, x):
-        # save the target layers' gradients and features, then get the category scores
+        # save the target layer' gradients and features, then get the category scores
         if torch.cuda.is_available():
             x = x.cuda()
         for name, module in self.model.features.named_children():
             x = module(x)
-            if name in self.target_layers:
+            if name == self.target_layer:
                 x.register_hook(self.save_gradient)
-                self.features += [x]
+                self.features = x
         x = x.view(x.size(0), -1)
         output = self.model.classifier(x)
 
         # if the target category equal None, return the feature map of the highest scoring category,
         # otherwise, return the feature map of the requested category
         if self.target_category is None:
-            self.target_category = np.argmax(output.cpu().data.numpy())
-
-        one_hot = output[0][self.target_category]
+            one_hot, self.target_category = output.max(dim=-1)
+        else:
+            one_hot = output[0][self.target_category]
         self.model.features.zero_grad()
         self.model.classifier.zero_grad()
         one_hot.backward()
 
-        grads_val = self.gradients[-1].cpu().data.numpy()
-        target = self.features[-1].cpu().data.numpy()[0, :]
-
-        weights = np.mean(grads_val, axis=(2, 3))[0, :]
-        cam = np.ones(target.shape[1:], dtype=np.float32)
-
-        for j, w in enumerate(weights):
-            cam += w * target[j, :, :]
-
-        cam = np.maximum(cam, 0)
-        cam = cv2.resize(cam, (224, 224))
-        cam = cam - np.min(cam)
-        cam = cam / np.max(cam)
+        weights = self.gradients.mean(dim=-1, keepdim=True).mean(dim=-2, keepdim=True)
+        cam = F.relu((weights * self.features).sum(dim=1))
+        cam = cam - cam.min()
+        cam = cam / cam.max()
+        cam = transforms.ToPILImage()(cam.data.cpu())
+        cam = transforms.Resize(size=(224, 224))(cam)
         return cam
-
-
-def show_cam_on_image(img, mask):
-    heatmap = cv2.applyColorMap(np.uint8(255 * mask), cv2.COLORMAP_JET)
-    heatmap = np.float32(heatmap) / 255
-    cam = heatmap + np.float32(img)
-    cam = cam / np.max(cam)
-    cv2.imwrite("cam.jpg", np.uint8(255 * cam))
 
 
 if __name__ == '__main__':
@@ -75,12 +59,14 @@ if __name__ == '__main__':
     IMAGE_PATH = opt.image_path
     TARGET_CATEGORY = opt.target_category
 
-    image = Image.open(IMAGE_PATH)
-    image = transforms.Resize((224, 224))(image)
-    image = transforms.ToTensor()(image)
+    img = Image.open(IMAGE_PATH)
+    img = transforms.Resize((224, 224))(img)
+    image = transforms.ToTensor()(img)
     image = Variable(image.unsqueeze(dim=0))
 
     net = models.vgg19(pretrained=True)
-    grad_cam = GradCam(net, ['35'], TARGET_CATEGORY)
-
-    show_cam_on_image(image.squeeze(dim=0).data.numpy().transpose(1, 2, 0), grad_cam(image))
+    grad_cam = GradCam(net, str(35), TARGET_CATEGORY)
+    mask = grad_cam(image)
+    result = Image.new('RGBA', img.size)
+    result.paste(im=img, mask=mask)
+    result.save('cam.png')
