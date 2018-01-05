@@ -28,7 +28,7 @@ pip install git+https://github.com/szagoruyko/pyinn.git@master
 ```
 python -m visdom.server & python main.py
 optional arguments:
---data_type                   dataset type [default value is 'CIFAR10'](choices:['MNIST', 'FashionMNIST', 'SVHN', 'CIFAR10', 'CIFAR100', 'STL10'])
+--data_type                   dataset type [default value is 'MNIST'](choices:['MNIST', 'FashionMNIST', 'SVHN', 'CIFAR10', 'CIFAR100', 'STL10'])
 --using_data_augmentation     is using data augmentation [default value is True]
 --num_epochs                  train epochs number [default value is 100]
 ```
