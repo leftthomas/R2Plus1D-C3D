@@ -10,7 +10,7 @@ from torchnet.logger import VisdomPlotLogger, VisdomLogger
 from tqdm import tqdm
 
 import utils
-from model import SquashCapsuleNet
+from model import models
 
 
 def processor(sample):
@@ -86,14 +86,11 @@ if __name__ == '__main__':
     USING_DATA_AUGMENTATION = opt.using_data_augmentation
 
     class_name = utils.CLASS_NAME[DATA_TYPE]
-    in_channels = 3
     CLASSES = 10
-    if DATA_TYPE == 'MNIST' or DATA_TYPE == 'FashionMNIST':
-        in_channels = 1
     if DATA_TYPE == 'CIFAR100':
         CLASSES = 100
 
-    model = SquashCapsuleNet(in_channels, CLASSES, DATA_TYPE)
+    model = models[DATA_TYPE]
     loss_criterion = nn.CrossEntropyLoss()
     if torch.cuda.is_available():
         model.cuda()
