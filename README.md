@@ -15,14 +15,6 @@ pip install git+https://github.com/pytorch/tnt.git@master
 ```
 pip install tqdm
 ```
-* fastrlock
-```
-pip install fastrlock
-```
-* pyinn
-```
-pip install git+https://github.com/szagoruyko/pyinn.git@master
-```
 
 ## Usage
 ```

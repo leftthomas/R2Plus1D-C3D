@@ -1,4 +1,3 @@
-import pyinn as P
 import torch
 import torch.nn.functional as F
 from torch import nn
@@ -100,12 +99,11 @@ class CapsuleConv2d(nn.Module):
 
         # it could be optimized, because it require many memory,
         # and the matrix multiplication also could be optimized to speed up
-        input_windows = P.im2col(input, self.kernel_size, self.stride, self.padding)
-        input_windows = input_windows.view(*input_windows.size()[:2], -1, *input_windows.size()[-2:])
-        input_windows = input_windows.view(*input_windows.size()[:3], -1).transpose(1, -1)
-        input_windows = input_windows.contiguous().view(*input_windows.size()[:-1], self.in_channels // self.in_length,
-                                                        self.in_length)
-        input_windows = input_windows.transpose(-2, -3)
+        input = F.pad(input, (self.padding[1], self.padding[1], self.padding[0], self.padding[0]))
+        input_windows = input.unfold(2, self.kernel_size[0], self.stride[0]). \
+            unfold(3, self.kernel_size[1], self.stride[1]).unfold(1, self.in_length, self.in_length)
+        input_windows = input_windows.contiguous().view(*input_windows.size()[:-3], -1, input_windows.size(-1))
+        input_windows = input_windows.view(*input_windows.size()[:2], -1, *input_windows.size()[-2:]).transpose(1, 2)
         input_windows = input_windows.contiguous().view(*input_windows.size()[:2], -1, input_windows.size(-1))
 
         priors = input_windows[None, :, :, :, None, :] @ self.weight[:, None, None, :, :, :]
