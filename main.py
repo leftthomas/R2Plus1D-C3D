@@ -5,6 +5,7 @@ import torchnet as tnt
 from torch import nn
 from torch.autograd import Variable
 from torch.optim import Adam
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torchnet.engine import Engine
 from torchnet.logger import VisdomPlotLogger, VisdomLogger
 from tqdm import tqdm
@@ -69,6 +70,8 @@ def on_end_epoch(state):
 
     torch.save(model.state_dict(), 'epochs/epoch_%d.pt' % state['epoch'])
 
+    scheduler.step(meter_loss.value()[0])
+
 
 if __name__ == '__main__':
 
@@ -99,6 +102,7 @@ if __name__ == '__main__':
     print("# parameters:", sum(param.numel() for param in model.parameters()))
 
     optimizer = Adam(model.parameters())
+    scheduler = ReduceLROnPlateau(optimizer)
 
     engine = Engine()
     meter_loss = tnt.meter.AverageValueMeter()
