@@ -21,7 +21,6 @@ pip install tqdm
 python -m visdom.server & python main.py
 optional arguments:
 --data_type                   dataset type [default value is 'MNIST'](choices:['MNIST', 'FashionMNIST', 'SVHN', 'CIFAR10', 'CIFAR100', 'STL10'])
---using_data_augmentation     is using data augmentation [default value is True]
 --batch_size                  train batch size [default value is 16]
 --num_epochs                  train epochs number [default value is 100]
 --target_category             the category of visualization [default value is None]
