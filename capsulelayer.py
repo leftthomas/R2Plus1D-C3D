@@ -200,5 +200,9 @@ def route_linear(input, num_iterations):
 
 def squash(tensor, dim=-1):
     squared_norm = (tensor ** 2).sum(dim=dim, keepdim=True)
-    scale = torch.sqrt(squared_norm) / (1 + squared_norm)
-    return scale * tensor
+    scale = squared_norm / (1 + squared_norm)
+    return scale * tensor / torch.sqrt(squared_norm)
+    #
+    # squared_norm = (tensor ** 2).sum(dim=dim, keepdim=True)
+    # scale = torch.sqrt(squared_norm) / (1 + squared_norm)
+    # return scale * tensor
