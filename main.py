@@ -8,6 +8,7 @@ from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torchnet.engine import Engine
 from torchnet.logger import VisdomPlotLogger, VisdomLogger
+from torchvision.utils import make_grid
 from tqdm import tqdm
 
 import utils
@@ -70,7 +71,18 @@ def on_end_epoch(state):
 
     torch.save(model.state_dict(), 'epochs/epoch_%d.pt' % state['epoch'])
 
+    # learning rate scheduler
     scheduler.step(meter_loss.value()[0])
+
+    # GradCam visualization
+    test_sample = next(iter(utils.get_iterator(False, DATA_TYPE, BATCH_SIZE, USING_DATA_AUGMENTATION)))
+    original_image = Variable(test_sample[0])
+    if torch.cuda.is_available():
+        original_image = original_image.cuda()
+    reconstructions = model(original_image)
+    reconstruction = reconstructions.cpu().view_as(original_image).data
+    original_image_logger.log(make_grid(original_image, nrow=int(BATCH_SIZE ** 0.5)).numpy())
+    grad_cam_logger.log(make_grid(reconstruction, nrow=int(BATCH_SIZE ** 0.5), normalize=True, range=(0, 1)).numpy())
 
 
 if __name__ == '__main__':
@@ -80,15 +92,29 @@ if __name__ == '__main__':
                         choices=['MNIST', 'FashionMNIST', 'SVHN', 'CIFAR10', 'CIFAR100', 'STL10'],
                         help='dataset type')
     parser.add_argument('--using_data_augmentation', default=True, type=bool, help='is using data augmentation')
-    parser.add_argument('--batch_size', default=32, type=int, help='train batch size')
+    parser.add_argument('--batch_size', default=16, type=int, help='train batch size')
     parser.add_argument('--num_epochs', default=100, type=int, help='train epochs number')
+    parser.add_argument('--target_category', default=None, help='the category of visualization')
 
     opt = parser.parse_args()
 
-    NUM_EPOCHS = opt.num_epochs
     DATA_TYPE = opt.data_type
     USING_DATA_AUGMENTATION = opt.using_data_augmentation
     BATCH_SIZE = opt.batch_size
+    NUM_EPOCHS = opt.num_epochs
+    TARGET_CATEGORY = opt.target_category
+
+    test_sample = next(iter(utils.get_iterator(False, DATA_TYPE, BATCH_SIZE, USING_DATA_AUGMENTATION)))
+
+    original_image = Variable(test_sample[0])
+    import torchvision.transforms as transforms
+
+    transforms.ToTensor()(original_image)
+    a = make_grid(original_image, nrow=int(BATCH_SIZE ** 0.5))
+
+
+
+
 
     class_name = utils.CLASS_NAME[DATA_TYPE]
     CLASSES = 10
@@ -118,6 +144,9 @@ if __name__ == '__main__':
     confusion_logger = VisdomLogger('heatmap', opts={'title': 'Confusion Matrix',
                                                      'columnnames': class_name,
                                                      'rownames': class_name})
+    original_image_logger = VisdomLogger('image', opts={'title': 'Original Image'})
+    grad_cam_logger = VisdomLogger('image', opts={'title': 'GradCam'})
+
     engine.hooks['on_sample'] = on_sample
     engine.hooks['on_forward'] = on_forward
     engine.hooks['on_start_epoch'] = on_start_epoch
