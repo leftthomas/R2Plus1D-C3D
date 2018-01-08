@@ -162,8 +162,8 @@ class CapsuleLinear(nn.Module):
         self.weight = Parameter(torch.randn(out_capsules, in_capsules, in_length, out_length))
 
     def forward(self, input):
+        print(input)
         priors = input[None, :, :, None, :] @ self.weight[:, None, :, :, :]
-        print(priors)
         out = route_linear(priors, self.num_iterations)
         return out
 
