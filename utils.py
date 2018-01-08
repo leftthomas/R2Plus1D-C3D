@@ -1,5 +1,4 @@
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as transforms
 from torch.autograd import Variable
@@ -37,20 +36,6 @@ def get_iterator(mode, data_type, batch_size):
         data = data_set[data_type](root='data/' + data_type, train=mode, transform=transforms.ToTensor(), download=True)
 
     return DataLoader(dataset=data, batch_size=batch_size, shuffle=mode, num_workers=4)
-
-
-class CapsuleLoss(nn.Module):
-    def __init__(self):
-        super(CapsuleLoss, self).__init__()
-
-    def forward(self, classes, labels):
-        left = F.relu(0.9 - classes, inplace=True) ** 2
-        right = F.relu(classes - 0.1, inplace=True) ** 2
-
-        margin_loss = labels * left + 0.5 * (1. - labels) * right
-        margin_loss = margin_loss.mean()
-
-        return margin_loss
 
 
 class GradCam:

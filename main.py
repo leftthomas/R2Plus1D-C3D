@@ -1,6 +1,7 @@
 import argparse
 
 import torch
+import torch.nn as nn
 import torchnet as tnt
 from torch.autograd import Variable
 from torch.optim import Adam
@@ -16,7 +17,7 @@ from model import models
 
 def processor(sample):
     data, labels, training = sample
-    labels = torch.eye(CLASSES).index_select(dim=0, index=labels)
+
     data = Variable(data)
     labels = Variable(labels)
     if torch.cuda.is_available():
@@ -119,7 +120,7 @@ if __name__ == '__main__':
         CLASSES = 100
 
     model = models[DATA_TYPE]()
-    loss_criterion = utils.CapsuleLoss()
+    loss_criterion = nn.CrossEntropyLoss()
     if torch.cuda.is_available():
         model.cuda()
         loss_criterion.cuda()
