@@ -25,8 +25,9 @@ def processor(sample):
         labels = labels.cuda()
 
     classes = model(data)
+    print(classes)
     loss = loss_criterion(classes, labels)
-
+    print(loss)
     return loss, classes
 
 
@@ -76,6 +77,8 @@ def on_end_epoch(state):
 
     # GradCam visualization
     grad_model = models[DATA_TYPE]().eval()
+    print(model.training)
+    print(grad_model.training)
     grad_model.load_state_dict(model.state_dict())
     original_image, _ = next(iter(utils.get_iterator(False, DATA_TYPE, BATCH_SIZE)))
     data = Variable(original_image)
