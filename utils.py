@@ -29,7 +29,7 @@ data_set = {'MNIST': MNIST, 'FashionMNIST': FashionMNIST, 'SVHN': SVHN, 'CIFAR10
 
 
 def get_iterator(mode, data_type, batch_size):
-    if data_type == 'STL10' or data_type == 'SVHN':
+    if (data_type == 'STL10') or (data_type == 'SVHN'):
         data = data_set[data_type](root='data/' + data_type, split='train' if mode else 'test',
                                    transform=transforms.ToTensor(), download=True)
     else:
