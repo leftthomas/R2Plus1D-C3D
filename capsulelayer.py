@@ -163,6 +163,7 @@ class CapsuleLinear(nn.Module):
 
     def forward(self, input):
         priors = input[None, :, :, None, :] @ self.weight[:, None, :, :, :]
+        print(priors)
         out = route_linear(priors, self.num_iterations)
         return out
 
@@ -200,9 +201,5 @@ def route_linear(input, num_iterations):
 
 def squash(tensor, dim=-1):
     squared_norm = (tensor ** 2).sum(dim=dim, keepdim=True)
-    scale = squared_norm / (1 + squared_norm)
-    return scale * tensor / torch.sqrt(squared_norm)
-    #
-    # squared_norm = (tensor ** 2).sum(dim=dim, keepdim=True)
-    # scale = torch.sqrt(squared_norm) / (1 + squared_norm)
-    # return scale * tensor
+    scale = torch.sqrt(squared_norm) / (1 + squared_norm)
+    return scale * tensor
