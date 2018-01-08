@@ -80,7 +80,7 @@ if __name__ == '__main__':
                         choices=['MNIST', 'FashionMNIST', 'SVHN', 'CIFAR10', 'CIFAR100', 'STL10'],
                         help='dataset type')
     parser.add_argument('--using_data_augmentation', default=True, type=bool, help='is using data augmentation')
-    parser.add_argument('--batch_size', default=64, type=int, help='train batch size')
+    parser.add_argument('--batch_size', default=32, type=int, help='train batch size')
     parser.add_argument('--num_epochs', default=100, type=int, help='train epochs number')
 
     opt = parser.parse_args()
