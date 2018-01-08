@@ -117,23 +117,6 @@ if __name__ == '__main__':
         CLASSES = 100
 
     model = models[DATA_TYPE]()
-
-    # GradCam visualization
-    grad_model = models[DATA_TYPE]().eval()
-    grad_model.load_state_dict(model.state_dict())
-    original_image, _ = next(iter(utils.get_iterator(False, DATA_TYPE, BATCH_SIZE)))
-
-    data = Variable(original_image)
-    if torch.cuda.is_available():
-        grad_model.cuda()
-        data = data.cuda()
-    grad_cam = utils.GradCam(grad_model, TARGET_LAYER, TARGET_CATEGORY)
-    masks = []
-    for i in range(data.size(0)):
-        mask = grad_cam(data[i].unsqueeze(0))
-        masks.append(mask)
-    masks = torch.stack(masks)
-
     loss_criterion = nn.CrossEntropyLoss()
     if torch.cuda.is_available():
         model.cuda()
