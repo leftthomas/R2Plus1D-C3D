@@ -90,7 +90,6 @@ class CapsuleConv2d(nn.Module):
                         in_length, out_length))
 
     def forward(self, input):
-        print(input)
         if input.dim() != 4:
             raise ValueError("Expected 4D tensor as input, got {}D tensor instead.".format(input.dim()))
 
