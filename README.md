@@ -24,6 +24,7 @@ optional arguments:
 --batch_size                  train batch size [default value is 16]
 --num_epochs                  train epochs number [default value is 100]
 --target_category             the category of visualization [default value is None]
+--target_layer                the layer of visualization [default value is None]
 ```
 Visdom now can be accessed by going to `127.0.0.1:8097` in your browser, or your own host address if specified.
 

@@ -2,10 +2,7 @@ import torch
 import torch.nn.functional as F
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
-from torchvision.datasets.cifar import CIFAR100, CIFAR10
-from torchvision.datasets.mnist import MNIST, FashionMNIST
-from torchvision.datasets.stl10 import STL10
-from torchvision.datasets.svhn import SVHN
+from torchvision.datasets import CIFAR100, CIFAR10, MNIST, FashionMNIST, STL10, SVHN
 
 CLASS_NAME = {'MNIST': ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
               'FashionMNIST': ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat', 'Sandal', 'Shirt', 'Sneaker',
@@ -46,9 +43,7 @@ def get_iterator(mode, data_type, batch_size):
 
 class GradCam:
     def __init__(self, model, target_layer, target_category):
-        self.model = model.eval()
-        if torch.cuda.is_available():
-            self.model = model.cuda()
+        self.model = model
         self.target_layer = target_layer
         self.target_category = target_category
         self.features = None
@@ -81,8 +76,4 @@ class GradCam:
 
         weights = self.gradients.mean(dim=-1, keepdim=True).mean(dim=-2, keepdim=True)
         cam = F.relu((weights * self.features).sum(dim=1))
-        cam = cam - cam.min()
-        cam = cam / cam.max()
-        cam = transforms.ToPILImage()(cam.data.cpu())
-        cam = transforms.Resize(size=(224, 224))(cam)
         return cam
