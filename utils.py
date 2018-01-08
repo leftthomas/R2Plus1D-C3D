@@ -1,6 +1,7 @@
 import torch
 import torch.nn.functional as F
 import torchvision.transforms as transforms
+from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from torchvision.datasets import CIFAR100, CIFAR10, MNIST, FashionMNIST, STL10, SVHN
 
@@ -29,12 +30,8 @@ data_set = {'MNIST': MNIST, 'FashionMNIST': FashionMNIST, 'SVHN': SVHN, 'CIFAR10
 
 def get_iterator(mode, data_type, batch_size):
     if data_type == 'STL10' or data_type == 'SVHN':
-        if mode:
-            data = data_set[data_type](root='data/' + data_type, split='train', transform=transforms.ToTensor(),
-                                       download=True)
-        else:
-            data = data_set[data_type](root='data/' + data_type, split='test', transform=transforms.ToTensor(),
-                                       download=True)
+        data = data_set[data_type](root='data/' + data_type, split='train' if mode else 'test',
+                                   transform=transforms.ToTensor(), download=True)
     else:
         data = data_set[data_type](root='data/' + data_type, train=mode, transform=transforms.ToTensor(), download=True)
 
@@ -44,7 +41,10 @@ def get_iterator(mode, data_type, batch_size):
 class GradCam:
     def __init__(self, model, target_layer, target_category):
         self.model = model
-        self.target_layer = target_layer
+        self.target_layer = len(model.features) - 1 if target_layer is None else target_layer
+        if self.target_layer > len(model.features) - 1:
+            raise ValueError(
+                "Expected target layer must less than the total layers({}) of features.".format(len(model.features)))
         self.target_category = target_category
         self.features = None
         self.gradients = None
@@ -53,27 +53,39 @@ class GradCam:
         self.gradients = grad
 
     def __call__(self, x):
+        image_size = (x.size(-2), x.size(-1))
         # save the target layer' gradients and features, then get the category scores
-        if torch.cuda.is_available():
-            x = x.cuda()
-        for name, module in self.model.features.named_children():
+        for idx, module in enumerate(self.model.features.children()):
             x = module(x)
-            if name == self.target_layer:
+            if idx == self.target_layer:
                 x.register_hook(self.save_gradient)
                 self.features = x
-        x = x.view(x.size(0), -1)
-        output = self.model.classifier(x)
+        out = x.view(*x.size()[:2], -1)
+        out = out.transpose(-1, -2)
+        out = out.contiguous().view(out.size(0), -1, self.model.out_length)
+        out = self.model.classifier(out)
+        classes = (out ** 2).sum(dim=-1) ** 0.5
+        classes = F.softmax(classes, dim=-1)
 
         # if the target category equal None, return the feature map of the highest scoring category,
         # otherwise, return the feature map of the requested category
         if self.target_category is None:
-            one_hot, self.target_category = output.max(dim=-1)
+            one_hot, _ = classes.max(dim=-1)
         else:
-            one_hot = output[0][self.target_category]
+            if self.target_category > classes.size(-1) - 1:
+                raise ValueError(
+                    "Expected target category must less than the total categories({}).".format(classes.size(-1)))
+            one_hot = classes.index_select(dim=-1, index=Variable(torch.LongTensor([self.target_category])))
+
         self.model.features.zero_grad()
         self.model.classifier.zero_grad()
         one_hot.backward()
 
         weights = self.gradients.mean(dim=-1, keepdim=True).mean(dim=-2, keepdim=True)
         cam = F.relu((weights * self.features).sum(dim=1))
-        return cam
+        cam = cam - cam.min()
+        cam = cam / cam.max()
+        img = transforms.ToPILImage()(cam.data.cpu())
+        img = transforms.Resize(size=image_size)(img)
+        result = transforms.ToTensor()(img)
+        return result
