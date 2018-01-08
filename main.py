@@ -87,7 +87,7 @@ def on_end_epoch(state):
     for i in range(data.size(0)):
         mask = grad_cam(data[i].unsqueeze(0))
         masks.append(mask)
-    masks = torch.cat(masks)
+    masks = torch.stack(masks)
     original_image_logger.log(make_grid(original_image, nrow=int(BATCH_SIZE ** 0.5)).numpy())
     grad_cam_logger.log(make_grid(masks, nrow=int(BATCH_SIZE ** 0.5)).numpy())
 
@@ -122,6 +122,7 @@ if __name__ == '__main__':
     grad_model = models[DATA_TYPE]().eval()
     grad_model.load_state_dict(model.state_dict())
     original_image, _ = next(iter(utils.get_iterator(False, DATA_TYPE, BATCH_SIZE)))
+
     data = Variable(original_image)
     if torch.cuda.is_available():
         grad_model.cuda()
@@ -131,7 +132,7 @@ if __name__ == '__main__':
     for i in range(data.size(0)):
         mask = grad_cam(data[i].unsqueeze(0))
         masks.append(mask)
-    masks = torch.cat(masks)
+    masks = torch.stack(masks)
 
     loss_criterion = nn.CrossEntropyLoss()
     if torch.cuda.is_available():
