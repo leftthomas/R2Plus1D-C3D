@@ -90,6 +90,7 @@ class CapsuleConv2d(nn.Module):
                         in_length, out_length))
 
     def forward(self, input):
+        print(input)
         if input.dim() != 4:
             raise ValueError("Expected 4D tensor as input, got {}D tensor instead.".format(input.dim()))
 
@@ -162,7 +163,6 @@ class CapsuleLinear(nn.Module):
         self.weight = Parameter(torch.randn(out_capsules, in_capsules, in_length, out_length))
 
     def forward(self, input):
-        print(input)
         priors = input[None, :, :, None, :] @ self.weight[:, None, :, :, :]
         out = route_linear(priors, self.num_iterations)
         return out
