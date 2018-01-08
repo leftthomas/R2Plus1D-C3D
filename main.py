@@ -59,7 +59,7 @@ def on_end_epoch(state):
 
     reset_meters()
 
-    engine.test(processor, utils.get_iterator(False, DATA_TYPE, USING_DATA_AUGMENTATION))
+    engine.test(processor, utils.get_iterator(False, DATA_TYPE, BATCH_SIZE, USING_DATA_AUGMENTATION))
 
     test_loss_logger.log(state['epoch'], meter_loss.value()[0])
     test_accuracy_logger.log(state['epoch'], meter_accuracy.value()[0])
@@ -80,6 +80,7 @@ if __name__ == '__main__':
                         choices=['MNIST', 'FashionMNIST', 'SVHN', 'CIFAR10', 'CIFAR100', 'STL10'],
                         help='dataset type')
     parser.add_argument('--using_data_augmentation', default=True, type=bool, help='is using data augmentation')
+    parser.add_argument('--batch_size', default=64, type=int, help='train batch size')
     parser.add_argument('--num_epochs', default=100, type=int, help='train epochs number')
 
     opt = parser.parse_args()
@@ -87,6 +88,7 @@ if __name__ == '__main__':
     NUM_EPOCHS = opt.num_epochs
     DATA_TYPE = opt.data_type
     USING_DATA_AUGMENTATION = opt.using_data_augmentation
+    BATCH_SIZE = opt.batch_size
 
     class_name = utils.CLASS_NAME[DATA_TYPE]
     CLASSES = 10
@@ -121,5 +123,6 @@ if __name__ == '__main__':
     engine.hooks['on_start_epoch'] = on_start_epoch
     engine.hooks['on_end_epoch'] = on_end_epoch
 
-    engine.train(processor, utils.get_iterator(True, DATA_TYPE, USING_DATA_AUGMENTATION), maxepoch=NUM_EPOCHS,
+    engine.train(processor, utils.get_iterator(True, DATA_TYPE, BATCH_SIZE, USING_DATA_AUGMENTATION),
+                 maxepoch=NUM_EPOCHS,
                  optimizer=optimizer)

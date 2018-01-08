@@ -34,7 +34,7 @@ transform_value = {'MNIST': transforms.Normalize((0.1307,), (0.3081,)),
                    'STL10': transforms.Normalize((0.4467, 0.4398, 0.4066), (0.2603, 0.2566, 0.2713))}
 
 
-def get_iterator(mode, data_type, using_data_augmentation):
+def get_iterator(mode, data_type, batch_size, using_data_augmentation):
     if using_data_augmentation:
         if data_type == 'MNIST':
             transform_train = transforms.Compose([
@@ -93,7 +93,7 @@ def get_iterator(mode, data_type, using_data_augmentation):
         else:
             data = data_set[data_type](root='data/' + data_type, train=mode, transform=transform_test, download=True)
 
-    return DataLoader(dataset=data, batch_size=16, shuffle=mode, num_workers=4)
+    return DataLoader(dataset=data, batch_size=batch_size, shuffle=mode, num_workers=4)
 
 
 def get_mean_std(data_type):
@@ -134,5 +134,5 @@ if __name__ == "__main__":
     get_mean_std('CIFAR10')
     get_mean_std('CIFAR100')
     get_mean_std('STL10')
-    t = get_iterator(True, 'MNIST', True)
+    t = get_iterator(True, 'MNIST', 16, True)
     print(t)
