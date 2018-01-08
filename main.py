@@ -119,7 +119,7 @@ if __name__ == '__main__':
     if DATA_TYPE == 'CIFAR100':
         CLASSES = 100
 
-    model = models[DATA_TYPE]()
+    model = models[DATA_TYPE]
     loss_criterion = nn.CrossEntropyLoss()
     if torch.cuda.is_available():
         model.cuda()
