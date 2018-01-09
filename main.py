@@ -124,7 +124,7 @@ if __name__ == '__main__':
     print("# parameters:", sum(param.numel() for param in model.parameters()))
 
     optimizer = Adam(model.parameters())
-    scheduler = ReduceLROnPlateau(optimizer, patience=20, verbose=True, threshold=1e-5)
+    scheduler = ReduceLROnPlateau(optimizer, verbose=True)
 
     engine = Engine()
     meter_loss = tnt.meter.AverageValueMeter()
