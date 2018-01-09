@@ -61,6 +61,8 @@ def on_end_epoch(state):
 
     reset_meters()
 
+    print(DATA_TYPE, BATCH_SIZE)
+
     engine.test(processor, utils.get_iterator(False, DATA_TYPE, BATCH_SIZE))
 
     test_loss_logger.log(state['epoch'], meter_loss.value()[0])
