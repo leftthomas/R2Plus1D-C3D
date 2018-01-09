@@ -25,7 +25,9 @@ def processor(sample):
         labels = labels.cuda()
 
     classes = model(data)
+    print(classes)
     loss = loss_criterion(classes, labels)
+    print(loss)
     return loss, classes
 
 
