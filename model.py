@@ -77,20 +77,20 @@ class CIFAR10CapsuleNet(nn.Module):
         super(CIFAR10CapsuleNet, self).__init__()
         self.out_length = 32
         self.features = nn.Sequential(
-            CapsuleConv2d(in_channels=3, out_channels=64, kernel_size=3, in_length=1, out_length=8, stride=1,
+            CapsuleConv2d(in_channels=3, out_channels=32, kernel_size=3, in_length=1, out_length=8, stride=1,
                           padding=1),
-            CapsuleConv2d(in_channels=64, out_channels=64, kernel_size=3, in_length=8, out_length=8, stride=2,
+            CapsuleConv2d(in_channels=32, out_channels=32, kernel_size=3, in_length=8, out_length=8, stride=2,
                           padding=1),
-            CapsuleConv2d(in_channels=64, out_channels=128, kernel_size=3, in_length=8, out_length=16, stride=1,
+            CapsuleConv2d(in_channels=32, out_channels=64, kernel_size=3, in_length=8, out_length=16, stride=1,
                           padding=1),
-            CapsuleConv2d(in_channels=128, out_channels=128, kernel_size=3, in_length=16, out_length=16, stride=2,
+            CapsuleConv2d(in_channels=64, out_channels=64, kernel_size=3, in_length=16, out_length=16, stride=2,
                           padding=1),
-            CapsuleConv2d(in_channels=128, out_channels=256, kernel_size=3, in_length=16, out_length=32, stride=1,
+            CapsuleConv2d(in_channels=64, out_channels=128, kernel_size=3, in_length=16, out_length=32, stride=1,
                           padding=1),
-            CapsuleConv2d(in_channels=256, out_channels=256, kernel_size=3, in_length=32, out_length=32, stride=2,
+            CapsuleConv2d(in_channels=128, out_channels=128, kernel_size=3, in_length=32, out_length=32, stride=2,
                           padding=1)
         )
-        self.classifier = CapsuleLinear(in_capsules=4 * 4 * 256 // 32, out_capsules=10, in_length=32,
+        self.classifier = CapsuleLinear(in_capsules=4 * 4 * 128 // 32, out_capsules=10, in_length=32,
                                         out_length=self.out_length)
 
     def forward(self, x):
