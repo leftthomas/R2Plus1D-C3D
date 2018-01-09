@@ -33,7 +33,7 @@ class MNISTCapsuleNet(nn.Module):
         out = out.contiguous().view(out.size(0), -1, self.out_length)
 
         out = self.classifier(out)
-        classes = (out ** 2).sum(dim=-1) ** 0.5
+        classes = out.norm(p=2, dim=-1)
         classes = F.softmax(classes, dim=-1)
         return classes
 
@@ -67,7 +67,7 @@ class FashionMNISTCapsuleNet(nn.Module):
         out = out.contiguous().view(out.size(0), -1, self.out_length)
 
         out = self.classifier(out)
-        classes = (out ** 2).sum(dim=-1) ** 0.5
+        classes = out.norm(p=2, dim=-1)
         classes = F.softmax(classes, dim=-1)
         return classes
 
@@ -105,7 +105,7 @@ class CIFAR10CapsuleNet(nn.Module):
         out = out.contiguous().view(out.size(0), -1, self.out_length)
 
         out = self.classifier(out)
-        classes = (out ** 2).sum(dim=-1) ** 0.5
+        classes = out.norm(p=2, dim=-1)
         classes = F.softmax(classes, dim=-1)
         return classes
 
@@ -139,7 +139,7 @@ class CIFAR100CapsuleNet(nn.Module):
         out = out.contiguous().view(out.size(0), -1, self.out_length)
 
         out = self.classifier(out)
-        classes = (out ** 2).sum(dim=-1) ** 0.5
+        classes = out.norm(p=2, dim=-1)
         classes = F.softmax(classes, dim=-1)
         return classes
 
@@ -173,7 +173,7 @@ class SVHNCapsuleNet(nn.Module):
         out = out.contiguous().view(out.size(0), -1, self.out_length)
 
         out = self.classifier(out)
-        classes = (out ** 2).sum(dim=-1) ** 0.5
+        classes = out.norm(p=2, dim=-1)
         classes = F.softmax(classes, dim=-1)
         return classes
 
@@ -207,7 +207,7 @@ class STL10CapsuleNet(nn.Module):
         out = out.contiguous().view(out.size(0), -1, self.out_length)
 
         out = self.classifier(out)
-        classes = (out ** 2).sum(dim=-1) ** 0.5
+        classes = out.norm(p=2, dim=-1)
         classes = F.softmax(classes, dim=-1)
         return classes
 

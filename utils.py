@@ -64,7 +64,7 @@ class GradCam:
         out = out.transpose(-1, -2)
         out = out.contiguous().view(out.size(0), -1, self.model.out_length)
         out = self.model.classifier(out)
-        classes = (out ** 2).sum(dim=-1) ** 0.5
+        classes = out.norm(p=2, dim=-1)
         classes = F.softmax(classes, dim=-1)
 
         # if the target category equal None, return the feature map of the highest scoring category,
