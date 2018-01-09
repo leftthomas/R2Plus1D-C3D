@@ -76,7 +76,7 @@ def on_end_epoch(state):
     # GradCam visualization
     a = []
     for param in model.parameters():
-        a.append(param)
+        a.append(param.data)
     model.eval()
     original_image, _ = next(iter(utils.get_iterator(False, DATA_TYPE, BATCH_SIZE)))
     data = Variable(original_image)
@@ -92,8 +92,10 @@ def on_end_epoch(state):
     grad_cam_logger.log(make_grid(masks, nrow=int(BATCH_SIZE ** 0.5)).numpy())
     model.train()
 
-    for i in range(len(a)):
-        print(torch.equal(a[i], model.parameters()[i]))
+    index = 0
+    for param in model.parameters():
+        print(torch.equal(a[index], param.data))
+        index += 1
 
 
 if __name__ == '__main__':
