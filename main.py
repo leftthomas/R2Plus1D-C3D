@@ -74,16 +74,14 @@ def on_end_epoch(state):
     scheduler.step(meter_loss.value()[0])
 
     # GradCam visualization
-    grad_model = models[DATA_TYPE]().eval()
-    print(model.training)
-    print(grad_model.training)
-    grad_model.load_state_dict(model.state_dict())
+    a = model.parameters()
+    model.eval()
     original_image, _ = next(iter(utils.get_iterator(False, DATA_TYPE, BATCH_SIZE)))
     data = Variable(original_image)
     if torch.cuda.is_available():
-        grad_model.cuda()
         data = data.cuda()
-    grad_cam = utils.GradCam(grad_model, TARGET_LAYER, TARGET_CATEGORY)
+
+    grad_cam = utils.GradCam(model, TARGET_LAYER, TARGET_CATEGORY)
     masks = []
     for i in range(data.size(0)):
         mask = grad_cam(data[i].unsqueeze(0))
@@ -91,6 +89,8 @@ def on_end_epoch(state):
     masks = torch.stack(masks)
     original_image_logger.log(make_grid(original_image, nrow=int(BATCH_SIZE ** 0.5)).numpy())
     grad_cam_logger.log(make_grid(masks, nrow=int(BATCH_SIZE ** 0.5)).numpy())
+    model.train()
+    print(torch.equal(model.parameters(), a))
 
 
 if __name__ == '__main__':
