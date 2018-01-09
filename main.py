@@ -43,6 +43,8 @@ def on_forward(state):
     meter_accuracy.add(state['output'].data, state['sample'][1])
     confusion_meter.add(state['output'].data, state['sample'][1])
     meter_loss.add(state['loss'].data[0])
+    state['iterator'].set_description('[Epoch %d] Training Loss: %.4f (Accuracy: %.2f%%)' % (
+        state['epoch'], meter_loss.value()[0], meter_accuracy.value()[0]))
 
 
 def on_start_epoch(state):
@@ -74,9 +76,6 @@ def on_end_epoch(state):
     scheduler.step(meter_loss.value()[0])
 
     # GradCam visualization
-    a = []
-    for param in model.parameters():
-        a.append(param.data)
     model.eval()
     original_image, _ = next(iter(utils.get_iterator(False, DATA_TYPE, BATCH_SIZE)))
     data = Variable(original_image)
@@ -91,11 +90,6 @@ def on_end_epoch(state):
     original_image_logger.log(make_grid(original_image, nrow=int(BATCH_SIZE ** 0.5)).numpy())
     grad_cam_logger.log(make_grid(masks, nrow=int(BATCH_SIZE ** 0.5)).numpy())
     model.train()
-
-    index = 0
-    for param in model.parameters():
-        print(torch.equal(a[index], param.data))
-        index += 1
 
 
 if __name__ == '__main__':
