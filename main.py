@@ -12,7 +12,7 @@ from torchvision.utils import make_grid
 from tqdm import tqdm
 
 import utils
-from model import models
+from model import models, FashionMNISTCapsuleNet
 
 
 def processor(sample):
@@ -117,7 +117,7 @@ if __name__ == '__main__':
     if DATA_TYPE == 'CIFAR100':
         CLASSES = 100
 
-    model = models[DATA_TYPE]()
+    model = FashionMNISTCapsuleNet()
     loss_criterion = nn.CrossEntropyLoss()
     if torch.cuda.is_available():
         model.cuda()

@@ -33,7 +33,7 @@ def get_iterator(mode, data_type, batch_size):
         data = data_set[data_type](root='data/' + data_type, split='train' if mode else 'test',
                                    transform=transforms.ToTensor(), download=True)
     else:
-        data = data_set[data_type](root='data/' + data_type, train=mode, transform=transforms.ToTensor(), download=True)
+        data = FashionMNIST(root='data/' + data_type, train=mode, transform=transforms.ToTensor(), download=True)
 
     return DataLoader(dataset=data, batch_size=batch_size, shuffle=mode, num_workers=4)
 
