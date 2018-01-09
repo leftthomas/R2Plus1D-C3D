@@ -43,8 +43,6 @@ def on_forward(state):
     meter_accuracy.add(state['output'].data, state['sample'][1])
     confusion_meter.add(state['output'].data, state['sample'][1])
     meter_loss.add(state['loss'].data[0])
-    state['iterator'].set_description('[Epoch %d] Training Loss: %.4f (Accuracy: %.2f%%)' % (
-        state['epoch'], meter_loss.value()[0], meter_accuracy.value()[0]))
 
 
 def on_start_epoch(state):
@@ -60,8 +58,6 @@ def on_end_epoch(state):
     train_accuracy_logger.log(state['epoch'], meter_accuracy.value()[0])
 
     reset_meters()
-
-    print(DATA_TYPE, BATCH_SIZE)
 
     engine.test(processor, utils.get_iterator(False, DATA_TYPE, BATCH_SIZE))
 
