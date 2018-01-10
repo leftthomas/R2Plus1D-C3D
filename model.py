@@ -22,8 +22,10 @@ class MNISTCapsuleNet(nn.Module):
             CapsuleConv2d(in_channels=128, out_channels=128, kernel_size=3, in_length=16, out_length=16, stride=2,
                           padding=1)
         )
-        self.classifier = CapsuleLinear(in_capsules=4 * 4 * 128 // 16, out_capsules=10, in_length=16,
-                                        out_length=self.out_length)
+        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=4 * 4 * 128 // 16, out_capsules=32, in_length=16,
+                                                      out_length=16),
+                                        CapsuleLinear(in_capsules=32, out_capsules=10, in_length=16,
+                                                      out_length=self.out_length))
 
     def forward(self, x):
         out = self.features(x)
@@ -75,7 +77,7 @@ class FashionMNISTCapsuleNet(nn.Module):
 class CIFAR10CapsuleNet(nn.Module):
     def __init__(self):
         super(CIFAR10CapsuleNet, self).__init__()
-        self.out_length = 32
+        self.out_length = 16
         self.features = nn.Sequential(
             CapsuleConv2d(in_channels=3, out_channels=32, kernel_size=3, in_length=1, out_length=8, stride=1,
                           padding=1),
@@ -85,13 +87,15 @@ class CIFAR10CapsuleNet(nn.Module):
                           padding=1),
             CapsuleConv2d(in_channels=64, out_channels=64, kernel_size=3, in_length=16, out_length=16, stride=2,
                           padding=1),
-            CapsuleConv2d(in_channels=64, out_channels=128, kernel_size=3, in_length=16, out_length=32, stride=1,
+            CapsuleConv2d(in_channels=64, out_channels=128, kernel_size=3, in_length=16, out_length=16, stride=1,
                           padding=1),
-            CapsuleConv2d(in_channels=128, out_channels=128, kernel_size=3, in_length=32, out_length=32, stride=2,
+            CapsuleConv2d(in_channels=128, out_channels=128, kernel_size=3, in_length=16, out_length=16, stride=2,
                           padding=1)
         )
-        self.classifier = CapsuleLinear(in_capsules=4 * 4 * 128 // 32, out_capsules=10, in_length=32,
-                                        out_length=self.out_length)
+        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=4 * 4 * 128 // 16, out_capsules=32, in_length=16,
+                                                      out_length=16),
+                                        CapsuleLinear(in_capsules=32, out_capsules=10, in_length=16,
+                                                      out_length=self.out_length))
 
     def forward(self, x):
         out = self.features(x)
