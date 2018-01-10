@@ -59,7 +59,7 @@ def on_end_epoch(state):
 
     reset_meters()
 
-    engine.test(processor, utils.get_iterator(False, DATA_TYPE, BATCH_SIZE))
+    engine.test(processor, utils.get_iterator(False, DATA_TYPE, BATCH_SIZE, USE_DATA_AUGMENTATION))
 
     test_loss_logger.log(state['epoch'], meter_loss.value()[0])
     test_accuracy_logger.log(state['epoch'], meter_accuracy.value()[0])
@@ -75,7 +75,7 @@ def on_end_epoch(state):
 
     # GradCam visualization
     model.eval()
-    original_image, _ = next(iter(utils.get_iterator(False, DATA_TYPE, BATCH_SIZE)))
+    original_image, _ = next(iter(utils.get_iterator(False, DATA_TYPE, BATCH_SIZE, USE_DATA_AUGMENTATION)))
     data = Variable(original_image)
     if torch.cuda.is_available():
         data = data.cuda()
@@ -106,7 +106,7 @@ if __name__ == '__main__':
     opt = parser.parse_args()
 
     DATA_TYPE = opt.data_type
-    USE_DATA_AUGMENTATION = opt.use_data_augmentation
+    USE_DATA_AUGMENTATION = True if opt.use_data_augmentation == 'yes' else False
     BATCH_SIZE = opt.batch_size
     NUM_EPOCHS = opt.num_epochs
     TARGET_CATEGORY = opt.target_category
@@ -149,4 +149,5 @@ if __name__ == '__main__':
     engine.hooks['on_start_epoch'] = on_start_epoch
     engine.hooks['on_end_epoch'] = on_end_epoch
 
-    engine.train(processor, utils.get_iterator(True, DATA_TYPE, BATCH_SIZE), maxepoch=NUM_EPOCHS, optimizer=optimizer)
+    engine.train(processor, utils.get_iterator(True, DATA_TYPE, BATCH_SIZE, USE_DATA_AUGMENTATION), maxepoch=NUM_EPOCHS,
+                 optimizer=optimizer)
