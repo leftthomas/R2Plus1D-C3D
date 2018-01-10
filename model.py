@@ -89,6 +89,8 @@ class CIFAR10CapsuleNet(nn.Module):
                           padding=1),
             CapsuleConv2d(in_channels=64, out_channels=128, kernel_size=3, in_length=16, out_length=16, stride=1,
                           padding=1),
+            CapsuleConv2d(in_channels=128, out_channels=128, kernel_size=3, in_length=16, out_length=16, stride=1,
+                          padding=1),
             CapsuleConv2d(in_channels=128, out_channels=128, kernel_size=3, in_length=16, out_length=16, stride=2,
                           padding=1)
         )

@@ -131,15 +131,15 @@ if __name__ == '__main__':
     meter_accuracy = tnt.meter.ClassErrorMeter(accuracy=True)
     confusion_meter = tnt.meter.ConfusionMeter(CLASSES, normalized=True)
 
-    train_loss_logger = VisdomPlotLogger('line', opts={'title': '%s Train Loss' % DATA_TYPE})
-    train_accuracy_logger = VisdomPlotLogger('line', opts={'title': '%s Train Accuracy' % DATA_TYPE})
-    test_loss_logger = VisdomPlotLogger('line', opts={'title': '%s_Test Loss'})
-    test_accuracy_logger = VisdomPlotLogger('line', opts={'title': '%s Test Accuracy' % DATA_TYPE})
-    confusion_logger = VisdomLogger('heatmap', opts={'title': '%s Confusion Matrix' % DATA_TYPE,
-                                                     'columnnames': class_name,
-                                                     'rownames': class_name})
-    original_image_logger = VisdomLogger('image', opts={'title': '%s Original Image' % DATA_TYPE})
-    grad_cam_logger = VisdomLogger('image', opts={'title': '%s GradCam' % DATA_TYPE})
+    train_loss_logger = VisdomPlotLogger('line', env=DATA_TYPE, opts={'title': 'Train Loss'})
+    train_accuracy_logger = VisdomPlotLogger('line', env=DATA_TYPE, opts={'title': 'Train Accuracy'})
+    test_loss_logger = VisdomPlotLogger('line', env=DATA_TYPE, opts={'title': 'Test Loss'})
+    test_accuracy_logger = VisdomPlotLogger('line', env=DATA_TYPE, opts={'title': 'Test Accuracy'})
+    confusion_logger = VisdomLogger('heatmap', env=DATA_TYPE, opts={'title': 'Confusion Matrix',
+                                                                    'columnnames': class_name,
+                                                                    'rownames': class_name})
+    original_image_logger = VisdomLogger('image', env=DATA_TYPE, opts={'title': 'Original Image'})
+    grad_cam_logger = VisdomLogger('image', env=DATA_TYPE, opts={'title': 'GradCam'})
 
     engine.hooks['on_sample'] = on_sample
     engine.hooks['on_forward'] = on_forward
