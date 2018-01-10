@@ -22,7 +22,7 @@ class MNISTCapsuleNet(nn.Module):
             CapsuleConv2d(in_channels=64, out_channels=64, kernel_size=3, in_length=16, out_length=16, stride=2,
                           padding=1)
         )
-        self.classifier = CapsuleLinear(in_capsules=4 * 4 * 128 // 16, out_capsules=10, in_length=16,
+        self.classifier = CapsuleLinear(in_capsules=4 * 4 * 64 // 16, out_capsules=10, in_length=16,
                                         out_length=self.out_length)
 
     def forward(self, x):
