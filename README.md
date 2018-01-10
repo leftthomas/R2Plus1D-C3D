@@ -27,7 +27,7 @@ optional arguments:
 --target_category             the category of visualization [default value is None]
 --target_layer                the layer of visualization [default value is None]
 ```
-Visdom now can be accessed by going to `127.0.0.1:8097` in your browser, or your own host address if specified.
+Visdom now can be accessed by going to `127.0.0.1:8097/env/$data_type` in your browser, `$data_type` means the dataset type which you are training.
 
 ## Benchmarks(STL10)
 
