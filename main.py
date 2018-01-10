@@ -68,7 +68,7 @@ def on_end_epoch(state):
     print('[Epoch %d] Testing Loss: %.4f (Accuracy: %.2f%%)' % (
         state['epoch'], meter_loss.value()[0], meter_accuracy.value()[0]))
 
-    torch.save(model.state_dict(), 'epochs/epoch_%d.pt' % state['epoch'])
+    torch.save(model.state_dict(), 'epochs/epoch_%s_%d.pt' % (DATA_TYPE, state['epoch']))
 
     # learning rate scheduler
     scheduler.step(meter_loss.value()[0])
@@ -131,15 +131,15 @@ if __name__ == '__main__':
     meter_accuracy = tnt.meter.ClassErrorMeter(accuracy=True)
     confusion_meter = tnt.meter.ConfusionMeter(CLASSES, normalized=True)
 
-    train_loss_logger = VisdomPlotLogger('line', opts={'title': 'Train Loss'})
-    train_accuracy_logger = VisdomPlotLogger('line', opts={'title': 'Train Accuracy'})
-    test_loss_logger = VisdomPlotLogger('line', opts={'title': 'Test Loss'})
-    test_accuracy_logger = VisdomPlotLogger('line', opts={'title': 'Test Accuracy'})
-    confusion_logger = VisdomLogger('heatmap', opts={'title': 'Confusion Matrix',
+    train_loss_logger = VisdomPlotLogger('line', opts={'title': '%s Train Loss' % DATA_TYPE})
+    train_accuracy_logger = VisdomPlotLogger('line', opts={'title': '%s Train Accuracy' % DATA_TYPE})
+    test_loss_logger = VisdomPlotLogger('line', opts={'title': '%s_Test Loss'})
+    test_accuracy_logger = VisdomPlotLogger('line', opts={'title': '%s Test Accuracy' % DATA_TYPE})
+    confusion_logger = VisdomLogger('heatmap', opts={'title': '%s Confusion Matrix' % DATA_TYPE,
                                                      'columnnames': class_name,
                                                      'rownames': class_name})
-    original_image_logger = VisdomLogger('image', opts={'title': 'Original Image'})
-    grad_cam_logger = VisdomLogger('image', opts={'title': 'GradCam'})
+    original_image_logger = VisdomLogger('image', opts={'title': '%s Original Image' % DATA_TYPE})
+    grad_cam_logger = VisdomLogger('image', opts={'title': '%s GradCam' % DATA_TYPE})
 
     engine.hooks['on_sample'] = on_sample
     engine.hooks['on_forward'] = on_forward
