@@ -141,7 +141,7 @@ class GradCam:
         img = transforms.ToPILImage()(cam.data.cpu())
         img = transforms.Resize(size=image_size)(img)
         result = transforms.ToTensor()(img)
-        return result
+        return result.numpy()
 
 
 def get_mean_std(data_type):

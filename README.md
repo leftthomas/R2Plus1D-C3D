@@ -15,6 +15,10 @@ pip install git+https://github.com/pytorch/tnt.git@master
 ```
 pip install tqdm
 ```
+* OpenCV
+```
+conda install opencv
+```
 
 ## Usage
 ```

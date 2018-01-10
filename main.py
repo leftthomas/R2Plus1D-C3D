@@ -1,5 +1,7 @@
 import argparse
 
+import cv2
+import numpy as np
 import torch
 import torch.nn as nn
 import torchnet as tnt
@@ -80,13 +82,17 @@ def on_end_epoch(state):
     if torch.cuda.is_available():
         data = data.cuda()
 
-    masks = []
+    cams = []
     for i in range(data.size(0)):
         mask = grad_cam(data[i].unsqueeze(0))
-        masks.append(mask)
-    masks = torch.stack(masks)
+        heat_map = cv2.applyColorMap(np.uint8(255 * mask), cv2.COLORMAP_JET)
+        heat_map = np.float32(heat_map) / 255
+        cam = heat_map + np.float32(data[i].data.cpu().numpy())
+        cam = cam / np.max(cam)
+        cams.append(torch.from_numpy(np.uint8(255 * cam)))
+    cams = torch.stack(cams)
     original_image_logger.log(make_grid(original_image, nrow=int(BATCH_SIZE ** 0.5)).numpy())
-    grad_cam_logger.log(make_grid(masks, nrow=int(BATCH_SIZE ** 0.5)).numpy())
+    grad_cam_logger.log(make_grid(cams, nrow=int(BATCH_SIZE ** 0.5)).numpy())
     model.train()
 
 
