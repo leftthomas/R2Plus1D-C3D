@@ -45,10 +45,10 @@ class FashionMNISTCapsuleNet(nn.Module):
         super(FashionMNISTCapsuleNet, self).__init__()
         self.out_length = 16
         self.features = nn.Sequential(
-            CapsuleConv2d(in_channels=1, out_channels=32, kernel_size=3, in_length=1, out_length=8, stride=1,
-                          padding=1),
-            CapsuleConv2d(in_channels=32, out_channels=32, kernel_size=3, in_length=8, out_length=8, stride=2,
-                          padding=1),
+            CapsuleConv2d(in_channels=1, out_channels=32, kernel_size=5, in_length=1, out_length=8, stride=1,
+                          padding=2),
+            CapsuleConv2d(in_channels=32, out_channels=32, kernel_size=5, in_length=8, out_length=8, stride=2,
+                          padding=2),
             CapsuleConv2d(in_channels=32, out_channels=64, kernel_size=3, in_length=8, out_length=16, stride=1,
                           padding=1),
             CapsuleConv2d(in_channels=64, out_channels=64, kernel_size=3, in_length=16, out_length=16, stride=2,
@@ -79,10 +79,10 @@ class CIFAR10CapsuleNet(nn.Module):
         super(CIFAR10CapsuleNet, self).__init__()
         self.out_length = 16
         self.features = nn.Sequential(
-            CapsuleConv2d(in_channels=3, out_channels=32, kernel_size=3, in_length=1, out_length=8, stride=1,
-                          padding=1),
-            CapsuleConv2d(in_channels=32, out_channels=32, kernel_size=3, in_length=8, out_length=8, stride=2,
-                          padding=1),
+            CapsuleConv2d(in_channels=3, out_channels=32, kernel_size=5, in_length=1, out_length=8, stride=1,
+                          padding=2),
+            CapsuleConv2d(in_channels=32, out_channels=32, kernel_size=5, in_length=8, out_length=8, stride=2,
+                          padding=2),
             CapsuleConv2d(in_channels=32, out_channels=64, kernel_size=3, in_length=8, out_length=16, stride=1,
                           padding=1),
             CapsuleConv2d(in_channels=64, out_channels=64, kernel_size=3, in_length=16, out_length=16, stride=2,

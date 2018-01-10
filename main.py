@@ -96,6 +96,8 @@ if __name__ == '__main__':
     parser.add_argument('--data_type', default='MNIST', type=str,
                         choices=['MNIST', 'FashionMNIST', 'SVHN', 'CIFAR10', 'CIFAR100', 'STL10'],
                         help='dataset type')
+    parser.add_argument('--use_data_augmentation', default='yes', type=str, choices=['yes', 'no'],
+                        help='use data augmentation or not')
     parser.add_argument('--batch_size', default=16, type=int, help='train batch size')
     parser.add_argument('--num_epochs', default=100, type=int, help='train epochs number')
     parser.add_argument('--target_category', default=None, type=int, help='the category of visualization')
@@ -104,6 +106,7 @@ if __name__ == '__main__':
     opt = parser.parse_args()
 
     DATA_TYPE = opt.data_type
+    USE_DATA_AUGMENTATION = opt.use_data_augmentation
     BATCH_SIZE = opt.batch_size
     NUM_EPOCHS = opt.num_epochs
     TARGET_CATEGORY = opt.target_category
