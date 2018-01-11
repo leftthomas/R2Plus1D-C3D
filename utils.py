@@ -134,6 +134,7 @@ class GradCam:
         cam = F.relu((self.gradients * self.features).sum(dim=1))
         cam = cam - cam.min()
         cam = cam / cam.max()
+        cam = 255 * cam
         img = transforms.ToPILImage()(cam.data.cpu())
         img = transforms.Resize(size=(72, 72))(img)
         result = transforms.ToTensor()(img)

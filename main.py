@@ -93,9 +93,9 @@ def on_end_epoch(state):
         cam = cam / np.max(cam)
         cams.append(transforms.ToTensor()(np.uint8(255 * cam)))
         img = data[i] - data[i].min()
-        img = img.data.cpu() / img.max()
+        img = img / img.max()
         img = 255 * img
-        img = transforms.ToPILImage()(img)
+        img = transforms.ToPILImage()(img.data.cpu())
         img = transforms.Resize(size=(72, 72))(img)
         original_images.append(transforms.ToTensor()(img))
     cams = torch.stack(cams)
