@@ -131,8 +131,7 @@ class GradCam:
         self.model.classifier.zero_grad()
         one_hot.backward()
 
-        weights = self.gradients.mean(dim=1, keepdim=True)
-        cam = F.relu((weights * self.features).sum(dim=1))
+        cam = F.relu((self.gradients * self.features).sum(dim=1))
         cam = cam - cam.min()
         cam = cam / cam.max()
         img = transforms.ToPILImage()(cam.data.cpu())
