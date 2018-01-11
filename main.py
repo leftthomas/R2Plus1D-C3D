@@ -93,7 +93,7 @@ def on_end_epoch(state):
         cams.append(transforms.ToTensor()(np.uint8(255 * cam)))
     cams = torch.stack(cams)
     original_image_logger.log(
-        make_grid(original_image, nrow=int(BATCH_SIZE ** 0.5), normalize=True, range=(0, 1)).numpy())
+        make_grid(original_image, nrow=int(BATCH_SIZE ** 0.5), normalize=True).numpy())
     grad_cam_logger.log(make_grid(cams, nrow=int(BATCH_SIZE ** 0.5)).numpy())
     model.train()
 
