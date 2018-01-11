@@ -78,12 +78,13 @@ def on_end_epoch(state):
 
     # GradCam visualization
     model.eval()
-    original_image, _ = next(iter(utils.get_iterator(False, DATA_TYPE, BATCH_SIZE, USE_DATA_AUGMENTATION)))
+    original_image, _ = next(iter(utils.get_iterator(False, DATA_TYPE, 16, USE_DATA_AUGMENTATION)))
     data = Variable(original_image)
     if torch.cuda.is_available():
         data = data.cuda()
 
     cams = []
+    original_images = []
     for i in range(data.size(0)):
         mask = (grad_cam(data[i].unsqueeze(0))).transpose((1, 2, 0))
         heat_map = cv2.applyColorMap(np.uint8(255 * mask), cv2.COLORMAP_JET)
@@ -91,10 +92,16 @@ def on_end_epoch(state):
         cam = heat_map + np.float32((data[i].data.cpu().numpy()).transpose((1, 2, 0)))
         cam = cam / np.max(cam)
         cams.append(transforms.ToTensor()(np.uint8(255 * cam)))
+        img = data[i] - data[i].min()
+        img = img.data.cpu() / img.max()
+        img = 255 * img
+        img = transforms.ToPILImage()(img)
+        img = transforms.Resize(size=(72, 72))(img)
+        original_images.append(transforms.ToTensor()(img))
     cams = torch.stack(cams)
-    original_image_logger.log(
-        make_grid(original_image, nrow=int(BATCH_SIZE ** 0.5), normalize=True).numpy())
-    grad_cam_logger.log(make_grid(cams, nrow=int(BATCH_SIZE ** 0.5)).numpy())
+    original_images = torch.stack(original_images)
+    original_image_logger.log(make_grid(original_images, nrow=4).numpy())
+    grad_cam_logger.log(make_grid(cams, nrow=4).numpy())
     model.train()
 
 
