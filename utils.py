@@ -1,7 +1,5 @@
-import torch
 import torch.nn.functional as F
 import torchvision.transforms as transforms
-from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from torchvision.datasets import CIFAR100, CIFAR10, MNIST, FashionMNIST, STL10, SVHN
 
@@ -127,13 +125,13 @@ class GradCam:
             if self.target_category > classes.size(-1) - 1:
                 raise ValueError(
                     "Expected target category must less than the total categories({}).".format(classes.size(-1)))
-            one_hot = classes.index_select(dim=-1, index=Variable(torch.LongTensor([self.target_category])))
+            one_hot = classes[0][self.target_category]
 
         self.model.features.zero_grad()
         self.model.classifier.zero_grad()
         one_hot.backward()
 
-        weights = self.gradients.mean(dim=-1, keepdim=True).mean(dim=-2, keepdim=True)
+        weights = self.gradients.mean(dim=2, keepdim=True)
         cam = F.relu((weights * self.features).sum(dim=1))
         cam = cam - cam.min()
         cam = cam / cam.max()
