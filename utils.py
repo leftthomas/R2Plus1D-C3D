@@ -104,6 +104,7 @@ class GradCam:
         self.gradients = grad
 
     def __call__(self, x):
+        image_size = (x.size(-2), x.size(-1))
         # save the target layer' gradients and features, then get the category scores
         for idx, module in enumerate(self.model.features.children()):
             x = module(x)
@@ -134,7 +135,10 @@ class GradCam:
         cam = F.relu((self.gradients * self.features).sum(dim=1))
         cam = cam - cam.min()
         cam = cam / cam.max()
-        result = cam.data.cpu()
+        cam = cam * 255
+        img = transforms.ToPILImage()(cam.data.cpu())
+        img = transforms.Resize(size=image_size)(img)
+        result = transforms.ToTensor()(img)
         return result.numpy()
 
 
