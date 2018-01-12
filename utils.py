@@ -132,7 +132,7 @@ class GradCam:
         self.model.classifier.zero_grad()
         one_hot.backward()
 
-        weight = self.gradients.mean(dim=1, keepdim=True)
+        weight = self.gradients.mean(dim=-1, keepdim=True).mean(dim=-2, keepdim=True)
         cam = F.relu((weight * self.features).sum(dim=1))
         cam = cam - cam.min()
         cam = cam / cam.max()
