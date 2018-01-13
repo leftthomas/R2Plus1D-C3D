@@ -194,7 +194,7 @@ class STL10CapsuleNet(nn.Module):
             CapsuleConv2d(in_channels=64, out_channels=64, kernel_size=3, in_length=16, out_length=self.out_length,
                           stride=2, padding=1)
         )
-        self.classifier = CapsuleLinear(in_capsules=4 * 4 * 64 // self.out_length, out_capsules=10,
+        self.classifier = CapsuleLinear(in_capsules=3 * 3 * 64 // self.out_length, out_capsules=10,
                                         in_length=self.out_length, out_length=16)
 
     def forward(self, x):
