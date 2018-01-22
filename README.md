@@ -13,7 +13,7 @@ pip install git+https://github.com/pytorch/tnt.git@master
 ```
 * tqdm
 ```
-pip install tqdm
+conda install tqdm
 ```
 * OpenCV
 ```
