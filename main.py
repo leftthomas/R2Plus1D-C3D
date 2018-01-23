@@ -3,7 +3,6 @@ import argparse
 import cv2
 import numpy as np
 import torch
-import torch.nn as nn
 import torchnet as tnt
 import torchvision.transforms as transforms
 from torch.autograd import Variable
@@ -128,7 +127,7 @@ if __name__ == '__main__':
         CLASSES = 100
 
     model = models[DATA_TYPE]()
-    loss_criterion = nn.CrossEntropyLoss()
+    loss_criterion = utils.FocalLoss()
     grad_cam = utils.GradCam(model, TARGET_LAYER, TARGET_CATEGORY)
     if torch.cuda.is_available():
         model.cuda()

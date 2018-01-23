@@ -1,3 +1,4 @@
+import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
@@ -87,6 +88,29 @@ def get_iterator(mode, data_type, batch_size, use_data_augmentation):
                                    transform=transform_train if mode else transform_test, download=True)
 
     return DataLoader(dataset=data, batch_size=batch_size, shuffle=mode, num_workers=4)
+
+
+class FocalLoss(nn.Module):
+    def __init__(self, gamma=0, size_average=True):
+        super(FocalLoss, self).__init__()
+        self.gamma = gamma
+        self.size_average = size_average
+
+    def forward(self, input, target):
+        if input.dim() != 2:
+            raise ValueError("Expected 2D tensor as input, got {}D tensor instead.".format(input.dim()))
+        target = target.view(-1, 1)
+
+        logpt = F.log_softmax(input)
+        logpt = logpt.gather(1, target)
+        logpt = logpt.view(-1)
+        pt = logpt.exp()
+
+        loss = -1 * (1 - pt) ** self.gamma * logpt
+        if self.size_average:
+            return loss.mean()
+        else:
+            return loss.sum()
 
 
 class GradCam:
