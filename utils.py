@@ -200,34 +200,6 @@ def get_mean_std(data_type):
         print(train_set.train_data.std(axis=(0, 1, 2)) / 255)
 
 
-class AverageValueMeter(Meter):
-    def __init__(self):
-        super(AverageValueMeter, self).__init__()
-        self.reset()
-        self.val = 0
-
-    def add(self, value, n=1):
-        self.val = value
-        self.sum += value
-        self.n += n
-
-        if self.n == 0:
-            self.mean = np.nan
-        elif self.n == 1:
-            self.mean = self.sum
-        else:
-            self.mean = self.sum / self.n
-
-    def value(self):
-        return self.mean, None
-
-    def reset(self):
-        self.n = 0
-        self.sum = 0.0
-        self.val = 0.0
-        self.mean = np.nan
-
-
 if __name__ == "__main__":
     get_mean_std('MNIST')
     get_mean_std('FashionMNIST')

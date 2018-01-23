@@ -127,7 +127,7 @@ if __name__ == '__main__':
         CLASSES = 100
 
     model = models[DATA_TYPE]()
-    loss_criterion = utils.FocalLoss(gamma=5)
+    loss_criterion = utils.FocalLoss(gamma=2)
     grad_cam = utils.GradCam(model, TARGET_LAYER, TARGET_CATEGORY)
     if torch.cuda.is_available():
         model.cuda()
@@ -139,7 +139,7 @@ if __name__ == '__main__':
     scheduler = ReduceLROnPlateau(optimizer, threshold=1e-5, verbose=True)
 
     engine = Engine()
-    meter_loss = utils.AverageValueMeter()
+    meter_loss = tnt.meter.AverageValueMeter()
     meter_accuracy = tnt.meter.ClassErrorMeter(accuracy=True)
     confusion_meter = tnt.meter.ConfusionMeter(CLASSES, normalized=True)
 
