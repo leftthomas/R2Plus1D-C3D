@@ -35,7 +35,7 @@ def on_sample(state):
 
 def on_forward(state):
     meter_log.updateLoss(state['loss'])
-    meter_log.updateMeter(state['output'], state['sample'][1], meters={'accuracy', 'map', 'confusion'})
+    meter_log.updateMeter(state['output'], state['sample'][1], meters={'accuracy', 'map'})
 
 
 def on_start_epoch(state):
@@ -104,7 +104,6 @@ if __name__ == '__main__':
     TARGET_CATEGORY = opt.target_category
     TARGET_LAYER = opt.target_layer
 
-    class_name = utils.CLASS_NAME[DATA_TYPE]
     CLASSES = 10
     if DATA_TYPE == 'CIFAR100':
         CLASSES = 100
