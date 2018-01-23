@@ -143,18 +143,18 @@ if __name__ == '__main__':
     meter_accuracy = tnt.meter.ClassErrorMeter(accuracy=True)
     confusion_meter = tnt.meter.ConfusionMeter(CLASSES, normalized=True)
 
-    train_loss_logger = VisdomPlotLogger('line', env=DATA_TYPE, server='10.20.193.83', opts={'title': 'Train Loss'})
-    train_accuracy_logger = VisdomPlotLogger('line', env=DATA_TYPE, server='10.20.193.83',
+    train_loss_logger = VisdomPlotLogger('line', env=DATA_TYPE, server='121.42.210.21', opts={'title': 'Train Loss'})
+    train_accuracy_logger = VisdomPlotLogger('line', env=DATA_TYPE, server='121.42.210.21',
                                              opts={'title': 'Train Accuracy'})
-    test_loss_logger = VisdomPlotLogger('line', env=DATA_TYPE, server='10.20.193.83', opts={'title': 'Test Loss'})
-    test_accuracy_logger = VisdomPlotLogger('line', env=DATA_TYPE, server='10.20.193.83',
+    test_loss_logger = VisdomPlotLogger('line', env=DATA_TYPE, server='121.42.210.21', opts={'title': 'Test Loss'})
+    test_accuracy_logger = VisdomPlotLogger('line', env=DATA_TYPE, server='121.42.210.21',
                                             opts={'title': 'Test Accuracy'})
-    confusion_logger = VisdomLogger('heatmap', env=DATA_TYPE, server='10.20.193.83', opts={'title': 'Confusion Matrix',
-                                                                                           'columnnames': class_name,
-                                                                                           'rownames': class_name})
-    original_image_logger = VisdomLogger('image', env=DATA_TYPE, server='10.20.193.83',
+    confusion_logger = VisdomLogger('heatmap', env=DATA_TYPE, server='121.42.210.21',
+                                    opts={'title': 'Confusion Matrix', 'columnnames': class_name,
+                                          'rownames': class_name})
+    original_image_logger = VisdomLogger('image', env=DATA_TYPE, server='121.42.210.21',
                                          opts={'title': 'Original Image'})
-    grad_cam_logger = VisdomLogger('image', env=DATA_TYPE, server='10.20.193.83', opts={'title': 'GradCam'})
+    grad_cam_logger = VisdomLogger('image', env=DATA_TYPE, server='121.42.210.21', opts={'title': 'GradCam'})
 
     engine.hooks['on_sample'] = on_sample
     engine.hooks['on_forward'] = on_forward
