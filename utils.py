@@ -219,7 +219,7 @@ class AverageValueMeter(Meter):
             self.mean = self.sum / self.n
 
     def value(self):
-        return self.mean
+        return self.mean, None
 
     def reset(self):
         self.n = 0
