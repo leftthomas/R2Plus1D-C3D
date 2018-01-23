@@ -1,7 +1,9 @@
+import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
+from torchnet.meter.meter import Meter
 from torchvision.datasets import CIFAR100, CIFAR10, MNIST, FashionMNIST, STL10, SVHN
 
 CLASS_NAME = {'MNIST': ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
@@ -196,6 +198,34 @@ def get_mean_std(data_type):
         print(train_set.train_data.shape)
         print(train_set.train_data.mean(axis=(0, 1, 2)) / 255)
         print(train_set.train_data.std(axis=(0, 1, 2)) / 255)
+
+
+class AverageValueMeter(Meter):
+    def __init__(self):
+        super(AverageValueMeter, self).__init__()
+        self.reset()
+        self.val = 0
+
+    def add(self, value, n=1):
+        self.val = value
+        self.sum += value
+        self.n += n
+
+        if self.n == 0:
+            self.mean = np.nan
+        elif self.n == 1:
+            self.mean = self.sum
+        else:
+            self.mean = self.sum / self.n
+
+    def value(self):
+        return self.mean
+
+    def reset(self):
+        self.n = 0
+        self.sum = 0.0
+        self.val = 0.0
+        self.mean = np.nan
 
 
 if __name__ == "__main__":

@@ -139,7 +139,7 @@ if __name__ == '__main__':
     scheduler = ReduceLROnPlateau(optimizer, threshold=1e-5, verbose=True)
 
     engine = Engine()
-    meter_loss = tnt.meter.AverageValueMeter()
+    meter_loss = utils.AverageValueMeter()
     meter_accuracy = tnt.meter.ClassErrorMeter(accuracy=True)
     confusion_meter = tnt.meter.ConfusionMeter(CLASSES, normalized=True)
 
