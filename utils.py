@@ -1,6 +1,5 @@
 import torch.nn.functional as F
 import torchvision.transforms as transforms
-from torch import nn
 from torch.utils.data import DataLoader
 from torchvision.datasets import CIFAR100, CIFAR10, MNIST, FashionMNIST, STL10, SVHN
 
@@ -31,6 +30,9 @@ transform_value = {'MNIST': transforms.Normalize((0.1307,), (0.3081,)),
                    'CIFAR10': transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616)),
                    'CIFAR100': transforms.Normalize((0.5071, 0.4865, 0.4409), (0.2673, 0.2564, 0.2762)),
                    'STL10': transforms.Normalize((0.4467, 0.4398, 0.4066), (0.2603, 0.2566, 0.2713))}
+
+models = {'MNIST': MNISTCapsuleNet, 'FashionMNIST': FashionMNISTCapsuleNet, 'SVHN': SVHNCapsuleNet,
+          'CIFAR10': CIFAR10CapsuleNet, 'CIFAR100': CIFAR100CapsuleNet, 'STL10': STL10CapsuleNet}
 
 
 def get_iterator(mode, data_type, batch_size, use_data_augmentation):
@@ -88,29 +90,6 @@ def get_iterator(mode, data_type, batch_size, use_data_augmentation):
                                    transform=transform_train if mode else transform_test, download=True)
 
     return DataLoader(dataset=data, batch_size=batch_size, shuffle=mode, num_workers=4)
-
-
-class FocalLoss(nn.Module):
-    def __init__(self, gamma=0, size_average=True):
-        super(FocalLoss, self).__init__()
-        self.gamma = gamma
-        self.size_average = size_average
-
-    def forward(self, input, target):
-        if input.dim() != 2:
-            raise ValueError("Expected 2D tensor as input, got {}D tensor instead.".format(input.dim()))
-        target = target.view(-1, 1)
-
-        logpt = F.log_softmax(input, dim=1)
-        logpt = logpt.gather(1, target)
-        logpt = logpt.view(-1)
-        pt = logpt.exp()
-
-        loss = -1 * (1 - pt) ** self.gamma * logpt
-        if self.size_average:
-            return loss.mean()
-        else:
-            return loss.sum()
 
 
 class GradCam:

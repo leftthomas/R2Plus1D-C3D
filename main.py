@@ -5,6 +5,7 @@ import numpy as np
 import torch
 import torchnet as tnt
 import torchvision.transforms as transforms
+from torch import nn
 from torch.autograd import Variable
 from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
@@ -14,7 +15,6 @@ from torchvision.utils import make_grid
 from tqdm import tqdm
 
 import utils
-from model import models
 
 
 def processor(sample):
@@ -126,8 +126,8 @@ if __name__ == '__main__':
     if DATA_TYPE == 'CIFAR100':
         CLASSES = 100
 
-    model = models[DATA_TYPE]()
-    loss_criterion = utils.FocalLoss(gamma=1)
+    model = utils.models[DATA_TYPE]()
+    loss_criterion = nn.CrossEntropyLoss()
     grad_cam = utils.GradCam(model, TARGET_LAYER, TARGET_CATEGORY)
     if torch.cuda.is_available():
         model.cuda()
