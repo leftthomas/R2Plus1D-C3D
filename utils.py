@@ -3,6 +3,13 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from torchvision.datasets import CIFAR100, CIFAR10, MNIST, FashionMNIST, STL10, SVHN
 
+from models.cifar10 import CIFAR10CapsuleNet
+from models.cifar100 import CIFAR100CapsuleNet
+from models.fashionmnist import FashionMNISTCapsuleNet
+from models.mnist import MNISTCapsuleNet
+from models.stl10 import STL10CapsuleNet
+from models.svhn import SVHNCapsuleNet
+
 CLASS_NAME = {'MNIST': ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
               'FashionMNIST': ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat', 'Sandal', 'Shirt', 'Sneaker',
                                'Bag', 'Ankle boot'],
