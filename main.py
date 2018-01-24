@@ -127,7 +127,7 @@ if __name__ == '__main__':
         CLASSES = 100
 
     model = models[DATA_TYPE]()
-    loss_criterion = utils.FocalLoss(gamma=2)
+    loss_criterion = utils.FocalLoss(gamma=1)
     grad_cam = utils.GradCam(model, TARGET_LAYER, TARGET_CATEGORY)
     if torch.cuda.is_available():
         model.cuda()
