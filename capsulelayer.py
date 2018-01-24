@@ -106,10 +106,7 @@ class CapsuleConv2d(nn.Module):
         input_windows = input_windows.contiguous().view(*input_windows.size()[:2], -1, input_windows.size(-1))
 
         priors = input_windows[None, :, :, :, None, :] @ self.weight[:, None, None, :, :, :]
-        priors = priors.view(*priors.size()[:3], self.in_channels // self.in_length, -1, priors.size(-1))
-
-        out = route_conv2d(priors, self.num_iterations)
-        out = out.transpose(-1, -2)
+        out = priors.sum(dim=-3, keepdim=True).squeeze(dim=-2).squeeze(dim=-2).transpose(0, 1).transpose(-1, -2)
         out = out.contiguous().view(out.size(0), -1, H_out, W_out)
         return out
 
