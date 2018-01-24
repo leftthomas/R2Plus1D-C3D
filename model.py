@@ -28,8 +28,9 @@ class MNISTCapsuleNet(nn.Module):
                           stride=2, padding=1),
             nn.ReLU(inplace=True)
         )
-        self.classifier = CapsuleLinear(in_capsules=4 * 4 * 64 // self.out_length, out_capsules=10,
-                                        in_length=self.out_length, out_length=16)
+        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=4 * 4 * 64 // self.out_length, out_capsules=10,
+                                                      in_length=self.out_length, out_length=16),
+                                        nn.ReLU(inplace=True))
 
     def forward(self, x):
         out = self.features(x)
