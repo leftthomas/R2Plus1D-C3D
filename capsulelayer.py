@@ -1,7 +1,6 @@
 import torch
 import torch.nn.functional as F
 from torch import nn
-from torch.autograd import Variable
 from torch.nn.modules.utils import _pair
 from torch.nn.parameter import Parameter
 
@@ -31,7 +30,6 @@ class CapsuleConv2d(nn.Module):
         out_length (int): length of each output sample's each capsule
         stride (int or tuple, optional): Stride of the capsule convolution
         padding (int or tuple, optional): Zero-padding added to both sides of the input
-        num_iterations (int, optional): number of routing iterations
 
     Shape:
         - Input: :math:`(N, C_{in}, H_{in}, W_{in})`
@@ -65,8 +63,7 @@ class CapsuleConv2d(nn.Module):
         torch.Size([20, 33, 28, 100])
     """
 
-    def __init__(self, in_channels, out_channels, kernel_size, in_length, out_length, stride=1,
-                 padding=0, num_iterations=3):
+    def __init__(self, in_channels, out_channels, kernel_size, in_length, out_length, stride=1, padding=0):
         super(CapsuleConv2d, self).__init__()
         if in_channels % in_length != 0:
             raise ValueError('in_channels must be divisible by in_length')
@@ -84,7 +81,6 @@ class CapsuleConv2d(nn.Module):
         self.out_length = out_length
         self.stride = stride
         self.padding = padding
-        self.num_iterations = num_iterations
         self.weight = Parameter(
             torch.randn(out_channels // out_length, (in_channels // in_length) * kernel_size[0] * kernel_size[1],
                         in_length, out_length))
@@ -134,7 +130,6 @@ class CapsuleLinear(nn.Module):
          out_capsules (int): number of each output sample's capsules
          in_length (int): length of each input sample's each capsule
          out_length (int): length of each output sample's each capsule
-         num_iterations (int, optional): number of routing iterations
 
      Shape:
          - Input: :math:`(N, in\_capsules, in\_length)`
@@ -154,51 +149,18 @@ class CapsuleLinear(nn.Module):
          torch.Size([128, 30, 16])
      """
 
-    def __init__(self, in_capsules, out_capsules, in_length, out_length, num_iterations=3):
+    def __init__(self, in_capsules, out_capsules, in_length, out_length):
         super(CapsuleLinear, self).__init__()
         self.in_capsules = in_capsules
         self.out_capsules = out_capsules
-        self.num_iterations = num_iterations
         self.weight = Parameter(torch.randn(out_capsules, in_capsules, in_length, out_length))
 
     def forward(self, input):
         priors = input[None, :, :, None, :] @ self.weight[:, None, :, :, :]
-        out = route_linear(priors, self.num_iterations)
+        out = priors.sum(dim=2, keepdim=True).squeeze(dim=-2).squeeze(dim=-2).transpose(0, 1)
         return out
 
     def __repr__(self):
         return self.__class__.__name__ + ' (' \
                + str(self.in_capsules) + ' -> ' \
                + str(self.out_capsules) + ')'
-
-
-def route_conv2d(input, num_iterations):
-    logits = Variable(torch.zeros(*input.size()))
-    if torch.cuda.is_available():
-        logits = logits.cuda()
-    for r in range(num_iterations):
-        probs = F.softmax(logits, dim=-2)
-        outputs = squash((probs * input).sum(dim=-2, keepdim=True).sum(dim=-3, keepdim=True))
-        if r != num_iterations - 1:
-            delta_logits = (input * outputs).sum(dim=-1, keepdim=True)
-            logits = logits + delta_logits
-    return outputs.squeeze(dim=-2).squeeze(dim=-2).transpose(0, 1)
-
-
-def route_linear(input, num_iterations):
-    logits = Variable(torch.zeros(*input.size()))
-    if torch.cuda.is_available():
-        logits = logits.cuda()
-    for r in range(num_iterations):
-        probs = F.softmax(logits, dim=2)
-        outputs = squash((probs * input).sum(dim=2, keepdim=True))
-        if r != num_iterations - 1:
-            delta_logits = (input * outputs).sum(dim=-1, keepdim=True)
-            logits = logits + delta_logits
-    return outputs.squeeze(dim=-2).squeeze(dim=-2).transpose(0, 1)
-
-
-def squash(tensor, dim=-1):
-    norm = tensor.norm(p=2, dim=dim, keepdim=True)
-    scale = norm / (1 + norm ** 2)
-    return scale * tensor
