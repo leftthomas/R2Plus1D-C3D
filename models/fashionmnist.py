@@ -13,7 +13,7 @@ class FashionMNISTCapsuleNet(nn.Module):
                           padding=0),
             nn.BatchNorm2d(num_features=32),
             nn.ReLU(inplace=True),
-            CapsuleConv2d(in_channels=32, out_channels=64, kernel_size=3, in_length=8, out_length=self.out_length,
+            CapsuleConv2d(in_channels=32, out_channels=64, kernel_size=3, in_length=4, out_length=self.out_length,
                           stride=2,
                           padding=0),
             nn.BatchNorm2d(num_features=64),
