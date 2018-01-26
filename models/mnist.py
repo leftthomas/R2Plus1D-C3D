@@ -9,17 +9,17 @@ class MNISTCapsuleNet(nn.Module):
         super(MNISTCapsuleNet, self).__init__()
         self.out_length = 2
         self.features = nn.Sequential(
-            CapsuleConv2d(in_channels=1, out_channels=2, kernel_size=5, in_length=1, out_length=1, stride=2,
+            CapsuleConv2d(in_channels=1, out_channels=8, kernel_size=5, in_length=1, out_length=2, stride=2,
                           padding=0),
-            nn.BatchNorm2d(num_features=2),
+            nn.BatchNorm2d(num_features=8),
             nn.ReLU(inplace=True),
-            CapsuleConv2d(in_channels=2, out_channels=4, kernel_size=5, in_length=1, out_length=self.out_length,
+            CapsuleConv2d(in_channels=8, out_channels=8, kernel_size=5, in_length=2, out_length=self.out_length,
                           stride=2,
                           padding=0),
-            nn.BatchNorm2d(num_features=4),
+            nn.BatchNorm2d(num_features=8),
             nn.ReLU(inplace=True)
         )
-        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=4 * 4 * 4 // self.out_length, out_capsules=10,
+        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=4 * 4 * 8 // self.out_length, out_capsules=10,
                                                       in_length=self.out_length, out_length=self.out_length),
                                         nn.ReLU(inplace=True))
 
