@@ -7,19 +7,19 @@ from capsulelayer import CapsuleConv2d, CapsuleLinear
 class FashionMNISTCapsuleNet(nn.Module):
     def __init__(self):
         super(FashionMNISTCapsuleNet, self).__init__()
-        self.out_length = 4
+        self.out_length = 8
         self.features = nn.Sequential(
             CapsuleConv2d(in_channels=1, out_channels=16, kernel_size=7, in_length=1, out_length=4, stride=2,
                           padding=0),
             nn.BatchNorm2d(num_features=16),
             nn.ReLU(inplace=True),
-            CapsuleConv2d(in_channels=16, out_channels=16, kernel_size=3, in_length=4, out_length=self.out_length,
+            CapsuleConv2d(in_channels=16, out_channels=32, kernel_size=3, in_length=4, out_length=self.out_length,
                           stride=2,
                           padding=0),
-            nn.BatchNorm2d(num_features=16),
+            nn.BatchNorm2d(num_features=32),
             nn.ReLU(inplace=True)
         )
-        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=5 * 5 * 16 // self.out_length, out_capsules=10,
+        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=5 * 5 * 32 // self.out_length, out_capsules=10,
                                                       in_length=self.out_length, out_length=self.out_length),
                                         nn.ReLU(inplace=True))
 
