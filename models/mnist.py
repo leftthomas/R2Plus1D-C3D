@@ -7,13 +7,13 @@ from capsulelayer import CapsuleConv2d, CapsuleLinear
 class MNISTCapsuleNet(nn.Module):
     def __init__(self):
         super(MNISTCapsuleNet, self).__init__()
-        self.out_length = 2
+        self.out_length = 4
         self.features = nn.Sequential(
-            CapsuleConv2d(in_channels=1, out_channels=4, kernel_size=5, in_length=1, out_length=1, stride=2,
+            CapsuleConv2d(in_channels=1, out_channels=4, kernel_size=5, in_length=1, out_length=2, stride=2,
                           padding=0),
             nn.BatchNorm2d(num_features=4),
             nn.ReLU(inplace=True),
-            CapsuleConv2d(in_channels=4, out_channels=8, kernel_size=5, in_length=1, out_length=self.out_length,
+            CapsuleConv2d(in_channels=4, out_channels=8, kernel_size=5, in_length=2, out_length=self.out_length,
                           stride=2,
                           padding=0),
             nn.BatchNorm2d(num_features=8),
