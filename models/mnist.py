@@ -7,7 +7,7 @@ from capsulelayer import CapsuleConv2d, CapsuleLinear
 class MNISTCapsuleNet(nn.Module):
     def __init__(self):
         super(MNISTCapsuleNet, self).__init__()
-        self.out_length = 4
+        self.out_length = 2
         self.features = nn.Sequential(
             CapsuleConv2d(in_channels=1, out_channels=4, kernel_size=7, in_length=1, out_length=2, stride=2,
                           padding=0),
