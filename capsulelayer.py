@@ -1,6 +1,7 @@
 import torch
 import torch.nn.functional as F
 from torch import nn
+from torch.autograd import Variable
 from torch.nn.modules.utils import _pair
 from torch.nn.parameter import Parameter
 
@@ -127,6 +128,7 @@ class CapsuleLinear(nn.Module):
          out_capsules (int): number of each output sample's capsules
          in_length (int): length of each input sample's each capsule
          out_length (int): length of each output sample's each capsule
+         num_iterations (int, optional): number of routing iterations
 
      Shape:
          - Input: :math:`(N, in\_capsules, in\_length)`
@@ -146,18 +148,37 @@ class CapsuleLinear(nn.Module):
          torch.Size([128, 30, 16])
      """
 
-    def __init__(self, in_capsules, out_capsules, in_length, out_length):
+    def __init__(self, in_capsules, out_capsules, in_length, out_length, num_iterations=3):
         super(CapsuleLinear, self).__init__()
         self.in_capsules = in_capsules
         self.out_capsules = out_capsules
+        self.num_iterations = num_iterations
         self.weight = Parameter(torch.randn(out_capsules, in_capsules, in_length, out_length))
 
     def forward(self, input):
         priors = input[None, :, :, None, :] @ self.weight[:, None, :, :, :]
-        out = priors.sum(dim=2, keepdim=True).squeeze(dim=-2).squeeze(dim=-2).transpose(0, 1)
+        out = route_linear(priors, self.num_iterations)
         return out
 
     def __repr__(self):
         return self.__class__.__name__ + ' (' \
                + str(self.in_capsules) + ' -> ' \
                + str(self.out_capsules) + ')'
+
+
+def route_linear(input, num_iterations):
+    logits = Variable(torch.zeros(*input.size())).type_as(input)
+    outputs = None
+    for r in range(num_iterations):
+        probs = F.softmax(logits, dim=2)
+        outputs = squash((probs * input).sum(dim=2, keepdim=True))
+        if r != num_iterations - 1:
+            delta_logits = (input * outputs).sum(dim=-1, keepdim=True)
+            logits = logits + delta_logits
+    return outputs.squeeze(dim=-2).squeeze(dim=-2).transpose(0, 1)
+
+
+def squash(tensor, dim=-1):
+    norm = tensor.norm(p=2, dim=dim, keepdim=True)
+    scale = norm / (1 + norm ** 2)
+    return scale * tensor
