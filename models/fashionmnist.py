@@ -9,25 +9,21 @@ class FashionMNISTCapsuleNet(nn.Module):
         super(FashionMNISTCapsuleNet, self).__init__()
         self.out_length = 8
         self.features = nn.Sequential(
-            CapsuleConv2d(in_channels=1, out_channels=64, kernel_size=7, in_length=1, out_length=4, stride=1,
+            CapsuleConv2d(in_channels=1, out_channels=64, kernel_size=7, in_length=1, out_length=4, stride=2,
                           padding=0),
             nn.BatchNorm2d(num_features=64),
             nn.ReLU(inplace=True),
-            CapsuleConv2d(in_channels=64, out_channels=128, kernel_size=5, in_length=4, out_length=4, stride=1,
+            CapsuleConv2d(in_channels=64, out_channels=128, kernel_size=5, in_length=4, out_length=4, stride=2,
                           padding=0),
             nn.BatchNorm2d(num_features=128),
             nn.ReLU(inplace=True),
-            CapsuleConv2d(in_channels=128, out_channels=256, kernel_size=3, in_length=4, out_length=8, stride=2,
-                          padding=1),
-            nn.BatchNorm2d(num_features=256),
-            nn.ReLU(inplace=True),
-            CapsuleConv2d(in_channels=256, out_channels=256, kernel_size=3, in_length=8, out_length=self.out_length,
+            CapsuleConv2d(in_channels=128, out_channels=256, kernel_size=3, in_length=4, out_length=self.out_length,
                           stride=2,
                           padding=1),
             nn.BatchNorm2d(num_features=256),
             nn.ReLU(inplace=True)
         )
-        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=5 * 5 * 256 // self.out_length, out_capsules=10,
+        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=2 * 2 * 256 // self.out_length, out_capsules=10,
                                                       in_length=self.out_length, out_length=self.out_length),
                                         nn.ReLU(inplace=True))
 
