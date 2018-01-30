@@ -47,7 +47,7 @@ class CIFAR10CapsuleNet(nn.Module):
             nn.ReLU(inplace=True),
             nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=2, padding=1)
         )
-        self.classifier = CapsuleLinear(in_capsules=1 * 1 * 128 // self.out_length, out_capsules=10,
+        self.classifier = CapsuleLinear(in_capsules=1 * 1 * 512 // self.out_length, out_capsules=10,
                                         in_length=self.out_length, out_length=self.out_length)
 
     def forward(self, x):
