@@ -31,6 +31,7 @@ class CapsuleConv2d(nn.Module):
         out_length (int): length of each output sample's each capsule
         stride (int or tuple, optional): Stride of the capsule convolution
         padding (int or tuple, optional): Zero-padding added to both sides of the input
+        num_iterations (int, optional): number of routing iterations
 
     Shape:
         - Input: :math:`(N, C_{in}, H_{in}, W_{in})`
@@ -64,7 +65,8 @@ class CapsuleConv2d(nn.Module):
         torch.Size([20, 33, 28, 100])
     """
 
-    def __init__(self, in_channels, out_channels, kernel_size, in_length, out_length, stride=1, padding=0):
+    def __init__(self, in_channels, out_channels, kernel_size, in_length, out_length, stride=1,
+                 padding=0, num_iterations=3):
         super(CapsuleConv2d, self).__init__()
         if in_channels % in_length != 0:
             raise ValueError('in_channels must be divisible by in_length')
@@ -82,6 +84,7 @@ class CapsuleConv2d(nn.Module):
         self.out_length = out_length
         self.stride = stride
         self.padding = padding
+        self.num_iterations = num_iterations
         self.weight = Parameter(
             torch.randn(out_channels // out_length, (in_channels // in_length) * kernel_size[0] * kernel_size[1],
                         in_length, out_length))
@@ -107,7 +110,10 @@ class CapsuleConv2d(nn.Module):
         input_windows = input_windows.contiguous().view(*input_windows.size()[:2], -1, input_windows.size(-1))
 
         priors = input_windows[None, :, :, :, None, :] @ self.weight[:, None, None, :, :, :]
-        out = priors.sum(dim=-3, keepdim=True).squeeze(dim=-2).squeeze(dim=-2).transpose(0, 1).transpose(-1, -2)
+        priors = priors.view(*priors.size()[:3], self.in_channels // self.in_length, -1, priors.size(-1))
+
+        out = route_conv2d(priors, self.num_iterations)
+        out = out.transpose(-1, -2)
         out = out.contiguous().view(out.size(0), -1, H_out, W_out)
         return out
 
@@ -166,9 +172,25 @@ class CapsuleLinear(nn.Module):
                + str(self.out_capsules) + ')'
 
 
+def route_conv2d(input, num_iterations):
+    logits = Variable(torch.zeros(*input.size())).type_as(input)
+    outputs = None
+    if torch.cuda.is_available():
+        logits = logits.cuda()
+    for r in range(num_iterations):
+        probs = F.softmax(logits, dim=-2)
+        outputs = squash((probs * input).sum(dim=-2, keepdim=True).sum(dim=-3, keepdim=True))
+        if r != num_iterations - 1:
+            delta_logits = (input * outputs).sum(dim=-1, keepdim=True)
+            logits = logits + delta_logits
+    return outputs.squeeze(dim=-2).squeeze(dim=-2).transpose(0, 1)
+
+
 def route_linear(input, num_iterations):
     logits = Variable(torch.zeros(*input.size())).type_as(input)
     outputs = None
+    if torch.cuda.is_available():
+        logits = logits.cuda()
     for r in range(num_iterations):
         probs = F.softmax(logits, dim=2)
         outputs = squash((probs * input).sum(dim=2, keepdim=True))
