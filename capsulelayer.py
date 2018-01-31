@@ -67,7 +67,7 @@ class CapsuleConv2d(nn.Module):
     """
 
     def __init__(self, in_channels, out_channels, kernel_size, in_length, out_length, stride=1,
-                 padding=0, with_routing=True, num_iterations=3):
+                 padding=0, with_routing=False, num_iterations=3):
         super(CapsuleConv2d, self).__init__()
         if in_channels % in_length != 0:
             raise ValueError('in_channels must be divisible by in_length')
@@ -160,7 +160,7 @@ class CapsuleLinear(nn.Module):
          torch.Size([128, 30, 16])
      """
 
-    def __init__(self, in_capsules, out_capsules, in_length, out_length, with_routing=True, num_iterations=3):
+    def __init__(self, in_capsules, out_capsules, in_length, out_length, with_routing=False, num_iterations=3):
         super(CapsuleLinear, self).__init__()
         self.in_capsules = in_capsules
         self.out_capsules = out_capsules
