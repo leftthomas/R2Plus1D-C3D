@@ -6,7 +6,7 @@ from capsulelayer import CapsuleLinear
 class CIFAR10CapsuleNet(nn.Module):
     def __init__(self):
         super(CIFAR10CapsuleNet, self).__init__()
-        self.out_length = 8
+        self.out_length = 1
         self.features = nn.Sequential(
             nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=64),
@@ -20,14 +20,8 @@ class CIFAR10CapsuleNet(nn.Module):
             nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2d(num_features=128),
             nn.ReLU(inplace=True),
-            nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(num_features=256),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=2, padding=1),
-            nn.BatchNorm2d(num_features=256),
-            nn.ReLU(inplace=True),
         )
-        self.classifier = CapsuleLinear(in_capsules=4 * 4 * 256 // self.out_length, out_capsules=10,
+        self.classifier = CapsuleLinear(in_capsules=8 * 8 * 128 // self.out_length, out_capsules=10,
                                         in_length=self.out_length, out_length=self.out_length)
 
     def forward(self, x):
