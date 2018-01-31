@@ -125,7 +125,7 @@ class GradCam:
         out = out.transpose(-1, -2)
         out = out.contiguous().view(out.size(0), -1, self.model.out_length)
         out = self.model.classifier(out)
-        classes = out.norm(p=2, dim=-1)
+        classes = out.sum(dim=-1)
 
         # if the target category equal None, return the feature map of the highest scoring category,
         # otherwise, return the feature map of the requested category
