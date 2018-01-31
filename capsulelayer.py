@@ -31,6 +31,7 @@ class CapsuleConv2d(nn.Module):
         out_length (int): length of each output sample's each capsule
         stride (int or tuple, optional): Stride of the capsule convolution
         padding (int or tuple, optional): Zero-padding added to both sides of the input
+        with_routing (bool, optional): using routing algorithm or not
         num_iterations (int, optional): number of routing iterations
 
     Shape:
@@ -66,7 +67,7 @@ class CapsuleConv2d(nn.Module):
     """
 
     def __init__(self, in_channels, out_channels, kernel_size, in_length, out_length, stride=1,
-                 padding=0, num_iterations=3):
+                 padding=0, with_routing=True, num_iterations=3):
         super(CapsuleConv2d, self).__init__()
         if in_channels % in_length != 0:
             raise ValueError('in_channels must be divisible by in_length')
@@ -84,6 +85,7 @@ class CapsuleConv2d(nn.Module):
         self.out_length = out_length
         self.stride = stride
         self.padding = padding
+        self.with_routing = with_routing
         self.num_iterations = num_iterations
         self.weight = Parameter(
             torch.randn(out_channels // out_length, (in_channels // in_length) * kernel_size[0] * kernel_size[1],
@@ -110,9 +112,12 @@ class CapsuleConv2d(nn.Module):
         input_windows = input_windows.contiguous().view(*input_windows.size()[:2], -1, input_windows.size(-1))
 
         priors = input_windows[None, :, :, :, None, :] @ self.weight[:, None, None, :, :, :]
-        priors = priors.view(*priors.size()[:3], self.in_channels // self.in_length, -1, priors.size(-1))
 
-        out = route_conv2d(priors, self.num_iterations)
+        if self.with_routing:
+            priors = priors.view(*priors.size()[:3], self.in_channels // self.in_length, -1, priors.size(-1))
+            out = route_conv2d(priors, self.num_iterations)
+        else:
+            out = priors.sum(dim=-3, keepdim=True).squeeze(dim=-2).squeeze(dim=-2).transpose(0, 1)
         out = out.transpose(-1, -2)
         out = out.contiguous().view(out.size(0), -1, H_out, W_out)
         return out
@@ -134,6 +139,7 @@ class CapsuleLinear(nn.Module):
          out_capsules (int): number of each output sample's capsules
          in_length (int): length of each input sample's each capsule
          out_length (int): length of each output sample's each capsule
+         with_routing (bool, optional): using routing algorithm or not
          num_iterations (int, optional): number of routing iterations
 
      Shape:
@@ -154,16 +160,20 @@ class CapsuleLinear(nn.Module):
          torch.Size([128, 30, 16])
      """
 
-    def __init__(self, in_capsules, out_capsules, in_length, out_length, num_iterations=3):
+    def __init__(self, in_capsules, out_capsules, in_length, out_length, with_routing=True, num_iterations=3):
         super(CapsuleLinear, self).__init__()
         self.in_capsules = in_capsules
         self.out_capsules = out_capsules
+        self.with_routing = with_routing
         self.num_iterations = num_iterations
         self.weight = Parameter(torch.randn(out_capsules, in_capsules, in_length, out_length))
 
     def forward(self, input):
         priors = input[None, :, :, None, :] @ self.weight[:, None, :, :, :]
-        out = route_linear(priors, self.num_iterations)
+        if self.with_routing:
+            out = route_linear(priors, self.num_iterations)
+        else:
+            out = priors.sum(dim=2, keepdim=True).squeeze(dim=-2).squeeze(dim=-2).transpose(0, 1)
         return out
 
     def __repr__(self):
