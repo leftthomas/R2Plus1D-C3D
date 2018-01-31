@@ -127,7 +127,8 @@ class GradCam:
         out = x.view(x.size(0), -1)
         out = self.model.classifier(out)
         # out = out.norm(p=2, dim=-1)
-        classes = F.softmax(out, dim=-1)
+        classes = out
+        # classes = F.softmax(out, dim=-1)
 
         # if the target category equal None, return the feature map of the highest scoring category,
         # otherwise, return the feature map of the requested category
