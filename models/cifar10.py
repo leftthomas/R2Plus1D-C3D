@@ -1,4 +1,3 @@
-import torch.nn.functional as F
 from torch import nn
 
 from capsulelayer import CapsuleLinear
@@ -59,5 +58,4 @@ class CIFAR10CapsuleNet(nn.Module):
 
         out = self.classifier(out)
         classes = out.norm(p=2, dim=-1)
-        classes = F.softmax(classes, dim=-1)
         return classes
