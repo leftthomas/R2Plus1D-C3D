@@ -28,10 +28,6 @@ class CIFAR10CapsuleNet(nn.Module):
                           padding=1),
             nn.BatchNorm2d(num_features=64),
             nn.ReLU(inplace=True),
-            CapsuleConv2d(in_channels=64, out_channels=64, kernel_size=3, in_length=8, out_length=8, stride=1,
-                          padding=1),
-            nn.BatchNorm2d(num_features=64),
-            nn.ReLU(inplace=True),
             CapsuleConv2d(in_channels=64, out_channels=64, kernel_size=3, in_length=8, out_length=8, stride=2,
                           padding=1),
             nn.BatchNorm2d(num_features=64),
@@ -40,26 +36,10 @@ class CIFAR10CapsuleNet(nn.Module):
                           padding=1),
             nn.BatchNorm2d(num_features=128),
             nn.ReLU(inplace=True),
-            CapsuleConv2d(in_channels=128, out_channels=128, kernel_size=3, in_length=8, out_length=8, stride=1,
-                          padding=1),
-            nn.BatchNorm2d(num_features=128),
-            nn.ReLU(inplace=True),
-            CapsuleConv2d(in_channels=128, out_channels=128, kernel_size=3, in_length=8, out_length=8, stride=2,
-                          padding=1),
-            nn.BatchNorm2d(num_features=128),
-            nn.ReLU(inplace=True),
-            CapsuleConv2d(in_channels=128, out_channels=128, kernel_size=3, in_length=8, out_length=8, stride=1,
-                          padding=1),
-            nn.BatchNorm2d(num_features=128),
-            nn.ReLU(inplace=True),
-            CapsuleConv2d(in_channels=128, out_channels=128, kernel_size=3, in_length=8, out_length=8, stride=1,
-                          padding=1),
-            nn.BatchNorm2d(num_features=128),
-            nn.ReLU(inplace=True),
             CapsuleConv2d(in_channels=128, out_channels=128, kernel_size=3, in_length=8, out_length=self.out_length,
                           stride=2, padding=1)
         )
-        self.classifier = CapsuleLinear(in_capsules=1 * 1 * 128 // self.out_length, out_capsules=10,
+        self.classifier = CapsuleLinear(in_capsules=2 * 2 * 128 // self.out_length, out_capsules=10,
                                         in_length=self.out_length, out_length=self.out_length)
 
     def forward(self, x):
