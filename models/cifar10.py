@@ -1,6 +1,6 @@
 from torch import nn
 
-from capsulelayer import CapsuleLinear
+from capsulelayer import CapsuleLinear, CapsuleConv2d
 
 
 class CIFAR10CapsuleNet(nn.Module):
@@ -8,16 +8,20 @@ class CIFAR10CapsuleNet(nn.Module):
         super(CIFAR10CapsuleNet, self).__init__()
         self.out_length = 8
         self.features = nn.Sequential(
-            nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1, padding=1),
+            CapsuleConv2d(in_channels=3, out_channels=64, kernel_size=3, in_length=1, out_length=4, stride=1,
+                          padding=1),
             nn.BatchNorm2d(num_features=64),
             nn.ReLU(inplace=True),
-            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=2, padding=1),
+            CapsuleConv2d(in_channels=64, out_channels=64, kernel_size=3, in_length=4, out_length=4, stride=2,
+                          padding=1),
             nn.BatchNorm2d(num_features=64),
             nn.ReLU(inplace=True),
-            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=1, padding=1),
+            CapsuleConv2d(in_channels=64, out_channels=128, kernel_size=3, in_length=4, out_length=8, stride=1,
+                          padding=1),
             nn.BatchNorm2d(num_features=128),
             nn.ReLU(inplace=True),
-            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, stride=2, padding=1),
+            CapsuleConv2d(in_channels=128, out_channels=128, kernel_size=3, in_length=8, out_length=8, stride=2,
+                          padding=1),
             nn.BatchNorm2d(num_features=128),
             nn.ReLU(inplace=True),
         )
