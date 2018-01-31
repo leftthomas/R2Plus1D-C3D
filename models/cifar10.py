@@ -1,5 +1,7 @@
 from torch import nn
 
+from capsulelayer import CapsuleLinear
+
 
 class CIFAR10CapsuleNet(nn.Module):
     def __init__(self):
@@ -44,15 +46,16 @@ class CIFAR10CapsuleNet(nn.Module):
             nn.ReLU(inplace=True),
             nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=2, padding=1)
         )
-        self.classifier = nn.Linear(in_features=512, out_features=10)
+        self.classifier = CapsuleLinear(in_capsules=1 * 1 * 512 // self.out_length, out_capsules=10,
+                                        in_length=self.out_length, out_length=self.out_length)
 
     def forward(self, x):
-        x = self.features(x)
-        # out = x.view(*x.size()[:2], -1)
-        # out = out.transpose(-1, -2)
-        # out = out.contiguous().view(out.size(0), -1, self.out_length)
-        out = x.view(x.size(0), -1)
-        classes = self.classifier(out)
+        out = self.features(x)
 
-        # out = out.norm(p=2, dim=-1)
+        out = out.view(*out.size()[:2], -1)
+        out = out.transpose(-1, -2)
+        out = out.contiguous().view(out.size(0), -1, self.out_length)
+
+        out = self.classifier(out)
+        classes = out.norm(p=2, dim=-1)
         return classes

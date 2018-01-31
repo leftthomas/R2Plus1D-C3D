@@ -121,14 +121,11 @@ class GradCam:
             if idx == self.target_layer:
                 x.register_hook(self.save_gradient)
                 self.features = x
-        # out = x.view(*x.size()[:2], -1)
-        # out = out.transpose(-1, -2)
-        # out = out.contiguous().view(out.size(0), -1, self.model.out_length)
-        out = x.view(x.size(0), -1)
+        out = x.view(*x.size()[:2], -1)
+        out = out.transpose(-1, -2)
+        out = out.contiguous().view(out.size(0), -1, self.model.out_length)
         out = self.model.classifier(out)
-        # out = out.norm(p=2, dim=-1)
-        classes = out
-        # classes = F.softmax(out, dim=-1)
+        classes = out.norm(p=2, dim=-1)
 
         # if the target category equal None, return the feature map of the highest scoring category,
         # otherwise, return the feature map of the requested category
