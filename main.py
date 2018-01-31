@@ -5,7 +5,6 @@ import numpy as np
 import torch
 import torchnet as tnt
 import torchvision.transforms as transforms
-from torch import nn
 from torch.autograd import Variable
 from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
@@ -19,6 +18,7 @@ import utils
 
 def processor(sample):
     data, labels, training = sample
+    labels = torch.eye(CLASSES).index_select(dim=0, index=labels)
 
     data = Variable(data)
     labels = Variable(labels)
@@ -127,7 +127,7 @@ if __name__ == '__main__':
         CLASSES = 100
 
     model = utils.models[DATA_TYPE]()
-    loss_criterion = nn.CrossEntropyLoss()
+    loss_criterion = utils.CapsuleLoss()
     grad_cam = utils.GradCam(model, TARGET_LAYER, TARGET_CATEGORY)
     if torch.cuda.is_available():
         model.cuda()

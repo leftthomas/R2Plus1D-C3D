@@ -1,5 +1,6 @@
 import torch.nn.functional as F
 import torchvision.transforms as transforms
+from torch import nn
 from torch.utils.data import DataLoader
 from torchvision.datasets import CIFAR100, CIFAR10, MNIST, FashionMNIST, STL10, SVHN
 
@@ -40,6 +41,19 @@ transform_value = {'MNIST': transforms.Normalize((0.1307,), (0.3081,)),
 
 models = {'MNIST': MNISTCapsuleNet, 'FashionMNIST': FashionMNISTCapsuleNet, 'SVHN': SVHNCapsuleNet,
           'CIFAR10': CIFAR10CapsuleNet, 'CIFAR100': CIFAR100CapsuleNet, 'STL10': STL10CapsuleNet}
+
+
+class CapsuleLoss(nn.Module):
+    def __init__(self):
+        super(CapsuleLoss, self).__init__()
+
+    def forward(self, classes, labels):
+        left = F.relu(0.9 - classes, inplace=True) ** 2
+        right = F.relu(classes - 0.1, inplace=True) ** 2
+        margin_loss = labels * left + 0.5 * (1. - labels) * right
+        margin_loss = margin_loss.mean()
+
+        return margin_loss
 
 
 def get_iterator(mode, data_type, batch_size, use_data_augmentation):
