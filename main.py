@@ -78,7 +78,7 @@ def on_end_epoch(state):
     torch.save(model.state_dict(), 'epochs/epoch_%s_%d.pt' % (DATA_TYPE, state['epoch']))
 
     # learning rate scheduler
-    scheduler.step(meter_loss.value()[0])
+    scheduler.step(meter_loss.value()[0], epoch=state['epoch'])
     # save statistics at every 10 epochs
     if state['epoch'] % 10 == 0:
         out_path = 'statistics/'
