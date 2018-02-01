@@ -1,3 +1,5 @@
+import torch.nn as nn
+import torch.nn.functional as F
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from torchvision.datasets import CIFAR100, CIFAR10, MNIST, FashionMNIST, STL10, SVHN
@@ -39,6 +41,23 @@ transform_value = {'MNIST': transforms.Normalize((0.1307,), (0.3081,)),
 
 models = {'MNIST': MNISTCapsuleNet, 'FashionMNIST': FashionMNISTCapsuleNet, 'SVHN': SVHNCapsuleNet,
           'CIFAR10': CIFAR10CapsuleNet, 'CIFAR100': CIFAR100CapsuleNet, 'STL10': STL10CapsuleNet}
+
+
+class FocalLoss(nn.Module):
+    def __init__(self, gamma=2, size_average=True):
+        super(FocalLoss, self).__init__()
+        self.gamma = gamma
+        self.size_average = size_average
+
+    def forward(self, input, target):
+        log_pt = F.log_softmax(input, dim=-1)
+        log_pt = log_pt.gather(-1, target.view(-1, 1)).view(-1)
+        pt = log_pt.exp()
+        loss = -1 * (1 - pt) ** self.gamma * log_pt
+        if self.size_average:
+            return loss.mean()
+        else:
+            return loss.sum()
 
 
 def get_iterator(mode, data_type, batch_size, use_data_augmentation):
