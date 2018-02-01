@@ -49,7 +49,7 @@ def on_start_epoch(state):
 
 
 def on_end_epoch(state):
-    print('[Epoch %d] Training Loss: %.4f (Top1 Accuracy: %.2f%%) (Top5 Accuracy: %.2f%%)' % (
+    print('[Epoch %d] Training Loss: %.4f Top1 Accuracy: %.2f%% Top5 Accuracy: %.2f%%' % (
         state['epoch'], meter_loss.value()[0], meter_accuracy.value()[0], meter_accuracy.value()[1]))
 
     train_loss_logger.log(state['epoch'], meter_loss.value()[0])
@@ -65,7 +65,7 @@ def on_end_epoch(state):
     test_top5_accuracy_logger.log(state['epoch'], meter_accuracy.value()[1])
     confusion_logger.log(confusion_meter.value())
 
-    print('[Epoch %d] Testing Loss: %.4f (Top1 Accuracy: %.2f%%) (Top5 Accuracy: %.2f%%)' % (
+    print('[Epoch %d] Testing Loss: %.4f Top1 Accuracy: %.2f%% Top5 Accuracy: %.2f%%' % (
         state['epoch'], meter_loss.value()[0], meter_accuracy.value()[0], meter_accuracy.value()[1]))
 
     torch.save(model.state_dict(), 'epochs/epoch_%s_%d.pt' % (DATA_TYPE, state['epoch']))
