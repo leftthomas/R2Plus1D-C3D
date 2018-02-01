@@ -1,5 +1,6 @@
 import argparse
 
+import pandas as pd
 import torch
 import torchnet as tnt
 from torch import nn
@@ -55,6 +56,9 @@ def on_end_epoch(state):
     train_loss_logger.log(state['epoch'], meter_loss.value()[0])
     train_top1_accuracy_logger.log(state['epoch'], meter_accuracy.value()[0])
     train_top5_accuracy_logger.log(state['epoch'], meter_accuracy.value()[1])
+    results['train_loss'].append(meter_loss.value()[0])
+    results['train_top1_accuracy'].append(meter_accuracy.value()[0])
+    results['train_top5_accuracy'].append(meter_accuracy.value()[1])
 
     reset_meters()
 
@@ -64,6 +68,9 @@ def on_end_epoch(state):
     test_top1_accuracy_logger.log(state['epoch'], meter_accuracy.value()[0])
     test_top5_accuracy_logger.log(state['epoch'], meter_accuracy.value()[1])
     confusion_logger.log(confusion_meter.value())
+    results['test_loss'].append(meter_loss.value()[0])
+    results['test_top1_accuracy'].append(meter_accuracy.value()[0])
+    results['test_top5_accuracy'].append(meter_accuracy.value()[1])
 
     print('[Epoch %d] Testing Loss: %.4f Top1 Accuracy: %.2f%% Top5 Accuracy: %.2f%%' % (
         state['epoch'], meter_loss.value()[0], meter_accuracy.value()[0], meter_accuracy.value()[1]))
@@ -72,6 +79,17 @@ def on_end_epoch(state):
 
     # learning rate scheduler
     scheduler.step(meter_loss.value()[0])
+    # save statistics at every 10 epochs
+    if state['epoch'] % 10 == 0:
+        out_path = 'statistics/'
+        data_frame = pd.DataFrame(
+            data={'train_loss': results['train_loss'], 'test_loss': results['test_loss'],
+                  'train_top1_accuracy': results['train_top1_accuracy'],
+                  'test_top1_accuracy': results['test_top1_accuracy'],
+                  'train_top5_accuracy': results['train_top5_accuracy'],
+                  'test_top5_accuracy': results['test_top5_accuracy']},
+            index=range(1, state['epoch']))
+        data_frame.to_csv(out_path + DATA_TYPE + '_results.csv', index_label='epoch')
 
 
 if __name__ == '__main__':
@@ -91,6 +109,9 @@ if __name__ == '__main__':
     USE_DATA_AUGMENTATION = True if opt.use_data_augmentation == 'yes' else False
     BATCH_SIZE = opt.batch_size
     NUM_EPOCHS = opt.num_epochs
+
+    results = {'train_loss': [], 'test_loss': [], 'train_top1_accuracy': [], 'test_top1_accuracy': [],
+               'train_top5_accuracy': [], 'test_top5_accuracy': []}
 
     class_name = utils.CLASS_NAME[DATA_TYPE]
     CLASSES = 10
