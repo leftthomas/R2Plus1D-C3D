@@ -88,7 +88,7 @@ def on_end_epoch(state):
                   'test_top1_accuracy': results['test_top1_accuracy'],
                   'train_top5_accuracy': results['train_top5_accuracy'],
                   'test_top5_accuracy': results['test_top5_accuracy']},
-            index=range(1, state['epoch']))
+            index=range(1, state['epoch'] + 1))
         data_frame.to_csv(out_path + DATA_TYPE + '_results.csv', index_label='epoch')
 
 
