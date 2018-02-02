@@ -93,8 +93,8 @@ def on_end_epoch(state):
         data_frame.to_csv(out_path + DATA_TYPE + '_results.csv', index_label='epoch')
 
     # vis
-    train_images, _ = next(iter(utils.get_iterator(True, DATA_TYPE, 16, USE_DATA_AUGMENTATION)))
-    test_images, _ = next(iter(utils.get_iterator(False, DATA_TYPE, 16, USE_DATA_AUGMENTATION)))
+    train_images, _ = next(iter(utils.get_iterator(True, DATA_TYPE, 64, USE_DATA_AUGMENTATION)))
+    test_images, _ = next(iter(utils.get_iterator(False, DATA_TYPE, 64, USE_DATA_AUGMENTATION)))
     train_image_logger.log(make_grid(train_images, nrow=4, normalize=True).numpy())
     test_image_logger.log(make_grid(test_images, nrow=4, normalize=True).numpy())
 
