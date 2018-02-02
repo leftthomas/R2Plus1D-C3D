@@ -23,7 +23,7 @@ class FashionMNISTCapsuleNet(nn.Module):
             nn.ReLU(inplace=True)
         )
         self.classifier = CapsuleLinear(in_capsules=7 * 7 * 32 // self.out_length, out_capsules=10,
-                                        in_length=self.out_length, out_length=self.out_length)
+                                        in_length=self.out_length, out_length=self.out_length, with_routing=True)
 
     def forward(self, x):
         out = self.features(x)
