@@ -2,6 +2,7 @@ import argparse
 
 import pandas as pd
 import torch
+import torch.nn as nn
 import torchnet as tnt
 from torch.autograd import Variable
 from torch.optim import Adam
@@ -118,7 +119,7 @@ if __name__ == '__main__':
         CLASSES = 100
 
     model = utils.models[DATA_TYPE]()
-    loss_criterion = utils.FocalLoss()
+    loss_criterion = nn.CrossEntropyLoss()
     if torch.cuda.is_available():
         model.cuda()
         loss_criterion.cuda()
