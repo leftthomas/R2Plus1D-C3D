@@ -9,6 +9,7 @@ from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torchnet.engine import Engine
 from torchnet.logger import VisdomPlotLogger, VisdomLogger
+from torchvision.utils import make_grid
 from tqdm import tqdm
 
 import utils
@@ -91,6 +92,12 @@ def on_end_epoch(state):
             index=range(1, state['epoch'] + 1))
         data_frame.to_csv(out_path + DATA_TYPE + '_results.csv', index_label='epoch')
 
+    # vis
+    train_images, _ = next(iter(utils.get_iterator(True, DATA_TYPE, 16, USE_DATA_AUGMENTATION)))
+    test_images, _ = next(iter(utils.get_iterator(False, DATA_TYPE, 16, USE_DATA_AUGMENTATION)))
+    train_image_logger.log(make_grid(train_images, nrow=4, normalize=True).numpy())
+    test_image_logger.log(make_grid(test_images, nrow=4, normalize=True).numpy())
+
 
 if __name__ == '__main__':
 
@@ -143,6 +150,9 @@ if __name__ == '__main__':
     confusion_logger = VisdomLogger('heatmap', env=DATA_TYPE,
                                     opts={'title': 'Confusion Matrix', 'columnnames': class_name,
                                           'rownames': class_name})
+    train_image_logger = VisdomLogger('image', env=DATA_TYPE,
+                                      opts={'title': 'Train Image', 'width': 350, 'height': 350})
+    test_image_logger = VisdomLogger('image', env=DATA_TYPE, opts={'title': 'Test Image', 'width': 350, 'height': 350})
 
     engine.hooks['on_sample'] = on_sample
     engine.hooks['on_forward'] = on_forward
