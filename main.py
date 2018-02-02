@@ -151,8 +151,8 @@ if __name__ == '__main__':
                                     opts={'title': 'Confusion Matrix', 'columnnames': class_name,
                                           'rownames': class_name})
     train_image_logger = VisdomLogger('image', env=DATA_TYPE,
-                                      opts={'title': 'Train Image', 'width': 350, 'height': 350})
-    test_image_logger = VisdomLogger('image', env=DATA_TYPE, opts={'title': 'Test Image', 'width': 350, 'height': 350})
+                                      opts={'title': 'Train Image', 'width': 350, 'height': 335})
+    test_image_logger = VisdomLogger('image', env=DATA_TYPE, opts={'title': 'Test Image', 'width': 350, 'height': 335})
 
     engine.hooks['on_sample'] = on_sample
     engine.hooks['on_forward'] = on_forward
