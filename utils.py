@@ -76,7 +76,7 @@ class FocalLoss(nn.Module):
             return loss.sum()
 
 
-def get_iterator(mode, data_type, batch_size, use_data_augmentation):
+def get_iterator(mode, data_type, batch_size=64, use_data_augmentation=True):
     if use_data_augmentation:
         transform_train = transform_trains[data_type]
         transform_test = transforms.Compose([

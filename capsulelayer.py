@@ -182,7 +182,7 @@ class CapsuleLinear(nn.Module):
                + str(self.out_capsules) + ')'
 
 
-def route_conv2d(input, num_iterations):
+def route_conv2d(input, num_iterations=3):
     logits = Variable(torch.zeros(*input.size())).type_as(input)
     outputs = None
     if torch.cuda.is_available():
@@ -196,7 +196,7 @@ def route_conv2d(input, num_iterations):
     return outputs.squeeze(dim=-2).squeeze(dim=-2).transpose(0, 1)
 
 
-def route_linear(input, num_iterations):
+def route_linear(input, num_iterations=3):
     logits = Variable(torch.zeros(*input.size())).type_as(input)
     outputs = None
     if torch.cuda.is_available():
