@@ -107,6 +107,8 @@ if __name__ == '__main__':
                         help='dataset type')
     parser.add_argument('--use_data_augmentation', default='yes', type=str, choices=['yes', 'no'],
                         help='use data augmentation or not')
+    parser.add_argument('--with_routing', default='no', type=str, choices=['yes', 'no'],
+                        help='use routing algorithm or not')
     parser.add_argument('--batch_size', default=64, type=int, help='train batch size')
     parser.add_argument('--num_epochs', default=100, type=int, help='train epochs number')
 
@@ -114,6 +116,7 @@ if __name__ == '__main__':
 
     DATA_TYPE = opt.data_type
     USE_DATA_AUGMENTATION = True if opt.use_data_augmentation == 'yes' else False
+    WITH_ROUTING = True if opt.with_routing == 'yes' else False
     BATCH_SIZE = opt.batch_size
     NUM_EPOCHS = opt.num_epochs
 
@@ -125,7 +128,7 @@ if __name__ == '__main__':
     if DATA_TYPE == 'CIFAR100':
         CLASSES = 100
 
-    model = utils.models[DATA_TYPE]()
+    model = utils.models[DATA_TYPE](WITH_ROUTING)
     loss_criterion = nn.CrossEntropyLoss()
     if torch.cuda.is_available():
         model.cuda()
