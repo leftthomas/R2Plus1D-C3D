@@ -16,13 +16,6 @@ class CapsuleConv2d(nn.Module):
         - a ``tuple`` of two ints -- in which case, the first `int` is used for the height dimension,
           and the second `int` for the width dimension
 
-    .. note::
-
-         Depending of the size of your kernel, several (of the last)
-         columns of the input might be lost, because it is a valid `cross-correlation`_,
-         and not a full `cross-correlation`_.
-         It is up to the user to add proper padding.
-
     Args:
         in_channels (int): Number of channels in the input image
         out_channels (int): Number of channels produced by the capsule convolution
@@ -37,8 +30,8 @@ class CapsuleConv2d(nn.Module):
     Shape:
         - Input: :math:`(N, C_{in}, H_{in}, W_{in})`
         - Output: :math:`(N, C_{out}, H_{out}, W_{out})` where
-          :math:`H_{out} = floor((H_{in}  + 2 * padding[0] - kernel\_size[0]) / stride[0] + 1)`
-          :math:`W_{out} = floor((W_{in}  + 2 * padding[1] - kernel\_size[1]) / stride[1] + 1)`
+          :math:`H_{out} = floor((H_{in}  + 2 * padding[0] - kernel_size[0]) / stride[0] + 1)`
+          :math:`W_{out} = floor((W_{in}  + 2 * padding[1] - kernel_size[1]) / stride[1] + 1)`
 
     Attributes:
         weight (Tensor): the learnable weights of the module of shape
@@ -143,8 +136,8 @@ class CapsuleLinear(nn.Module):
          num_iterations (int, optional): number of routing iterations
 
      Shape:
-         - Input: :math:`(N, in\_capsules, in\_length)`
-         - Output: :math:`(N, out\_capsules, out\_length)`
+         - Input: :math:`(N, in_capsules, in_length)`
+         - Output: :math:`(N, out_capsules, out_length)`
 
      Attributes:
          weight (Tensor): the learnable weights of the module of shape
