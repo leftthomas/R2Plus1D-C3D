@@ -12,10 +12,6 @@ class MNISTCapsuleNet(nn.Module):
                           padding=2, with_routing=with_routing),
             nn.BatchNorm2d(num_features=16),
             nn.ReLU(inplace=True),
-            CapsuleConv2d(in_channels=16, out_channels=16, kernel_size=3, in_length=4, out_length=4, stride=1,
-                          padding=1, with_routing=with_routing),
-            nn.BatchNorm2d(num_features=16),
-            nn.ReLU(inplace=True),
             CapsuleConv2d(in_channels=16, out_channels=32, kernel_size=3, in_length=4, out_length=4, stride=2,
                           padding=1, with_routing=with_routing),
             nn.BatchNorm2d(num_features=32),
@@ -25,9 +21,10 @@ class MNISTCapsuleNet(nn.Module):
             nn.BatchNorm2d(num_features=32),
             nn.ReLU(inplace=True)
         )
-        self.classifier = CapsuleLinear(in_capsules=7 * 7 * 32 // self.out_length, out_capsules=10,
-                                        in_length=self.out_length, out_length=self.out_length,
-                                        with_routing=with_routing)
+        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=7 * 7 * 32 // self.out_length, out_capsules=10,
+                                                      in_length=self.out_length, out_length=self.out_length,
+                                                      with_routing=with_routing),
+                                        nn.ReLU(inplace=True))
 
     def forward(self, x):
         out = self.features(x)

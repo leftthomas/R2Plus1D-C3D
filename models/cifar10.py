@@ -21,9 +21,10 @@ class CIFAR10CapsuleNet(nn.Module):
             nn.BatchNorm2d(num_features=64),
             nn.ReLU(inplace=True)
         )
-        self.classifier = CapsuleLinear(in_capsules=8 * 8 * 64 // self.out_length, out_capsules=10,
-                                        in_length=self.out_length, out_length=self.out_length,
-                                        with_routing=with_routing)
+        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=8 * 8 * 64 // self.out_length, out_capsules=10,
+                                                      in_length=self.out_length, out_length=self.out_length,
+                                                      with_routing=with_routing),
+                                        nn.ReLU(inplace=True))
 
     def forward(self, x):
         out = self.features(x)
