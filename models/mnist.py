@@ -21,10 +21,9 @@ class MNISTCapsuleNet(nn.Module):
             nn.BatchNorm2d(num_features=32),
             nn.ReLU(inplace=True)
         )
-        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=7 * 7 * 32 // self.out_length, out_capsules=10,
-                                                      in_length=self.out_length, out_length=self.out_length,
-                                                      with_routing=with_routing),
-                                        nn.ReLU(inplace=True))
+        self.classifier = CapsuleLinear(in_capsules=7 * 7 * 32 // self.out_length, out_capsules=10,
+                                        in_length=self.out_length, out_length=self.out_length,
+                                        with_routing=with_routing)
 
     def forward(self, x):
         out = self.features(x)
