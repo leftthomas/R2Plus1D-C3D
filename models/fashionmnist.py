@@ -11,20 +11,20 @@ class FashionMNISTCapsuleNet(nn.Module):
             CapsuleConv2d(in_channels=1, out_channels=32, kernel_size=5, in_length=1, out_length=4, stride=1,
                           padding=2, with_routing=with_routing),
             nn.BatchNorm2d(num_features=32),
-            nn.LeakyReLU(inplace=True),
+            nn.ReLU(inplace=True),
             CapsuleConv2d(in_channels=32, out_channels=64, kernel_size=3, in_length=4, out_length=8, stride=2,
                           padding=1, with_routing=with_routing),
             nn.BatchNorm2d(num_features=64),
-            nn.LeakyReLU(inplace=True),
+            nn.ReLU(inplace=True),
             CapsuleConv2d(in_channels=64, out_channels=64, kernel_size=3, in_length=8, out_length=self.out_length,
                           stride=2, padding=1, with_routing=with_routing),
             nn.BatchNorm2d(num_features=64),
-            nn.LeakyReLU(inplace=True)
+            nn.ReLU(inplace=True)
         )
         self.classifier = nn.Sequential(CapsuleLinear(in_capsules=7 * 7 * 64 // self.out_length, out_capsules=10,
                                                       in_length=self.out_length, out_length=self.out_length,
                                                       with_routing=with_routing),
-                                        nn.LeakyReLU(inplace=True))
+                                        nn.ReLU(inplace=True))
 
     def forward(self, x):
         out = self.features(x)
