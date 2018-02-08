@@ -4,26 +4,26 @@ from capsulelayer import CapsuleConv2d, CapsuleLinear
 
 
 class STL10CapsuleNet(nn.Module):
-    def __init__(self, with_routing=False):
+    def __init__(self, with_conv_routing=False, with_linear_routing=False):
         super(STL10CapsuleNet, self).__init__()
         self.out_length = 16
         self.features = nn.Sequential(
             CapsuleConv2d(in_channels=3, out_channels=16, kernel_size=5, in_length=1, out_length=4, stride=2,
-                          padding=2, with_routing=with_routing),
+                          padding=2, with_routing=with_conv_routing),
             CapsuleConv2d(in_channels=16, out_channels=16, kernel_size=5, in_length=4, out_length=4, stride=2,
-                          padding=2, with_routing=with_routing),
+                          padding=2, with_routing=with_conv_routing),
             CapsuleConv2d(in_channels=16, out_channels=32, kernel_size=3, in_length=4, out_length=8, stride=2,
-                          padding=1, with_routing=with_routing),
+                          padding=1, with_routing=with_conv_routing),
             CapsuleConv2d(in_channels=32, out_channels=32, kernel_size=3, in_length=8, out_length=8, stride=2,
-                          padding=1, with_routing=with_routing),
+                          padding=1, with_routing=with_conv_routing),
             CapsuleConv2d(in_channels=32, out_channels=64, kernel_size=3, in_length=8, out_length=16, stride=1,
-                          padding=1, with_routing=with_routing),
+                          padding=1, with_routing=with_conv_routing),
             CapsuleConv2d(in_channels=64, out_channels=64, kernel_size=3, in_length=16, out_length=self.out_length,
-                          stride=2, padding=1, with_routing=with_routing)
+                          stride=2, padding=1, with_routing=with_conv_routing)
         )
         self.classifier = CapsuleLinear(in_capsules=3 * 3 * 64 // self.out_length, out_capsules=10,
                                         in_length=self.out_length, out_length=self.out_length,
-                                        with_routing=with_routing)
+                                        with_routing=with_linear_routing)
 
     def forward(self, x):
         out = self.features(x)
