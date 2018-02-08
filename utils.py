@@ -76,6 +76,59 @@ class FocalLoss(nn.Module):
             return loss.sum()
 
 
+class GradCam:
+    def __init__(self, model, target_layer, target_category):
+        self.model = model
+        self.target_layer = len(model.features) - 1 if target_layer is None else target_layer
+        if self.target_layer > len(model.features) - 1:
+            raise ValueError(
+                "Expected target layer must less than the total layers({}) of features.".format(len(model.features)))
+        self.target_category = target_category
+        self.features = None
+        self.gradients = None
+
+    def save_gradient(self, grad):
+        self.gradients = grad
+
+    def __call__(self, x):
+        image_size = (x.size(-2), x.size(-1))
+        # save the target layer' gradients and features, then get the category scores
+        for idx, module in enumerate(self.model.features.children()):
+            x = module(x)
+            if idx == self.target_layer:
+                x.register_hook(self.save_gradient)
+                self.features = x
+        out = x.view(*x.size()[:2], -1)
+        out = out.transpose(-1, -2)
+        out = out.contiguous().view(out.size(0), -1, self.model.out_length)
+        out = self.model.classifier(out)
+        classes = out.sum(dim=-1)
+
+        # if the target category equal None, return the feature map of the highest scoring category,
+        # otherwise, return the feature map of the requested category
+        if self.target_category is None:
+            one_hot, _ = classes.max(dim=-1)
+        else:
+            if self.target_category > classes.size(-1) - 1:
+                raise ValueError(
+                    "Expected target category must less than the total categories({}).".format(classes.size(-1)))
+            one_hot = classes[0][self.target_category]
+
+        self.model.features.zero_grad()
+        self.model.classifier.zero_grad()
+        one_hot.backward()
+
+        weight = self.gradients.mean(dim=-1, keepdim=True).mean(dim=-2, keepdim=True)
+        cam = F.relu((weight * self.features).sum(dim=1))
+        cam = cam - cam.min()
+        cam = cam / cam.max()
+        cam = cam * 255
+        img = transforms.ToPILImage()(cam.data.cpu())
+        img = transforms.Resize(size=image_size)(img)
+        result = transforms.ToTensor()(img)
+        return result.numpy()
+
+
 def get_iterator(mode, data_type, batch_size=64, use_data_augmentation=True):
     if use_data_augmentation:
         transform_train = transform_trains[data_type]
