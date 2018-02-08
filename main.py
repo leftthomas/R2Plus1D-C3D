@@ -107,14 +107,13 @@ def on_end_epoch(state):
     for i in range(data.size(0)):
         mask = (grad_cam(data[i].unsqueeze(0))).transpose((1, 2, 0))
         heat_map = cv2.applyColorMap(np.uint8(255 * mask), cv2.COLORMAP_JET)
-        # heat_map = np.float32(heat_map) / 255
-        # img = data[i] - data[i].min()
-        # img = img / img.max()
-        # img = img.data.cpu().numpy()
-        # cam = heat_map + np.float32(img.transpose((1, 2, 0)))
-        # cam = cam / np.max(cam)
-        # cams.append(transforms.ToTensor()(np.uint8(255 * cam)))
-        cams.append(transforms.ToTensor()(heat_map))
+        heat_map = np.float32(heat_map) / 255
+        img = data[i] - data[i].min()
+        img = img / img.max()
+        img = img.data.cpu().numpy()
+        cam = heat_map + np.float32(img.transpose((1, 2, 0)))
+        cam = cam / np.max(cam)
+        cams.append(transforms.ToTensor()(np.uint8(255 * cam)))
     cams = torch.stack(cams)
     original_image_logger.log(make_grid(original_image, nrow=5, normalize=True).numpy())
     grad_cam_logger.log(make_grid(cams, nrow=5, normalize=True).numpy())

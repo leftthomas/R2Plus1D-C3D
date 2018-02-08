@@ -1,3 +1,5 @@
+import cv2
+import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as transforms
@@ -119,14 +121,11 @@ class GradCam:
         one_hot.backward()
 
         weight = self.gradients.mean(dim=-1, keepdim=True).mean(dim=-2, keepdim=True)
-        cam = F.relu((weight * self.features).sum(dim=1))
-        cam = cam - cam.min()
-        cam = cam / cam.max()
-        cam = cam * 255
-        img = transforms.ToPILImage()(cam.data.cpu())
-        img = transforms.Resize(size=image_size)(img)
-        result = transforms.ToTensor()(img)
-        return result.numpy()
+        cam = F.relu(1 + (weight * self.features).sum(dim=1)).squeeze(0)
+        cam = cv2.resize(cam.cpu().data.numpy(), image_size)
+        cam = cam - np.min(cam)
+        cam = cam / np.max(cam)
+        return cam
 
 
 def get_iterator(mode, data_type, batch_size=64, use_data_augmentation=True):
