@@ -114,7 +114,6 @@ def on_end_epoch(state):
         cam = heat_map + np.float32(
             cv2.cvtColor(img.transpose((1, 2, 0)) * 255, cv2.COLOR_RGB2BGR if img_channel == 3 else cv2.COLOR_GRAY2BGR))
         cam = cam / np.max(cam)
-        cv2.imwrite('cam_' + str(i) + '.jpg', np.uint8(255 * cam))
         cams.append(transforms.ToTensor()(cv2.cvtColor(np.uint8(255 * cam), cv2.COLOR_BGR2RGB)))
     cams = torch.stack(cams)
     original_image_logger.log(make_grid(original_image, nrow=5, normalize=True).numpy())
