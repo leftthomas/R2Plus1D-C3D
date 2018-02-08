@@ -9,7 +9,7 @@ if __name__ == '__main__':
     grad_cam = utils.GradCam(model=models.vgg19(pretrained=True), target_layer=35, target_category=None)
 
     img = cv2.imread('both.png', 1)
-    img = np.float32(cv2.resize(img, (224, 224))) / 255
+    img = np.float32(img) / 255
     input = utils2.preprocess_image(img)
 
     mask = grad_cam(input)
