@@ -120,8 +120,8 @@ class GradCam:
         self.model.classifier.zero_grad()
         one_hot.backward()
 
-        weight = self.gradients.mean(dim=-1, keepdim=True).mean(dim=-2, keepdim=True)
-        cam = F.relu(1 + (weight * self.features).sum(dim=1)).squeeze(0)
+        # weight = self.gradients.mean(dim=-1, keepdim=True).mean(dim=-2, keepdim=True)
+        cam = F.relu(1 + (self.gradients * self.features).sum(dim=1)).squeeze(0)
         cam = cv2.resize(cam.cpu().data.numpy(), image_size)
         cam = cam - np.min(cam)
         cam = cam / np.max(cam)
