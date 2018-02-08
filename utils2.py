@@ -28,14 +28,15 @@ def show_cam_on_image(img, mask):
 
 
 class GradCam:
-    def __init__(self, model, target_layer):
-        self.model = model
-        self.model.eval()
-        self.target_layer = target_layer
+    def __init__(self, model, target_layer, target_category):
+        self.model = model.eval()
+        self.target_layer = len(model.features) - 1 if target_layer is None else target_layer
+        if self.target_layer > len(model.features) - 1:
+            raise ValueError(
+                "Expected target layer must less than the total layers({}) of features.".format(len(model.features)))
+        self.target_category = target_category
         self.features = None
         self.gradients = None
-        if torch.cuda.is_available():
-            self.model = model.cuda()
 
     def save_gradient(self, grad):
         self.gradients = grad
@@ -43,7 +44,7 @@ class GradCam:
     def forward(self, input):
         return self.model(input)
 
-    def __call__(self, input, index=None):
+    def __call__(self, input):
         x = input
         if torch.cuda.is_available():
             x = input.cuda()
@@ -56,11 +57,11 @@ class GradCam:
         output = x.view(x.size(0), -1)
         output = self.model.classifier(output)
 
-        if index is None:
-            index = np.argmax(output.cpu().data.numpy())
+        if self.target_category is None:
+            self.target_category = np.argmax(output.cpu().data.numpy())
 
         one_hot = np.zeros((1, output.size()[-1]), dtype=np.float32)
-        one_hot[0][index] = 1
+        one_hot[0][self.target_category] = 1
         one_hot = Variable(torch.from_numpy(one_hot), requires_grad=True)
         if torch.cuda.is_available():
             one_hot = torch.sum(one_hot.cuda() * output)

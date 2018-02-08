@@ -78,7 +78,7 @@ class FocalLoss(nn.Module):
 
 class GradCam:
     def __init__(self, model, target_layer, target_category):
-        self.model = model
+        self.model = model.eval()
         self.target_layer = len(model.features) - 1 if target_layer is None else target_layer
         if self.target_layer > len(model.features) - 1:
             raise ValueError(
