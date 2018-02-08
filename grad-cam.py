@@ -1,5 +1,5 @@
 import cv2
-import numpy as np
+import torchvision.transforms as transforms
 from torchvision import models
 
 import utils
@@ -9,8 +9,7 @@ if __name__ == '__main__':
     grad_cam = utils.GradCam(model=models.vgg19(pretrained=True), target_layer=35, target_category=None)
 
     img = cv2.imread('both.png', 1)
-    img = np.float32(img) / 255
-    input = utils2.preprocess_image(img)
+    input = utils2.preprocess_image(transforms.ToTensor()(cv2.cvtColor(img, cv2.COLOR_BGR2RGB)))
 
     mask = grad_cam(input)
 
