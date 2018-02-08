@@ -26,7 +26,7 @@ def processor(sample):
     if torch.cuda.is_available():
         data = data.cuda()
         labels = labels.cuda()
-    print(training)
+
     model.train(training)
 
     classes = model(data)
