@@ -141,7 +141,7 @@ class CapsuleLinear(nn.Module):
 
      Attributes:
          weight (Tensor): the learnable weights of the module of shape
-             (out_capsules, in_capsules, in_length, out_length)
+             (out_capsules, out_length, in_capsules, in_length)
 
      Examples::
          >>> import capsulelayer
@@ -159,14 +159,15 @@ class CapsuleLinear(nn.Module):
         self.out_capsules = out_capsules
         self.with_routing = with_routing
         self.num_iterations = num_iterations
-        self.weight = Parameter(torch.randn(out_capsules, in_capsules, in_length, out_length))
+        self.weight = Parameter(torch.randn(out_capsules, out_length, in_capsules, in_length))
 
     def forward(self, input):
-        priors = input[None, :, :, None, :] @ self.weight[:, None, :, :, :]
+        weight = self.weight.transpose(1, 2)
+        priors = (weight[:, None, :, :, :] @ input[None, :, :, :, None]).squeeze(dim=-1)
         if self.with_routing:
             out = route_linear(priors, self.num_iterations)
         else:
-            out = priors.sum(dim=2, keepdim=True).squeeze(dim=-2).squeeze(dim=-2).transpose(0, 1)
+            out = priors.sum(dim=2, keepdim=True).squeeze(dim=-2).transpose(0, 1)
         return out
 
     def __repr__(self):
@@ -178,8 +179,6 @@ class CapsuleLinear(nn.Module):
 def route_conv2d(input, num_iterations=3):
     logits = Variable(torch.zeros(*input.size())).type_as(input)
     outputs = None
-    if torch.cuda.is_available():
-        logits = logits.cuda()
     for r in range(num_iterations):
         probs = F.softmax(logits, dim=-2)
         outputs = squash((probs * input).sum(dim=-2, keepdim=True).sum(dim=-3, keepdim=True))
@@ -192,15 +191,13 @@ def route_conv2d(input, num_iterations=3):
 def route_linear(input, num_iterations=3):
     logits = Variable(torch.zeros(*input.size())).type_as(input)
     outputs = None
-    if torch.cuda.is_available():
-        logits = logits.cuda()
     for r in range(num_iterations):
         probs = F.softmax(logits, dim=2)
         outputs = squash((probs * input).sum(dim=2, keepdim=True))
         if r != num_iterations - 1:
             delta_logits = (input * outputs).sum(dim=-1, keepdim=True)
             logits = logits + delta_logits
-    return outputs.squeeze(dim=-2).squeeze(dim=-2).transpose(0, 1)
+    return outputs.squeeze(dim=-2).transpose(0, 1)
 
 
 def squash(tensor, dim=-1):

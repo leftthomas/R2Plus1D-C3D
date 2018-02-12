@@ -22,21 +22,12 @@ class FashionMNISTCapsuleNet(nn.Module):
                           padding=1, with_routing=with_conv_routing),
             nn.BatchNorm2d(num_features=64),
             nn.ReLU(inplace=True),
-            CapsuleConv2d(in_channels=64, out_channels=64, kernel_size=3, in_length=16, out_length=16, stride=2,
-                          padding=1, with_routing=with_conv_routing),
-            nn.BatchNorm2d(num_features=64),
-            nn.ReLU(inplace=True),
-
-            CapsuleConv2d(in_channels=64, out_channels=128, kernel_size=3, in_length=16, out_length=16, stride=1,
-                          padding=1, with_routing=with_conv_routing),
-            nn.BatchNorm2d(num_features=128),
-            nn.ReLU(inplace=True),
-            CapsuleConv2d(in_channels=128, out_channels=128, kernel_size=3, in_length=16, out_length=self.out_length,
+            CapsuleConv2d(in_channels=64, out_channels=64, kernel_size=3, in_length=16, out_length=self.out_length,
                           stride=2, padding=1, with_routing=with_conv_routing),
-            nn.BatchNorm2d(num_features=128),
-            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(num_features=64),
+            nn.ReLU(inplace=True)
         )
-        self.classifier = CapsuleLinear(in_capsules=2 * 2 * 128 // self.out_length, out_capsules=10,
+        self.classifier = CapsuleLinear(in_capsules=4 * 4 * 64 // self.out_length, out_capsules=10,
                                         in_length=self.out_length, out_length=self.out_length,
                                         with_routing=with_linear_routing)
 
