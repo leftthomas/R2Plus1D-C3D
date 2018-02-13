@@ -6,28 +6,19 @@ from capsulelayer import CapsuleConv2d, CapsuleLinear
 class MNISTCapsuleNet(nn.Module):
     def __init__(self, with_conv_routing=False, with_linear_routing=False):
         super(MNISTCapsuleNet, self).__init__()
-        self.out_length = 16
+        self.out_length = 8
         self.features = nn.Sequential(
-            CapsuleConv2d(in_channels=1, out_channels=16, kernel_size=3, in_length=1, out_length=4, stride=2,
-                          padding=1, with_routing=with_conv_routing),
-            nn.BatchNorm2d(num_features=16),
-            nn.ReLU(inplace=True),
-
-            CapsuleConv2d(in_channels=16, out_channels=32, kernel_size=3, in_length=4, out_length=8, stride=2,
-                          padding=1, with_routing=with_conv_routing),
+            CapsuleConv2d(in_channels=1, out_channels=32, kernel_size=9, in_length=1, out_length=4, stride=1,
+                          padding=0, with_routing=with_conv_routing),
             nn.BatchNorm2d(num_features=32),
             nn.ReLU(inplace=True),
 
-            CapsuleConv2d(in_channels=32, out_channels=64, kernel_size=3, in_length=8, out_length=16, stride=1,
-                          padding=1, with_routing=with_conv_routing),
+            CapsuleConv2d(in_channels=32, out_channels=64, kernel_size=9, in_length=4, out_length=self.out_length,
+                          stride=2, padding=0, with_routing=with_conv_routing),
             nn.BatchNorm2d(num_features=64),
-            nn.ReLU(inplace=True),
-            CapsuleConv2d(in_channels=64, out_channels=64, kernel_size=3, in_length=16, out_length=self.out_length,
-                          stride=2, padding=1, with_routing=with_conv_routing),
-            nn.BatchNorm2d(num_features=64),
-            nn.ReLU(inplace=True),
+            nn.ReLU(inplace=True)
         )
-        self.classifier = CapsuleLinear(in_capsules=4 * 4 * 64 // self.out_length, out_capsules=10,
+        self.classifier = CapsuleLinear(in_capsules=6 * 6 * 64 // self.out_length, out_capsules=10,
                                         in_length=self.out_length, out_length=self.out_length,
                                         with_routing=with_linear_routing)
 
