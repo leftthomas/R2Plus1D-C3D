@@ -18,7 +18,7 @@ class FashionMNISTCapsuleNet(nn.Module):
             nn.BatchNorm2d(num_features=64),
             nn.ReLU(inplace=True)
         )
-        self.classifier = CapsuleLinear(in_capsules=4 * 4 * 64 // self.features_out_length, out_capsules=10,
+        self.classifier = CapsuleLinear(in_capsules=6 * 6 * 64 // self.features_out_length, out_capsules=10,
                                         in_length=self.features_out_length, out_length=16,
                                         with_routing=with_linear_routing)
 
