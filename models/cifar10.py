@@ -39,5 +39,5 @@ class CIFAR10CapsuleNet(nn.Module):
         out = out.contiguous().view(out.size(0), -1, self.features_out_length)
 
         out = self.classifier(out)
-        classes = out.sum(dim=-1)
+        classes = out.norm(dim=-1)
         return classes

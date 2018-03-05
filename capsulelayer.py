@@ -107,7 +107,7 @@ class CapsuleConv2d(nn.Module):
 
         if self.with_routing:
             priors = priors.view(*priors.size()[:3], self.in_channels // self.in_length, -1, priors.size(-1))
-            out = route_conv2d(priors, self.num_iterations)
+            out = dynamic_route_conv2d(priors, self.num_iterations)
         else:
             out = priors.sum(dim=-3, keepdim=True).squeeze(dim=-2).squeeze(dim=-2).transpose(0, 1)
         out = out.transpose(-1, -2)
@@ -164,7 +164,7 @@ class CapsuleLinear(nn.Module):
         weight = self.weight.transpose(1, 2)
         priors = (weight[:, None, :, :, :] @ input[None, :, :, :, None]).squeeze(dim=-1)
         if self.with_routing:
-            out = route_linear(priors, self.num_iterations)
+            out = dynamic_route_linear(priors, self.num_iterations)
         else:
             out = priors.sum(dim=2, keepdim=True).squeeze(dim=-2).transpose(0, 1)
         return out
@@ -175,9 +175,8 @@ class CapsuleLinear(nn.Module):
                + str(self.out_capsules) + ')'
 
 
-def route_conv2d(input, num_iterations=3):
+def dynamic_route_conv2d(input, num_iterations=3):
     logits = torch.zeros_like(input)
-    outputs = None
     for r in range(num_iterations):
         probs = F.softmax(logits, dim=-2)
         outputs = squash((probs * input).sum(dim=-2, keepdim=True).sum(dim=-3, keepdim=True))
@@ -186,15 +185,35 @@ def route_conv2d(input, num_iterations=3):
     return outputs.squeeze(dim=-2).squeeze(dim=-2).transpose(0, 1)
 
 
-def route_linear(input, num_iterations=3):
+def dynamic_route_linear(input, num_iterations=3):
     logits = torch.zeros_like(input)
-    outputs = None
     for r in range(num_iterations):
         probs = F.softmax(logits, dim=2)
         outputs = squash((probs * input).sum(dim=2, keepdim=True))
         if r != num_iterations - 1:
             logits = (input * outputs).sum(dim=-1, keepdim=True)
     return outputs.squeeze(dim=-2).transpose(0, 1)
+
+
+# def means_route_conv2d(input, num_iterations=3):
+#     outputs = input.mean(dim=-2, keepdim=True).mean(dim=-3, keepdim=True)
+#     for r in range(num_iterations):
+#         probs = F.softmax(logits, dim=-2)
+#         outputs = squash((probs * input).sum(dim=-2, keepdim=True).sum(dim=-3, keepdim=True))
+#         if r != num_iterations - 1:
+#             logits = (input * outputs).sum(dim=-1, keepdim=True)
+#     return outputs.squeeze(dim=-2).squeeze(dim=-2).transpose(0, 1)
+#
+#
+# def means_route_linear(input, num_iterations=3):
+#     outputs = input.mean(dim=2, keepdim=True)
+#     torch.renorm()
+#     for r in range(num_iterations):
+#         probs = F.softmax(logits, dim=2)
+#         outputs = squash((probs * input).sum(dim=2, keepdim=True))
+#         if r != num_iterations - 1:
+#             logits = (input * outputs).sum(dim=-1, keepdim=True)
+#     return outputs.squeeze(dim=-2).transpose(0, 1)
 
 
 def squash(tensor, dim=-1):
