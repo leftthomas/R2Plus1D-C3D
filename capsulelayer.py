@@ -180,7 +180,7 @@ def route_conv2d(input, num_iterations=3):
     outputs = None
     for r in range(num_iterations):
         probs = F.softmax(logits, dim=-2)
-        outputs = (probs * input).mean(dim=-2, keepdim=True).mean(dim=-3, keepdim=True)
+        outputs = (probs * input).sum(dim=-2, keepdim=True).sum(dim=-3, keepdim=True)
         if r != num_iterations - 1:
             logits = (input * outputs).sum(dim=-1, keepdim=True)
     return outputs.squeeze(dim=-2).squeeze(dim=-2).transpose(0, 1)
@@ -191,7 +191,7 @@ def route_linear(input, num_iterations=3):
     outputs = None
     for r in range(num_iterations):
         probs = F.softmax(logits, dim=2)
-        outputs = (probs * input).mean(dim=2, keepdim=True)
+        outputs = (probs * input).sum(dim=2, keepdim=True)
         if r != num_iterations - 1:
             logits = (input * outputs).sum(dim=-1, keepdim=True)
     return outputs.squeeze(dim=-2).transpose(0, 1)
