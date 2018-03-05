@@ -1,7 +1,6 @@
 import torch
 import torch.nn.functional as F
 from torch import nn
-from torch.autograd import Variable
 from torch.nn.modules.utils import _pair
 from torch.nn.parameter import Parameter
 
@@ -177,30 +176,23 @@ class CapsuleLinear(nn.Module):
 
 
 def route_conv2d(input, num_iterations=3):
-    logits = Variable(torch.zeros(*input.size())).type_as(input)
+    logits = torch.zeros_like(input)
     outputs = None
     for r in range(num_iterations):
         probs = F.softmax(logits, dim=-2)
-        outputs = squash((probs * input).sum(dim=-2, keepdim=True).sum(dim=-3, keepdim=True))
+        outputs = (probs * input).mean(dim=-2, keepdim=True).mean(dim=-3, keepdim=True)
         if r != num_iterations - 1:
-            delta_logits = (input * outputs).sum(dim=-1, keepdim=True)
-            logits = logits + delta_logits
+            logits = (input * outputs).sum(dim=-1, keepdim=True)
     return outputs.squeeze(dim=-2).squeeze(dim=-2).transpose(0, 1)
 
 
 def route_linear(input, num_iterations=3):
-    logits = Variable(torch.zeros(*input.size())).type_as(input)
+    logits = torch.zeros_like(input)
     outputs = None
     for r in range(num_iterations):
         probs = F.softmax(logits, dim=2)
-        outputs = squash((probs * input).sum(dim=2, keepdim=True))
+        outputs = (probs * input).mean(dim=2, keepdim=True)
         if r != num_iterations - 1:
-            delta_logits = (input * outputs).sum(dim=-1, keepdim=True)
-            logits = logits + delta_logits
+            logits = (input * outputs).sum(dim=-1, keepdim=True)
     return outputs.squeeze(dim=-2).transpose(0, 1)
 
-
-def squash(tensor, dim=-1):
-    norm = tensor.norm(p=2, dim=dim, keepdim=True)
-    scale = norm / (1 + norm ** 2)
-    return scale * tensor
