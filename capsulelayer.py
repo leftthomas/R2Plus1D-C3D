@@ -107,7 +107,7 @@ class CapsuleConv2d(nn.Module):
 
         if self.with_routing:
             priors = priors.view(*priors.size()[:3], self.in_channels // self.in_length, -1, priors.size(-1))
-            out = dynamic_route_conv2d(priors, self.num_iterations)
+            out = means_route_conv2d(priors, self.num_iterations)
         else:
             out = priors.sum(dim=-3, keepdim=True).squeeze(dim=-2).squeeze(dim=-2).transpose(0, 1)
         out = out.transpose(-1, -2)
@@ -164,7 +164,7 @@ class CapsuleLinear(nn.Module):
         weight = self.weight.transpose(1, 2)
         priors = (weight[:, None, :, :, :] @ input[None, :, :, :, None]).squeeze(dim=-1)
         if self.with_routing:
-            out = dynamic_route_linear(priors, self.num_iterations)
+            out = means_route_linear(priors, self.num_iterations)
         else:
             out = priors.sum(dim=2, keepdim=True).squeeze(dim=-2).transpose(0, 1)
         return out
