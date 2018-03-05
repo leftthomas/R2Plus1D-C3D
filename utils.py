@@ -61,21 +61,15 @@ models = {'MNIST': MNISTCapsuleNet, 'FashionMNIST': FashionMNISTCapsuleNet, 'SVH
           'CIFAR10': CIFAR10CapsuleNet, 'CIFAR100': CIFAR100CapsuleNet, 'STL10': STL10CapsuleNet}
 
 
-class FocalLoss(nn.Module):
-    def __init__(self, gamma=2, size_average=True):
-        super(FocalLoss, self).__init__()
-        self.gamma = gamma
-        self.size_average = size_average
+class MarginLoss(nn.Module):
+    def __init__(self):
+        super(MarginLoss, self).__init__()
 
-    def forward(self, input, target):
-        log_pt = F.log_softmax(input, dim=-1)
-        log_pt = log_pt.gather(-1, target.view(-1, 1)).view(-1)
-        pt = log_pt.exp()
-        loss = -1 * (1 - pt) ** self.gamma * log_pt
-        if self.size_average:
-            return loss.mean()
-        else:
-            return loss.sum()
+    def forward(self, classes, labels):
+        left = F.relu(0.9 - classes, inplace=True) ** 2
+        right = F.relu(classes - 0.1, inplace=True) ** 2
+        loss = labels * left + 0.5 * (1 - labels) * right
+        return loss.mean()
 
 
 class GradCam:

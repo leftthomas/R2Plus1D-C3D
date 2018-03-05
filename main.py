@@ -4,7 +4,6 @@ import cv2
 import numpy as np
 import pandas as pd
 import torch
-import torch.nn as nn
 import torchnet as tnt
 import torchvision.transforms as transforms
 from torch.autograd import Variable
@@ -20,6 +19,7 @@ import utils
 
 def processor(sample):
     data, labels, training = sample
+    labels = torch.eye(CLASSES).index_select(dim=0, index=labels)
 
     data = Variable(data)
     labels = Variable(labels)
@@ -158,7 +158,7 @@ if __name__ == '__main__':
         CLASSES = 100
 
     model = utils.models[DATA_TYPE](WITH_CONV_ROUTING, WITH_LINEAR_ROUTING)
-    loss_criterion = nn.CrossEntropyLoss()
+    loss_criterion = utils.MarginLoss()
     grad_cam = utils.GradCam(model, TARGET_LAYER, TARGET_CATEGORY)
     if torch.cuda.is_available():
         model.cuda()
