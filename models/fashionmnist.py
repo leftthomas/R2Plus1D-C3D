@@ -18,9 +18,11 @@ class FashionMNISTCapsuleNet(nn.Module):
             nn.BatchNorm2d(num_features=32),
             nn.ReLU(inplace=True)
         )
-        self.classifier = CapsuleLinear(in_capsules=7 * 7 * 32 // self.features_out_length, out_capsules=10,
-                                        in_length=self.features_out_length, out_length=16,
-                                        with_routing=with_linear_routing)
+        self.classifier = nn.Sequential(
+            CapsuleLinear(in_capsules=7 * 7 * 32 // self.features_out_length, out_capsules=64,
+                          in_length=self.features_out_length, out_length=16, with_routing=with_linear_routing),
+            CapsuleLinear(in_capsules=64, out_capsules=10, in_length=16, out_length=32,
+                          with_routing=with_linear_routing))
 
     def forward(self, x):
         out = self.features(x)
