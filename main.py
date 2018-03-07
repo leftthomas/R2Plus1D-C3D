@@ -129,10 +129,8 @@ if __name__ == '__main__':
                         help='dataset type')
     parser.add_argument('--use_data_augmentation', default='yes', type=str, choices=['yes', 'no'],
                         help='use data augmentation or not')
-    parser.add_argument('--with_conv_routing', default='no', type=str, choices=['yes', 'no'],
-                        help='use routing algorithm in convolution layer or not')
-    parser.add_argument('--with_linear_routing', default='no', type=str, choices=['yes', 'no'],
-                        help='use routing algorithm in linear layer or not')
+    parser.add_argument('--routing_type', default='sum', type=str, choices=['sum', 'dynamic', 'means'],
+                        help='routing type')
     parser.add_argument('--batch_size', default=64, type=int, help='train batch size')
     parser.add_argument('--num_epochs', default=100, type=int, help='train epochs number')
     parser.add_argument('--target_category', default=None, type=int, help='the category of visualization')
@@ -142,8 +140,7 @@ if __name__ == '__main__':
 
     DATA_TYPE = opt.data_type
     USE_DATA_AUGMENTATION = True if opt.use_data_augmentation == 'yes' else False
-    WITH_CONV_ROUTING = True if opt.with_conv_routing == 'yes' else False
-    WITH_LINEAR_ROUTING = True if opt.with_linear_routing == 'yes' else False
+    ROUTING_TYPE = opt.routing_type
     BATCH_SIZE = opt.batch_size
     NUM_EPOCHS = opt.num_epochs
     TARGET_CATEGORY = opt.target_category
@@ -157,7 +154,7 @@ if __name__ == '__main__':
     if DATA_TYPE == 'CIFAR100':
         CLASSES = 100
 
-    model = utils.models[DATA_TYPE](WITH_CONV_ROUTING, WITH_LINEAR_ROUTING)
+    model = utils.models[DATA_TYPE](ROUTING_TYPE)
     loss_criterion = utils.MarginLoss()
     grad_cam = utils.GradCam(model, TARGET_LAYER, TARGET_CATEGORY)
     if torch.cuda.is_available():

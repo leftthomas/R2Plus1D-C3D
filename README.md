@@ -3,19 +3,24 @@ Convolutional Capsule Network
 
 ## Requirements
 * [Anaconda(Python 3.6 version)](https://www.anaconda.com/download/)
-* PyTorch(>=0.3.0) 
+* PyTorch(version >= 0.3.1) 
 ```
 conda install pytorch torchvision cuda90 -c pytorch
 ```
-* PyTorchNet
+* PyTorchNet(version >= 0.0.1)
 ```
 pip install git+https://github.com/pytorch/tnt.git@master
 ```
-* tqdm
+* capsule-layer(version >= 0.0.1)
+```
+pip install git+https://github.com/leftthomas/CapsuleLayer.git@master
+
+```
+* tqdm(version >= 4.19.5)
 ```
 conda install tqdm
 ```
-* OpenCV
+* OpenCV(version >= 3.3.1)
 ```
 conda install opencv
 ```
@@ -26,8 +31,7 @@ python -m visdom.server -logging_level WARNING & python main.py
 optional arguments:
 --data_type                   dataset type [default value is 'MNIST'](choices:['MNIST', 'FashionMNIST', 'SVHN', 'CIFAR10', 'CIFAR100', 'STL10'])
 --use_data_augmentation       use data augmentation or not [default value is 'yes'](choices:['yes', 'no'])
---with_conv_routing           use routing algorithm in convolution layer or not [default value is 'no'](choices:['yes', 'no'])
---with_linear_routing         use routing algorithm in linear layer or not [default value is 'no'](choices:['yes', 'no'])
+--routing_type                routing type [default value is 'sum'](choices:['sum', 'dynamic', 'means'])
 --batch_size                  train batch size [default value is 64]
 --num_epochs                  train epochs number [default value is 100]
 --target_category             the category of visualization [default value is None]

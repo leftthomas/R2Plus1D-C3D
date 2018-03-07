@@ -1,26 +1,24 @@
+from capsule_layer import CapsuleConv2d, CapsuleLinear
 from torch import nn
-
-from capsulelayer import CapsuleConv2d, CapsuleLinear
 
 
 class MNISTCapsuleNet(nn.Module):
-    def __init__(self, with_conv_routing=False, with_linear_routing=False):
+    def __init__(self, routing_type='sum'):
         super(MNISTCapsuleNet, self).__init__()
         self.features_out_length = 8
         self.features = nn.Sequential(
             CapsuleConv2d(in_channels=1, out_channels=16, kernel_size=5, in_length=1, out_length=4, stride=2,
-                          padding=2, with_routing=with_conv_routing),
+                          padding=2),
             nn.BatchNorm2d(num_features=16),
             nn.ReLU(inplace=True),
 
             CapsuleConv2d(in_channels=16, out_channels=32, kernel_size=3, in_length=4,
-                          out_length=self.features_out_length, stride=2, padding=1, with_routing=with_conv_routing),
+                          out_length=self.features_out_length, stride=2, padding=1),
             nn.BatchNorm2d(num_features=32),
             nn.ReLU(inplace=True)
         )
         self.classifier = CapsuleLinear(in_capsules=7 * 7 * 32 // self.features_out_length, out_capsules=10,
-                                        in_length=self.features_out_length, out_length=16,
-                                        with_routing=with_linear_routing)
+                                        in_length=self.features_out_length, out_length=16, routing_type=routing_type)
 
     def forward(self, x):
         out = self.features(x)
