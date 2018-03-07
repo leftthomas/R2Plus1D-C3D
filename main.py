@@ -129,8 +129,8 @@ if __name__ == '__main__':
                         help='dataset type')
     parser.add_argument('--use_data_augmentation', default='yes', type=str, choices=['yes', 'no'],
                         help='use data augmentation or not')
-    parser.add_argument('--routing_type', default='sum', type=str, choices=['sum', 'dynamic', 'means'],
-                        help='routing type')
+    parser.add_argument('--routing_type', default='sum', type=str,
+                        choices=['sum', 'dynamic', 'means', 'cosine', 'tonimoto', 'pearson'], help='routing type')
     parser.add_argument('--batch_size', default=64, type=int, help='train batch size')
     parser.add_argument('--num_epochs', default=100, type=int, help='train epochs number')
     parser.add_argument('--target_category', default=None, type=int, help='the category of visualization')
