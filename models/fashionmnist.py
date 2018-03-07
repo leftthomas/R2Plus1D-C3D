@@ -5,7 +5,7 @@ from torch import nn
 class FashionMNISTCapsuleNet(nn.Module):
     def __init__(self, routing_type='sum'):
         super(FashionMNISTCapsuleNet, self).__init__()
-        self.features_out_length = 32
+        self.features_out_length = 16
         self.features = nn.Sequential(
             CapsuleConv2d(in_channels=1, out_channels=64, kernel_size=3, in_length=1, out_length=4, stride=1,
                           padding=1),
@@ -33,26 +33,13 @@ class FashionMNISTCapsuleNet(nn.Module):
                           padding=1),
             nn.BatchNorm2d(num_features=256),
             nn.ReLU(inplace=True),
-            CapsuleConv2d(in_channels=256, out_channels=256, kernel_size=3, in_length=16, out_length=16, stride=2,
-                          padding=1),
-            nn.BatchNorm2d(num_features=256),
-            nn.ReLU(inplace=True),
-
-            CapsuleConv2d(in_channels=256, out_channels=512, kernel_size=3, in_length=16, out_length=32, stride=1,
-                          padding=1),
-            nn.BatchNorm2d(num_features=512),
-            nn.ReLU(inplace=True),
-            CapsuleConv2d(in_channels=512, out_channels=512, kernel_size=3, in_length=32, out_length=32, stride=1,
-                          padding=1),
-            nn.BatchNorm2d(num_features=512),
-            nn.ReLU(inplace=True),
-            CapsuleConv2d(in_channels=512, out_channels=512, kernel_size=3, in_length=32,
+            CapsuleConv2d(in_channels=256, out_channels=256, kernel_size=3, in_length=16,
                           out_length=self.features_out_length, stride=2, padding=1),
-            nn.BatchNorm2d(num_features=512),
+            nn.BatchNorm2d(num_features=256),
             nn.ReLU(inplace=True)
         )
-        self.classifier = CapsuleLinear(in_capsules=2 * 2 * 512 // self.features_out_length, out_capsules=10,
-                                        in_length=self.features_out_length, out_length=36, routing_type=routing_type,
+        self.classifier = CapsuleLinear(in_capsules=4 * 4 * 256 // self.features_out_length, out_capsules=10,
+                                        in_length=self.features_out_length, out_length=32, routing_type=routing_type,
                                         share_weight=False)
 
     def forward(self, x):

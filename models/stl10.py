@@ -46,29 +46,16 @@ class STL10CapsuleNet(nn.Module):
                           padding=1),
             nn.BatchNorm2d(num_features=512),
             nn.ReLU(inplace=True),
-            CapsuleConv2d(in_channels=512, out_channels=512, kernel_size=3, in_length=32, out_length=32, stride=2,
-                          padding=1),
-            nn.BatchNorm2d(num_features=512),
-            nn.ReLU(inplace=True),
-
-            CapsuleConv2d(in_channels=512, out_channels=512, kernel_size=3, in_length=32, out_length=32, stride=1,
-                          padding=1),
-            nn.BatchNorm2d(num_features=512),
-            nn.ReLU(inplace=True),
-            CapsuleConv2d(in_channels=512, out_channels=512, kernel_size=3, in_length=32, out_length=32, stride=1,
-                          padding=1),
-            nn.BatchNorm2d(num_features=512),
-            nn.ReLU(inplace=True),
             CapsuleConv2d(in_channels=512, out_channels=512, kernel_size=3, in_length=32,
                           out_length=self.features_out_length, stride=2, padding=1),
             nn.BatchNorm2d(num_features=512),
             nn.ReLU(inplace=True)
         )
         self.classifier = nn.Sequential(
-            CapsuleLinear(in_capsules=3 * 3 * 512 // self.features_out_length, out_capsules=64,
-                          in_length=self.features_out_length, out_length=36, routing_type=routing_type,
-                          share_weight=False),
-            CapsuleLinear(in_capsules=64, out_capsules=10, in_length=36, out_length=40, routing_type=routing_type,
+            CapsuleLinear(in_capsules=6 * 6 * 512 // self.features_out_length, out_capsules=64,
+                          in_length=self.features_out_length, out_length=40, routing_type=routing_type,
+                          share_weight=True),
+            CapsuleLinear(in_capsules=64, out_capsules=10, in_length=40, out_length=42, routing_type=routing_type,
                           share_weight=False))
 
     def forward(self, x):
