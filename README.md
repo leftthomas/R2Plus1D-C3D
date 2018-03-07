@@ -11,7 +11,7 @@ conda install pytorch torchvision cuda90 -c pytorch
 ```
 pip install git+https://github.com/pytorch/tnt.git@master
 ```
-* capsule-layer(version >= 0.0.2)
+* capsule-layer(version >= 0.0.3)
 ```
 pip install git+https://github.com/leftthomas/CapsuleLayer.git@master
 
