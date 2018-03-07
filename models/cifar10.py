@@ -25,7 +25,7 @@ class CIFAR10CapsuleNet(nn.Module):
             nn.BatchNorm2d(num_features=256),
             nn.ReLU(inplace=True)
         )
-        self.classifier = CapsuleLinear(in_capsules=5 * 5 * 512 // self.features_out_length, out_capsules=10,
+        self.classifier = CapsuleLinear(in_capsules=6 * 6 * 512 // self.features_out_length, out_capsules=10,
                                         in_length=self.features_out_length, out_length=32, routing_type=routing_type,
                                         share_weight=False)
 
