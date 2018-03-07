@@ -46,25 +46,12 @@ class CIFAR10CapsuleNet(nn.Module):
                           padding=1),
             nn.BatchNorm2d(num_features=512),
             nn.ReLU(inplace=True),
-            CapsuleConv2d(in_channels=512, out_channels=512, kernel_size=3, in_length=32, out_length=32, stride=2,
-                          padding=1),
-            nn.BatchNorm2d(num_features=512),
-            nn.ReLU(inplace=True),
-
-            CapsuleConv2d(in_channels=512, out_channels=512, kernel_size=3, in_length=32, out_length=32, stride=1,
-                          padding=1),
-            nn.BatchNorm2d(num_features=512),
-            nn.ReLU(inplace=True),
-            CapsuleConv2d(in_channels=512, out_channels=512, kernel_size=3, in_length=32, out_length=32, stride=1,
-                          padding=1),
-            nn.BatchNorm2d(num_features=512),
-            nn.ReLU(inplace=True),
             CapsuleConv2d(in_channels=512, out_channels=512, kernel_size=3, in_length=32,
                           out_length=self.features_out_length, stride=2, padding=1),
             nn.BatchNorm2d(num_features=512),
             nn.ReLU(inplace=True)
         )
-        self.classifier = CapsuleLinear(in_capsules=1 * 1 * 512 // self.features_out_length, out_capsules=10,
+        self.classifier = CapsuleLinear(in_capsules=2 * 2 * 512 // self.features_out_length, out_capsules=10,
                                         in_length=self.features_out_length, out_length=36, routing_type=routing_type,
                                         share_weight=False)
 
