@@ -20,10 +20,6 @@ pip install git+https://github.com/leftthomas/CapsuleLayer.git@master
 ```
 conda install tqdm
 ```
-* OpenCV(version >= 3.3.1)
-```
-conda install opencv
-```
 
 ## Usage
 ```
