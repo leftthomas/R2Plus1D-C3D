@@ -97,8 +97,8 @@ def on_end_epoch(state):
 
     # features visualization
     original_image, _ = next(iter(utils.get_iterator(False, DATA_TYPE, 25, USE_DATA_AUGMENTATION)))
-    features = utils.show_features(model, TARGET_LAYER, original_image)
-    original_image_logger.log(make_grid(Variable(original_image), nrow=5, normalize=True).numpy())
+    features = utils.show_features(model, TARGET_LAYER, Variable(original_image))
+    original_image_logger.log(make_grid(original_image, nrow=5, normalize=True).numpy())
     features_logger.log(make_grid(features, nrow=5, normalize=True).numpy())
 
 
