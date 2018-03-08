@@ -34,7 +34,6 @@ optional arguments:
 --routing_type                routing type [default value is 'sum'](choices:['sum', 'dynamic', 'means', 'cosine', 'tonimoto', 'pearson'])
 --batch_size                  train batch size [default value is 64]
 --num_epochs                  train epochs number [default value is 100]
---target_category             the category of visualization [default value is None]
 --target_layer                the layer of visualization [default value is None]
 ```
 Visdom now can be accessed by going to `127.0.0.1:8097/env/$data_type` in your browser, `$data_type` means the dataset type which you are training.

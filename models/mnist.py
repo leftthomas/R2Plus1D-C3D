@@ -5,7 +5,6 @@ from torch import nn
 class MNISTCapsuleNet(nn.Module):
     def __init__(self, routing_type='sum'):
         super(MNISTCapsuleNet, self).__init__()
-        self.features_out_length = 8
         self.features = nn.Sequential(
             nn.Conv2d(in_channels=1, out_channels=64, kernel_size=7, stride=1, padding=0),
             nn.BatchNorm2d(num_features=64),
@@ -19,8 +18,7 @@ class MNISTCapsuleNet(nn.Module):
             nn.ReLU(inplace=True)
         )
         self.classifier = nn.Sequential(
-            CapsuleLinear(in_capsules=4 * 4 * 128 // self.features_out_length, out_capsules=32,
-                          in_length=self.features_out_length, out_length=8, routing_type=routing_type,
+            CapsuleLinear(in_capsules=256, out_capsules=32, in_length=8, out_length=8, routing_type=routing_type,
                           share_weight=True),
             CapsuleLinear(in_capsules=32, out_capsules=10, in_length=8, out_length=16, routing_type=routing_type))
 
@@ -29,7 +27,7 @@ class MNISTCapsuleNet(nn.Module):
 
         out = out.view(*out.size()[:2], -1)
         out = out.transpose(-1, -2)
-        out = out.contiguous().view(out.size(0), -1, self.features_out_length)
+        out = out.contiguous().view(out.size(0), -1, 8)
 
         out = self.classifier(out)
         classes = out.norm(dim=-1)

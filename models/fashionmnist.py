@@ -4,7 +4,6 @@ from torch import nn
 class FashionMNISTCapsuleNet(nn.Module):
     def __init__(self, routing_type='sum'):
         super(FashionMNISTCapsuleNet, self).__init__()
-        self.features_out_length = 8
         self.features = nn.Sequential(
             nn.Conv2d(in_channels=1, out_channels=64, kernel_size=7, stride=1, padding=0),
             nn.BatchNorm2d(num_features=64),
@@ -19,7 +18,7 @@ class FashionMNISTCapsuleNet(nn.Module):
         )
         self.classifier = nn.Sequential(
             nn.Linear(in_features=4 * 4 * 128, out_features=256),
-            nn.Linear(in_features=4 * 4 * 128, out_features=10))
+            nn.Linear(in_features=256, out_features=10))
 
     def forward(self, x):
         out = self.features(x)

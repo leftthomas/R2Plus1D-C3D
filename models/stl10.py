@@ -5,7 +5,6 @@ from torch import nn
 class STL10CapsuleNet(nn.Module):
     def __init__(self, routing_type='sum'):
         super(STL10CapsuleNet, self).__init__()
-        self.features_out_length = 32
         self.features = nn.Sequential(
             CapsuleConv2d(in_channels=3, out_channels=64, kernel_size=3, in_length=3, out_length=4, stride=1,
                           padding=1),
@@ -46,14 +45,13 @@ class STL10CapsuleNet(nn.Module):
                           padding=1),
             nn.BatchNorm2d(num_features=512),
             nn.ReLU(inplace=True),
-            CapsuleConv2d(in_channels=512, out_channels=512, kernel_size=3, in_length=32,
-                          out_length=self.features_out_length, stride=2, padding=1),
+            CapsuleConv2d(in_channels=512, out_channels=512, kernel_size=3, in_length=32, out_length=32, stride=2,
+                          padding=1),
             nn.BatchNorm2d(num_features=512),
             nn.ReLU(inplace=True)
         )
         self.classifier = nn.Sequential(
-            CapsuleLinear(in_capsules=6 * 6 * 512 // self.features_out_length, out_capsules=64,
-                          in_length=self.features_out_length, out_length=40, routing_type=routing_type,
+            CapsuleLinear(in_capsules=576, out_capsules=64, in_length=32, out_length=40, routing_type=routing_type,
                           share_weight=True),
             CapsuleLinear(in_capsules=64, out_capsules=10, in_length=40, out_length=42, routing_type=routing_type,
                           share_weight=False))
@@ -63,7 +61,7 @@ class STL10CapsuleNet(nn.Module):
 
         out = out.view(*out.size()[:2], -1)
         out = out.transpose(-1, -2)
-        out = out.contiguous().view(out.size(0), -1, self.features_out_length)
+        out = out.contiguous().view(out.size(0), -1, 32)
 
         out = self.classifier(out)
         classes = out.norm(dim=-1)
