@@ -1,3 +1,4 @@
+from capsule_layer import CapsuleLinear
 from torch import nn
 
 
@@ -17,13 +18,17 @@ class FashionMNISTCapsuleNet(nn.Module):
             nn.ReLU(inplace=True)
         )
         self.classifier = nn.Sequential(
-            nn.Linear(in_features=4 * 4 * 128, out_features=256),
-            nn.Linear(in_features=256, out_features=10))
+            CapsuleLinear(in_capsules=256, out_capsules=32, in_length=8, out_length=8, routing_type=routing_type,
+                          share_weight=True),
+            CapsuleLinear(in_capsules=32, out_capsules=10, in_length=8, out_length=16, routing_type=routing_type))
 
     def forward(self, x):
         out = self.features(x)
-        out = out.view(out.size(0), -1)
 
-        out = self.classifier(out).unsqueeze(dim=-1)
+        out = out.view(*out.size()[:2], -1)
+        out = out.transpose(-1, -2)
+        out = out.contiguous().view(out.size(0), -1, 8)
+
+        out = self.classifier(out)
         classes = out.norm(dim=-1)
         return classes
