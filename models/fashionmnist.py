@@ -25,5 +25,5 @@ class FashionMNISTCapsuleNet(nn.Module):
         out = out.view(out.size(0), -1)
 
         out = self.classifier(out)
-        classes = out.norm(dim=-1)
+        classes = out.norm(dim=-1, keepdim=True)
         return classes
