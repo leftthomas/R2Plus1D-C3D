@@ -1,4 +1,3 @@
-from capsule_layer import CapsuleConv2d, CapsuleLinear
 from torch import nn
 
 
@@ -7,32 +6,27 @@ class FashionMNISTCapsuleNet(nn.Module):
         super(FashionMNISTCapsuleNet, self).__init__()
         self.features_out_length = 8
         self.features = nn.Sequential(
-            CapsuleConv2d(in_channels=1, out_channels=64, kernel_size=7, in_length=1, out_length=4, stride=1,
-                          padding=0),
+            nn.Conv2d(in_channels=1, out_channels=64, kernel_size=7, stride=1, padding=0),
             nn.BatchNorm2d(num_features=64),
             nn.ReLU(inplace=True),
-            CapsuleConv2d(in_channels=64, out_channels=64, kernel_size=5, in_length=4, out_length=4, stride=2,
-                          padding=0),
+            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=5, stride=2, padding=0),
             nn.BatchNorm2d(num_features=64),
             nn.ReLU(inplace=True),
 
-            CapsuleConv2d(in_channels=64, out_channels=128, kernel_size=3, in_length=4,
-                          out_length=self.features_out_length, stride=2, padding=0),
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=2, padding=0),
             nn.BatchNorm2d(num_features=128),
             nn.ReLU(inplace=True)
         )
         self.classifier = nn.Sequential(
-            CapsuleLinear(in_capsules=4 * 4 * 128 // self.features_out_length, out_capsules=32,
-                          in_length=self.features_out_length, out_length=8, routing_type=routing_type,
-                          share_weight=True),
-            CapsuleLinear(in_capsules=32, out_capsules=10, in_length=8, out_length=16, routing_type=routing_type))
+            nn.Linear(in_features=4 * 4 * 128, out_features=256),
+            nn.Linear(in_features=4 * 4 * 128, out_features=10))
 
     def forward(self, x):
         out = self.features(x)
 
         out = out.view(*out.size()[:2], -1)
         out = out.transpose(-1, -2)
-        out = out.contiguous().view(out.size(0), -1, self.features_out_length)
+        out = out.contiguous().view(out.size(0), -1)
 
         out = self.classifier(out)
         classes = out.norm(dim=-1)
