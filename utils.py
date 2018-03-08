@@ -70,6 +70,19 @@ class MarginLoss(nn.Module):
         return loss.mean()
 
 
+def show_features(model, target_layer, data):
+    model = model.eval()
+    target_layer = len(model.features) - 1 if target_layer is None else target_layer
+    if target_layer > len(model.features) - 1:
+        raise ValueError("Expected target layer must less than the total layers({}) "
+                         "of features.".format(len(model.features)))
+    for idx, module in enumerate(model.features.children()):
+        data = module(data)
+        if idx == target_layer:
+            features = data
+    return features.mean(dim=1, keepdim=True)
+
+
 def get_iterator(mode, data_type, batch_size=64, use_data_augmentation=True):
     if use_data_augmentation:
         transform_train = transform_trains[data_type]
