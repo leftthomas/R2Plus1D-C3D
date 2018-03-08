@@ -94,9 +94,10 @@ class GradCam:
             if idx == self.target_layer:
                 x.register_hook(self.save_gradient)
                 self.features = x
-        out = x.view(*x.size()[:2], -1)
-        out = out.transpose(-1, -2)
-        out = out.contiguous().view(out.size(0), -1, self.model.features_out_length)
+        out = x.view(x.size(0), -1)
+        # out = x.view(*x.size()[:2], -1)
+        # out = out.transpose(-1, -2)
+        # out = out.contiguous().view(out.size(0), -1, self.model.features_out_length)
         out = self.model.classifier(out)
         classes = out.sum(dim=-1)
 
