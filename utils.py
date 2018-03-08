@@ -80,7 +80,7 @@ def show_features(model, target_layer, data):
         data = module(data)
         if idx == target_layer:
             features = data
-    return features.means(dim=1, keepdim=True).data.cpu()
+    return features.mean(dim=1, keepdim=True).data.cpu()
 
 
 def get_iterator(mode, data_type, batch_size=64, use_data_augmentation=True):
