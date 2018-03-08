@@ -71,6 +71,7 @@ class MarginLoss(nn.Module):
 
 
 def show_features(model, target_layer, data):
+    image_size = (data.size(-2), data.size(-1))
     model = model.eval()
     target_layer = len(model.features) - 1 if target_layer is None else target_layer
     if target_layer > len(model.features) - 1:
@@ -80,7 +81,8 @@ def show_features(model, target_layer, data):
         data = module(data)
         if idx == target_layer:
             features = data
-    return features.sum(dim=1, keepdim=True).data.cpu()
+    features = features.sum(dim=1, keepdim=True).data.cpu()
+    return features.resize_(features.size(0), features.size(1), *image_size)
 
 
 def get_iterator(mode, data_type, batch_size=64, use_data_augmentation=True):
