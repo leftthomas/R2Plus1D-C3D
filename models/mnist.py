@@ -18,9 +18,9 @@ class MNISTCapsuleNet(nn.Module):
             nn.ReLU(inplace=True)
         )
         self.classifier = nn.Sequential(
-            CapsuleLinear(in_capsules=256, out_capsules=32, in_length=8, out_length=8, routing_type=routing_type,
+            CapsuleLinear(in_capsules=512, out_capsules=128, in_length=4, out_length=8, routing_type=routing_type,
                           share_weight=True),
-            CapsuleLinear(in_capsules=32, out_capsules=10, in_length=8, out_length=16, routing_type=routing_type,
+            CapsuleLinear(in_capsules=128, out_capsules=10, in_length=8, out_length=16, routing_type=routing_type,
                           share_weight=True))
 
     def forward(self, x):
@@ -28,7 +28,7 @@ class MNISTCapsuleNet(nn.Module):
 
         out = out.view(*out.size()[:2], -1)
         out = out.transpose(-1, -2)
-        out = out.contiguous().view(out.size(0), -1, 8)
+        out = out.contiguous().view(out.size(0), -1, 4)
 
         out = self.classifier(out)
         classes = out.norm(dim=-1)
