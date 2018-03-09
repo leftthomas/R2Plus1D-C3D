@@ -11,7 +11,7 @@ conda install pytorch torchvision cuda90 -c pytorch
 ```
 pip install git+https://github.com/pytorch/tnt.git@master
 ```
-* capsule-layer(version >= 0.0.3)
+* capsule-layer(version >= 0.0.4)
 ```
 pip install git+https://github.com/leftthomas/CapsuleLayer.git@master
 
@@ -27,7 +27,7 @@ python -m visdom.server -logging_level WARNING & python main.py
 optional arguments:
 --data_type                   dataset type [default value is 'MNIST'](choices:['MNIST', 'FashionMNIST', 'SVHN', 'CIFAR10', 'CIFAR100', 'STL10'])
 --use_data_augmentation       use data augmentation or not [default value is 'yes'](choices:['yes', 'no'])
---routing_type                routing type [default value is 'sum'](choices:['sum', 'dynamic', 'means', 'cosine', 'tonimoto', 'pearson'])
+--routing_type                routing type [default value is 'sum'](choices:['sum', 'dynamic', 'contract', 'means', 'cosine', 'tonimoto', 'pearson'])
 --batch_size                  train batch size [default value is 64]
 --num_epochs                  train epochs number [default value is 100]
 --target_layer                the layer of visualization [default value is None]
