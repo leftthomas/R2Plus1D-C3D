@@ -97,12 +97,13 @@ def on_end_epoch(state):
 
     # features visualization
     original_image, _ = next(iter(utils.get_iterator(False, DATA_TYPE, 25, USE_DA)))
-    data = Variable(original_image, volatile=True)
-    if torch.cuda.is_available():
-        data = data.cuda()
-    features = utils.show_features(model, TARGET_LAYER, data)
+    # data = Variable(original_image, volatile=True)
+    # if torch.cuda.is_available():
+    #     data = data.cuda()
+    # features = utils.show_features(model, TARGET_LAYER, data)
     original_image_logger.log(make_grid(original_image, nrow=5, normalize=True).numpy())
-    features_logger.log(make_grid(features, nrow=5, normalize=True).numpy())
+    # features_logger.log(make_grid(features, nrow=5, normalize=True).numpy())
+    features_logger.log(make_grid(original_image, nrow=5, normalize=True).numpy())
 
 
 if __name__ == '__main__':
