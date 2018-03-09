@@ -23,10 +23,10 @@ conda install tqdm
 
 ## Usage
 ```
-python -m visdom.server -logging_level WARNING & python main.py
+python -m visdom.server -logging_level WARNING & python main.py --data_type FashionMNIST --use_da --num_epochs 300
 optional arguments:
 --data_type                   dataset type [default value is 'MNIST'](choices:['MNIST', 'FashionMNIST', 'SVHN', 'CIFAR10', 'CIFAR100', 'STL10'])
---use_data_augmentation       use data augmentation or not [default value is 'yes'](choices:['yes', 'no'])
+--use_da                      use data augmentation or not [default value is False]
 --routing_type                routing type [default value is 'sum'](choices:['sum', 'dynamic', 'contract', 'means', 'cosine', 'tonimoto', 'pearson'])
 --batch_size                  train batch size [default value is 64]
 --num_epochs                  train epochs number [default value is 100]

@@ -68,7 +68,7 @@ def on_end_epoch(state):
 
     reset_meters()
 
-    engine.test(processor, utils.get_iterator(False, DATA_TYPE, BATCH_SIZE, USE_DATA_AUGMENTATION))
+    engine.test(processor, utils.get_iterator(False, DATA_TYPE, BATCH_SIZE, USE_DA))
 
     test_loss_logger.log(state['epoch'], meter_loss.value()[0])
     test_top1_accuracy_logger.log(state['epoch'], meter_accuracy.value()[0])
@@ -96,7 +96,7 @@ def on_end_epoch(state):
         data_frame.to_csv(out_path + DATA_TYPE + '_' + ROUTING_TYPE + '_results.csv', index_label='epoch')
 
     # features visualization
-    original_image, _ = next(iter(utils.get_iterator(False, DATA_TYPE, 25, USE_DATA_AUGMENTATION)))
+    original_image, _ = next(iter(utils.get_iterator(False, DATA_TYPE, 25, USE_DA)))
     data = Variable(original_image, requires_grad=False)
     if torch.cuda.is_available():
         data = data.cuda()
@@ -111,8 +111,7 @@ if __name__ == '__main__':
     parser.add_argument('--data_type', default='MNIST', type=str,
                         choices=['MNIST', 'FashionMNIST', 'SVHN', 'CIFAR10', 'CIFAR100', 'STL10'],
                         help='dataset type')
-    parser.add_argument('--use_data_augmentation', default='yes', type=str, choices=['yes', 'no'],
-                        help='use data augmentation or not')
+    parser.add_argument('--use_da', action='store_true', help='use data augmentation or not')
     parser.add_argument('--routing_type', default='sum', type=str,
                         choices=['sum', 'dynamic', 'contract', 'means', 'cosine', 'tonimoto', 'pearson'],
                         help='routing type')
@@ -123,7 +122,7 @@ if __name__ == '__main__':
     opt = parser.parse_args()
 
     DATA_TYPE = opt.data_type
-    USE_DATA_AUGMENTATION = True if opt.use_data_augmentation == 'yes' else False
+    USE_DA = opt.use_da
     ROUTING_TYPE = opt.routing_type
     BATCH_SIZE = opt.batch_size
     NUM_EPOCHS = opt.num_epochs
@@ -172,5 +171,5 @@ if __name__ == '__main__':
     engine.hooks['on_start_epoch'] = on_start_epoch
     engine.hooks['on_end_epoch'] = on_end_epoch
 
-    engine.train(processor, utils.get_iterator(True, DATA_TYPE, BATCH_SIZE, USE_DATA_AUGMENTATION), maxepoch=NUM_EPOCHS,
+    engine.train(processor, utils.get_iterator(True, DATA_TYPE, BATCH_SIZE, USE_DA), maxepoch=NUM_EPOCHS,
                  optimizer=optimizer)
