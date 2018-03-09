@@ -51,9 +51,9 @@ class STL10CapsuleNet(nn.Module):
             nn.ReLU(inplace=True)
         )
         self.classifier = nn.Sequential(
-            CapsuleLinear(in_capsules=576, out_capsules=144, in_length=8, out_length=8, routing_type=routing_type,
+            CapsuleLinear(in_capsules=576, out_capsules=144, in_length=8, out_length=12, routing_type=routing_type,
                           share_weight=False),
-            CapsuleLinear(in_capsules=144, out_capsules=10, in_length=8, out_length=16, routing_type=routing_type,
+            CapsuleLinear(in_capsules=144, out_capsules=10, in_length=12, out_length=16, routing_type=routing_type,
                           share_weight=False))
 
     def forward(self, x):
