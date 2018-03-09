@@ -97,7 +97,7 @@ def on_end_epoch(state):
 
     # features visualization
     original_image, _ = next(iter(utils.get_iterator(False, DATA_TYPE, 25, USE_DATA_AUGMENTATION)))
-    data = Variable(original_image)
+    data = Variable(original_image, requires_grad=False)
     if torch.cuda.is_available():
         data = data.cuda()
     features = utils.show_features(model, TARGET_LAYER, data)
