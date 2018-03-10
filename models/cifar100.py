@@ -34,6 +34,13 @@ class CIFAR100CapsuleNet(nn.Module):
             nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=1, bias=False),
             nn.BatchNorm2d(num_features=512),
         )
+        self.bk4 = nn.Sequential(
+            nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=2, padding=1, bias=False),
+            nn.BatchNorm2d(num_features=512),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=1, bias=False),
+            nn.BatchNorm2d(num_features=512),
+        )
         self.down1 = nn.Sequential(
             nn.Conv2d(64, 128, kernel_size=1, stride=2, bias=False),
             nn.BatchNorm2d(128),
@@ -46,8 +53,12 @@ class CIFAR100CapsuleNet(nn.Module):
             nn.Conv2d(256, 512, kernel_size=1, stride=2, bias=False),
             nn.BatchNorm2d(512),
         )
+        self.down4 = nn.Sequential(
+            nn.Conv2d(512, 512, kernel_size=1, stride=2, bias=False),
+            nn.BatchNorm2d(512),
+        )
         self.relu = nn.ReLU(inplace=True)
-        self.classifier = CapsuleLinear(in_capsules=1024, out_capsules=100, in_length=8, out_length=16,
+        self.classifier = CapsuleLinear(in_capsules=256, out_capsules=100, in_length=8, out_length=16,
                                         routing_type=routing_type, share_weight=False,
                                         num_iterations=num_iterations)
 
@@ -64,6 +75,10 @@ class CIFAR100CapsuleNet(nn.Module):
         res = out
         out = self.bk3(out)
         out += self.down3(res)
+        out = self.relu(out)
+        res = out
+        out = self.bk4(out)
+        out += self.down4(res)
         out = self.relu(out)
 
         out = out.view(*out.size()[:2], -1)
