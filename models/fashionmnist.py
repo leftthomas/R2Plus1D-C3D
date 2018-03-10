@@ -8,14 +8,14 @@ class FashionMNISTCapsuleNet(nn.Module):
         self.features = nn.Sequential(
             nn.Conv2d(in_channels=1, out_channels=64, kernel_size=7, stride=1, padding=0),
             nn.BatchNorm2d(num_features=64),
-            nn.LeakyReLU(inplace=True),
+            nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(in_channels=64, out_channels=64, kernel_size=5, stride=2, padding=0),
             nn.BatchNorm2d(num_features=64),
-            nn.LeakyReLU(inplace=True),
+            nn.LeakyReLU(0.2, inplace=True),
 
             nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=2, padding=0),
             nn.BatchNorm2d(num_features=128),
-            nn.LeakyReLU(inplace=True)
+            nn.LeakyReLU(0.2, inplace=True)
         )
         self.classifier = CapsuleLinear(in_capsules=256, out_capsules=10, in_length=8, out_length=16,
                                         routing_type=routing_type, share_weight=False, num_iterations=num_iterations)
