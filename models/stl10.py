@@ -9,7 +9,7 @@ class STL10CapsuleNet(nn.Module):
             nn.Conv2d(in_channels=3, out_channels=64, kernel_size=7, stride=1, padding=3, bias=False),
             nn.BatchNorm2d(num_features=64),
             nn.ReLU(inplace=True),
-            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=5, stride=1, padding=2, bias=False),
+            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=5, stride=2, padding=2, bias=False),
             nn.BatchNorm2d(num_features=64),
             nn.ReLU(inplace=True)
         )
@@ -21,34 +21,20 @@ class STL10CapsuleNet(nn.Module):
             nn.BatchNorm2d(num_features=128),
         )
         self.bk2 = nn.Sequential(
-            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, stride=2, padding=1, bias=False),
-            nn.BatchNorm2d(num_features=128),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, stride=1, padding=1, bias=False),
-            nn.BatchNorm2d(num_features=128),
-        )
-        self.bk3 = nn.Sequential(
             nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(num_features=256),
             nn.ReLU(inplace=True),
             nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=1, padding=1, bias=False),
             nn.BatchNorm2d(num_features=256),
         )
-        self.bk4 = nn.Sequential(
-            nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=2, padding=1, bias=False),
-            nn.BatchNorm2d(num_features=256),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=1, padding=1, bias=False),
-            nn.BatchNorm2d(num_features=256),
-        )
-        self.bk5 = nn.Sequential(
+        self.bk3 = nn.Sequential(
             nn.Conv2d(in_channels=256, out_channels=512, kernel_size=3, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(num_features=512),
             nn.ReLU(inplace=True),
             nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=1, bias=False),
             nn.BatchNorm2d(num_features=512),
         )
-        self.bk6 = nn.Sequential(
+        self.bk4 = nn.Sequential(
             nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(num_features=512),
             nn.ReLU(inplace=True),
@@ -60,27 +46,19 @@ class STL10CapsuleNet(nn.Module):
             nn.BatchNorm2d(128),
         )
         self.down2 = nn.Sequential(
-            nn.Conv2d(128, 128, kernel_size=1, stride=2, bias=False),
-            nn.BatchNorm2d(128),
-        )
-        self.down3 = nn.Sequential(
             nn.Conv2d(128, 256, kernel_size=1, stride=2, bias=False),
             nn.BatchNorm2d(256),
         )
-        self.down4 = nn.Sequential(
-            nn.Conv2d(256, 256, kernel_size=1, stride=2, bias=False),
-            nn.BatchNorm2d(256),
-        )
-        self.down5 = nn.Sequential(
+        self.down3 = nn.Sequential(
             nn.Conv2d(256, 512, kernel_size=1, stride=2, bias=False),
             nn.BatchNorm2d(512),
         )
-        self.down6 = nn.Sequential(
+        self.down4 = nn.Sequential(
             nn.Conv2d(512, 512, kernel_size=1, stride=2, bias=False),
             nn.BatchNorm2d(512),
         )
         self.relu = nn.ReLU(inplace=True)
-        self.classifier = CapsuleLinear(in_capsules=256, out_capsules=10, in_length=8, out_length=16,
+        self.classifier = CapsuleLinear(in_capsules=576, out_capsules=10, in_length=8, out_length=16,
                                         routing_type=routing_type, share_weight=False, num_iterations=num_iterations)
 
     def forward(self, x):
@@ -100,14 +78,6 @@ class STL10CapsuleNet(nn.Module):
         res = out
         out = self.bk4(out)
         out += self.down4(res)
-        out = self.relu(out)
-        res = out
-        out = self.bk5(out)
-        out += self.down5(res)
-        out = self.relu(out)
-        res = out
-        out = self.bk6(out)
-        out += self.down6(res)
         out = self.relu(out)
 
         out = out.view(*out.size()[:2], -1)
