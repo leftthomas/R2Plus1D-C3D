@@ -6,7 +6,7 @@ class STL10CapsuleNet(nn.Module):
     def __init__(self, routing_type='sum', num_iterations=3):
         super(STL10CapsuleNet, self).__init__()
         self.features = nn.Sequential(
-            nn.Conv2d(in_channels=1, out_channels=64, kernel_size=7, stride=1, padding=3, bias=False),
+            nn.Conv2d(in_channels=3, out_channels=64, kernel_size=7, stride=1, padding=3, bias=False),
             nn.BatchNorm2d(num_features=64),
             nn.ReLU(inplace=True),
             nn.Conv2d(in_channels=64, out_channels=64, kernel_size=5, stride=1, padding=2, bias=False),
