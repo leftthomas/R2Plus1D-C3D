@@ -14,6 +14,7 @@ class BasicBlock(nn.Module):
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.stride = stride
+        self.downsample = None
 
     def forward(self, x):
         residual = x
@@ -26,11 +27,11 @@ class BasicBlock(nn.Module):
         out = self.bn2(out)
 
         if self.stride == 2:
-            downsample = nn.Sequential(
+            self.downsample = nn.Sequential(
                 nn.Conv2d(self.in_channels, self.out_channels, kernel_size=1, stride=self.stride, bias=False),
                 nn.BatchNorm2d(self.out_channels),
             )
-            residual = downsample(x)
+            residual = self.downsample(x)
 
         out += residual
         out = self.relu(out)
@@ -47,18 +48,21 @@ class FashionMNISTCapsuleNet(nn.Module):
             nn.ReLU(inplace=True),
             nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(num_features=64),
-            nn.ReLU(inplace=True),
-
-            BasicBlock(in_channels=64, out_channels=64),
-            BasicBlock(in_channels=64, out_channels=128, stride=2),
-            BasicBlock(in_channels=128, out_channels=256, stride=2),
-            BasicBlock(in_channels=256, out_channels=512, stride=2)
+            nn.ReLU(inplace=True)
         )
+        self.bk1 = BasicBlock(in_channels=64, out_channels=64)
+        self.bk2 = BasicBlock(in_channels=64, out_channels=128, stride=2)
+        self.bk3 = BasicBlock(in_channels=128, out_channels=256, stride=2)
+        self.bk4 = BasicBlock(in_channels=256, out_channels=512, stride=2)
         self.classifier = CapsuleLinear(in_capsules=256, out_capsules=10, in_length=8, out_length=16,
                                         routing_type=routing_type, share_weight=False, num_iterations=num_iterations)
 
     def forward(self, x):
         out = self.features(x)
+        out = self.bk1(out)
+        out = self.bk2(out)
+        out = self.bk3(out)
+        out = self.bk4(out)
 
         out = out.view(*out.size()[:2], -1)
         out = out.transpose(-1, -2)
