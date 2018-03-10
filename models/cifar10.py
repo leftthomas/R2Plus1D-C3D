@@ -9,16 +9,18 @@ class CIFAR10CapsuleNet(nn.Module):
             nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=64),
             nn.ReLU(inplace=True),
-            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=2, padding=1),
+            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=64),
             nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
 
             nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=128),
             nn.ReLU(inplace=True),
-            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, stride=2, padding=1),
+            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=128),
             nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
 
             nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=256),
@@ -26,9 +28,10 @@ class CIFAR10CapsuleNet(nn.Module):
             nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=256),
             nn.ReLU(inplace=True),
-            nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=2, padding=1),
+            nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=256),
             nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
 
             nn.Conv2d(in_channels=256, out_channels=512, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=512),
@@ -36,9 +39,10 @@ class CIFAR10CapsuleNet(nn.Module):
             nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=512),
             nn.ReLU(inplace=True),
-            nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=2, padding=1),
+            nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=512),
-            nn.ReLU(inplace=True)
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2)
         )
         self.classifier = CapsuleLinear(in_capsules=256, out_capsules=10, in_length=8, out_length=16,
                                         routing_type=routing_type, share_weight=False, num_iterations=num_iterations)
