@@ -28,6 +28,7 @@ optional arguments:
 --data_type                   dataset type [default value is 'MNIST'](choices:['MNIST', 'FashionMNIST', 'SVHN', 'CIFAR10', 'CIFAR100', 'STL10'])
 --use_da                      use data augmentation or not [default value is False]
 --routing_type                routing type [default value is 'sum'](choices:['sum', 'dynamic', 'contract', 'means', 'cosine', 'tonimoto', 'pearson'])
+--num_iterations              routing iterations number [default value is 3](it not work for sum routing)
 --batch_size                  train batch size [default value is 64]
 --num_epochs                  train epochs number [default value is 100]
 --target_layer                the layer of visualization [default value is None]

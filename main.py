@@ -116,6 +116,7 @@ if __name__ == '__main__':
     parser.add_argument('--routing_type', default='sum', type=str,
                         choices=['sum', 'dynamic', 'contract', 'means', 'cosine', 'tonimoto', 'pearson'],
                         help='routing type')
+    parser.add_argument('--num_iterations', default=3, type=int, help='routing iterations number')
     parser.add_argument('--batch_size', default=64, type=int, help='train batch size')
     parser.add_argument('--num_epochs', default=100, type=int, help='train epochs number')
     parser.add_argument('--target_layer', default=None, type=int, help='the layer of visualization')
@@ -125,6 +126,7 @@ if __name__ == '__main__':
     DATA_TYPE = opt.data_type
     USE_DA = opt.use_da
     ROUTING_TYPE = opt.routing_type
+    NUM_ITERATIONS = opt.num_iterations
     BATCH_SIZE = opt.batch_size
     NUM_EPOCHS = opt.num_epochs
     TARGET_LAYER = opt.target_layer
@@ -137,7 +139,7 @@ if __name__ == '__main__':
     if DATA_TYPE == 'CIFAR100':
         CLASSES = 100
 
-    model = utils.models[DATA_TYPE](ROUTING_TYPE)
+    model = utils.models[DATA_TYPE](ROUTING_TYPE, NUM_ITERATIONS)
     loss_criterion = utils.MarginLoss()
     if torch.cuda.is_available():
         model.cuda()

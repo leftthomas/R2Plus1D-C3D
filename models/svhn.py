@@ -3,7 +3,7 @@ from torch import nn
 
 
 class SVHNCapsuleNet(nn.Module):
-    def __init__(self, routing_type='sum'):
+    def __init__(self, routing_type='sum', num_iterations=3):
         super(SVHNCapsuleNet, self).__init__()
         self.features = nn.Sequential(
             CapsuleConv2d(in_channels=3, out_channels=16, kernel_size=5, in_length=3, out_length=4, stride=1,
@@ -20,7 +20,7 @@ class SVHNCapsuleNet(nn.Module):
                           padding=1)
         )
         self.classifier = CapsuleLinear(in_capsules=64, out_capsules=10, in_length=16, out_length=32,
-                                        routing_type=routing_type)
+                                        routing_type=routing_type, num_iterations=num_iterations)
 
     def forward(self, x):
         out = self.features(x)

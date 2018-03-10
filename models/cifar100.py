@@ -3,7 +3,7 @@ from torch import nn
 
 
 class CIFAR100CapsuleNet(nn.Module):
-    def __init__(self, routing_type='sum'):
+    def __init__(self, routing_type='sum', num_iterations=3):
         super(CIFAR100CapsuleNet, self).__init__()
         self.features = nn.Sequential(
             nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1, padding=1),
@@ -31,7 +31,7 @@ class CIFAR100CapsuleNet(nn.Module):
             nn.ReLU(inplace=True)
         )
         self.classifier = CapsuleLinear(in_capsules=512, out_capsules=100, in_length=8, out_length=16,
-                                        routing_type=routing_type, share_weight=False)
+                                        routing_type=routing_type, share_weight=False, num_iterations=num_iterations)
 
     def forward(self, x):
         out = self.features(x)
