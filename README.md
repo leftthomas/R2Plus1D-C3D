@@ -14,7 +14,6 @@ pip install git+https://github.com/pytorch/tnt.git@master
 * capsule-layer(version >= 0.0.4)
 ```
 pip install git+https://github.com/leftthomas/CapsuleLayer.git@master
-
 ```
 * tqdm(version >= 4.19.5)
 ```
