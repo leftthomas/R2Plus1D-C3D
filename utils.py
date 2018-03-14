@@ -110,30 +110,26 @@ def get_iterator(mode, data_type, batch_size=64, use_data_augmentation=True):
 
 def get_mean_std(data_type):
     if data_type == 'MNIST' or data_type == 'FashionMNIST':
-        train_set = data_set[data_type](root='data/' + data_type, train=True, download=True,
-                                        transform=transforms.ToTensor())
+        train_set = data_set[data_type](root='data/' + data_type, train=True, download=True)
         print(list(train_set.train_data.size()))
         print(train_set.train_data.float().mean() / 255)
         print(train_set.train_data.float().std() / 255)
     elif data_type == 'STL10':
-        train_set = data_set[data_type](root='data/' + data_type, split='train', download=True,
-                                        transform=transforms.ToTensor())
+        train_set = data_set[data_type](root='data/' + data_type, split='train', download=True)
         print(train_set.data.shape)
         train_set.data = train_set.data.reshape((5000, 3, 96, 96))
         train_set.data = train_set.data.transpose((0, 2, 3, 1))  # convert to HWC
         print(train_set.data.mean(axis=(0, 1, 2)) / 255)
         print(train_set.data.std(axis=(0, 1, 2)) / 255)
     elif data_type == 'SVHN':
-        train_set = data_set[data_type](root='data/' + data_type, split='train', download=True,
-                                        transform=transforms.ToTensor())
+        train_set = data_set[data_type](root='data/' + data_type, split='train', download=True)
         print(train_set.data.shape)
         train_set.data = train_set.data.reshape((73257, 3, 32, 32))
         train_set.data = train_set.data.transpose((0, 2, 3, 1))  # convert to HWC
         print(train_set.data.mean(axis=(0, 1, 2)) / 255)
         print(train_set.data.std(axis=(0, 1, 2)) / 255)
     else:
-        train_set = data_set[data_type](root='data/' + data_type, train=True, download=True,
-                                        transform=transforms.ToTensor())
+        train_set = data_set[data_type](root='data/' + data_type, train=True, download=True)
         print(train_set.train_data.shape)
         print(train_set.train_data.mean(axis=(0, 1, 2)) / 255)
         print(train_set.train_data.std(axis=(0, 1, 2)) / 255)
