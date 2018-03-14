@@ -146,5 +146,3 @@ if __name__ == "__main__":
     get_mean_std('CIFAR10')
     get_mean_std('CIFAR100')
     get_mean_std('STL10')
-    t = get_iterator(True, 'MNIST', 16, True)
-    print(t)
