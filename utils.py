@@ -117,14 +117,12 @@ def get_mean_std(data_type):
     elif data_type == 'STL10':
         train_set = data_set[data_type](root='data/' + data_type, split='train', download=True)
         print(train_set.data.shape)
-        train_set.data = train_set.data.reshape((5000, 3, 96, 96))
         train_set.data = train_set.data.transpose((0, 2, 3, 1))  # convert to HWC
         print(train_set.data.mean(axis=(0, 1, 2)) / 255)
         print(train_set.data.std(axis=(0, 1, 2)) / 255)
     elif data_type == 'SVHN':
         train_set = data_set[data_type](root='data/' + data_type, split='train', download=True)
         print(train_set.data.shape)
-        train_set.data = train_set.data.reshape((73257, 3, 32, 32))
         train_set.data = train_set.data.transpose((0, 2, 3, 1))  # convert to HWC
         print(train_set.data.mean(axis=(0, 1, 2)) / 255)
         print(train_set.data.std(axis=(0, 1, 2)) / 255)
