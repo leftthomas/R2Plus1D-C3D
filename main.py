@@ -117,7 +117,7 @@ if __name__ == '__main__':
                         choices=['sum', 'dynamic', 'contract', 'means', 'cosine', 'tonimoto', 'pearson'],
                         help='routing type')
     parser.add_argument('--num_iterations', default=3, type=int, help='routing iterations number')
-    parser.add_argument('--batch_size', default=64, type=int, help='train batch size')
+    parser.add_argument('--batch_size', default=100, type=int, help='train batch size')
     parser.add_argument('--num_epochs', default=100, type=int, help='train epochs number')
     parser.add_argument('--target_layer', default=None, type=int, help='the layer of visualization')
 
