@@ -32,32 +32,38 @@ CLASS_NAME = {'MNIST': ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
 
 data_set = {'MNIST': MNIST, 'FashionMNIST': FashionMNIST, 'SVHN': SVHN, 'CIFAR10': CIFAR10, 'CIFAR100': CIFAR100,
             'STL10': STL10}
-transform_value = {'MNIST': transforms.Normalize((0.1307,), (0.3081,)),
-                   'FashionMNIST': transforms.Normalize((0.2860,), (0.3530,)),
-                   'SVHN': transforms.Normalize((0.4377, 0.4438, 0.4728), (0.1980, 0.2010, 0.1970)),
-                   'CIFAR10': transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616)),
-                   'CIFAR100': transforms.Normalize((0.5071, 0.4865, 0.4409), (0.2673, 0.2564, 0.2762)),
-                   'STL10': transforms.Normalize((0.4467, 0.4398, 0.4066), (0.2603, 0.2566, 0.2713))}
+transform_value = {'MNIST': transforms.Normalize((0.1306604762738429,), (0.30810780717887876,)),
+                   'FashionMNIST': transforms.Normalize((0.2860405969887955,), (0.35302424825650003,)),
+                   'SVHN': transforms.Normalize((0.4376821, 0.4437697, 0.47280442),
+                                                (0.19803012, 0.20101562, 0.19703614)),
+                   'CIFAR10': transforms.Normalize((0.49139968, 0.48215841, 0.44653091),
+                                                   (0.24703223, 0.24348513, 0.26158784)),
+                   'CIFAR100': transforms.Normalize((0.50707516, 0.48654887, 0.44091784),
+                                                    (0.26733429, 0.25643846, 0.27615047)),
+                   'STL10': transforms.Normalize((0.44671062, 0.43980984, 0.40664645),
+                                                 (0.26034098, 0.25657727, 0.27126738))}
 transform_trains = {'MNIST': transforms.Compose(
-    [transforms.RandomCrop(28, padding=2), transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))]),
+    [transforms.RandomCrop(28, padding=2), transforms.ToTensor(),
+     transforms.Normalize((0.1306604762738429,), (0.30810780717887876,))]),
     'FashionMNIST': transforms.Compose(
         [transforms.RandomCrop(28, padding=2), transforms.RandomHorizontalFlip(), transforms.ToTensor(),
-         transforms.Normalize((0.2860,), (0.3530,))]),
+         transforms.Normalize((0.2860405969887955,), (0.35302424825650003,))]),
     'SVHN': transforms.Compose([transforms.RandomCrop(32, padding=2), transforms.ToTensor(),
-                                transforms.Normalize((0.4377, 0.4438, 0.4728), (0.1980, 0.2010, 0.1970))]),
+                                transforms.Normalize((0.4376821, 0.4437697, 0.47280442),
+                                                     (0.19803012, 0.20101562, 0.19703614))]),
     'CIFAR10': transforms.Compose(
         [transforms.RandomCrop(32, padding=2), transforms.RandomHorizontalFlip(),
          transforms.ColorJitter(0.2, 0.2, 0.2, 0.2), transforms.ToTensor(),
-         transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616))]),
+         transforms.Normalize((0.49139968, 0.48215841, 0.44653091), (0.24703223, 0.24348513, 0.26158784))]),
     'CIFAR100': transforms.Compose(
         [transforms.RandomCrop(32, padding=2), transforms.RandomHorizontalFlip(),
          transforms.ColorJitter(0.2, 0.2, 0.2, 0.2), transforms.ToTensor(),
-         transforms.Normalize((0.5071, 0.4865, 0.4409), (0.2673, 0.2564, 0.2762))
+         transforms.Normalize((0.50707516, 0.48654887, 0.44091784), (0.26733429, 0.25643846, 0.27615047))
          ]),
     'STL10': transforms.Compose(
         [transforms.RandomCrop(96, padding=6), transforms.RandomHorizontalFlip(),
          transforms.ColorJitter(0.2, 0.2, 0.2, 0.2), transforms.ToTensor(),
-         transforms.Normalize((0.4467, 0.4398, 0.4066), (0.2603, 0.2566, 0.2713))])}
+         transforms.Normalize((0.44671062, 0.43980984, 0.40664645), (0.26034098, 0.25657727, 0.27126738))])}
 models = {'MNIST': MNISTCapsuleNet, 'FashionMNIST': FashionMNISTCapsuleNet, 'SVHN': SVHNCapsuleNet,
           'CIFAR10': CIFAR10CapsuleNet, 'CIFAR100': CIFAR100CapsuleNet, 'STL10': STL10CapsuleNet}
 
