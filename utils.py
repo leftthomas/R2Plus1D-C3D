@@ -46,14 +46,17 @@ transform_trains = {'MNIST': transforms.Compose(
     'SVHN': transforms.Compose([transforms.RandomCrop(32, padding=2), transforms.ToTensor(),
                                 transforms.Normalize((0.4377, 0.4438, 0.4728), (0.1980, 0.2010, 0.1970))]),
     'CIFAR10': transforms.Compose(
-        [transforms.RandomCrop(32, padding=2), transforms.RandomHorizontalFlip(), transforms.ToTensor(),
+        [transforms.RandomCrop(32, padding=2), transforms.RandomHorizontalFlip(),
+         transforms.ColorJitter(0.2, 0.2, 0.2, 0.2), transforms.ToTensor(),
          transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616))]),
     'CIFAR100': transforms.Compose(
-        [transforms.RandomCrop(32, padding=2), transforms.RandomHorizontalFlip(), transforms.ToTensor(),
+        [transforms.RandomCrop(32, padding=2), transforms.RandomHorizontalFlip(),
+         transforms.ColorJitter(0.2, 0.2, 0.2, 0.2), transforms.ToTensor(),
          transforms.Normalize((0.5071, 0.4865, 0.4409), (0.2673, 0.2564, 0.2762))
          ]),
     'STL10': transforms.Compose(
-        [transforms.RandomCrop(96, padding=6), transforms.RandomHorizontalFlip(), transforms.ToTensor(),
+        [transforms.RandomCrop(96, padding=6), transforms.RandomHorizontalFlip(),
+         transforms.ColorJitter(0.2, 0.2, 0.2, 0.2), transforms.ToTensor(),
          transforms.Normalize((0.4467, 0.4398, 0.4066), (0.2603, 0.2566, 0.2713))])}
 models = {'MNIST': MNISTCapsuleNet, 'FashionMNIST': FashionMNISTCapsuleNet, 'SVHN': SVHNCapsuleNet,
           'CIFAR10': CIFAR10CapsuleNet, 'CIFAR100': CIFAR100CapsuleNet, 'STL10': STL10CapsuleNet}
