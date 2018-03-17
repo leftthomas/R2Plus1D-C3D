@@ -52,7 +52,7 @@ transform_trains = {'MNIST': transforms.Compose(
                                 transforms.Normalize((0.4376821, 0.4437697, 0.47280442),
                                                      (0.19803012, 0.20101562, 0.19703614))]),
     'CIFAR10': transforms.Compose(
-        [transforms.RandomCrop(32, padding=2), transforms.RandomHorizontalFlip(), transforms.ToTensor(),
+        [transforms.RandomCrop(32, padding=4), transforms.RandomHorizontalFlip(), transforms.ToTensor(),
          transforms.Normalize((0.49139968, 0.48215841, 0.44653091), (0.24703223, 0.24348513, 0.26158784))]),
     'CIFAR100': transforms.Compose(
         [transforms.RandomCrop(32, padding=2), transforms.RandomHorizontalFlip(), transforms.ToTensor(),
