@@ -3,7 +3,7 @@ from torch import nn
 
 
 class MNISTCapsuleNet(nn.Module):
-    def __init__(self, routing_type='sum', num_iterations=3):
+    def __init__(self, num_iterations=3):
         super(MNISTCapsuleNet, self).__init__()
         self.features = nn.Sequential(
             nn.Conv2d(in_channels=1, out_channels=64, kernel_size=7, stride=2, padding=3, bias=False),
@@ -29,7 +29,7 @@ class MNISTCapsuleNet(nn.Module):
 
         )
         self.classifier = CapsuleLinear(in_capsules=512, out_capsules=10, in_length=8, out_length=16,
-                                        routing_type=routing_type, share_weight=False,
+                                        routing_type='dynamic', share_weight=False,
                                         num_iterations=num_iterations)
 
     def forward(self, x):

@@ -81,7 +81,7 @@ def on_end_epoch(state):
     print('[Epoch %d] Testing Loss: %.4f Top1 Accuracy: %.2f%% Top5 Accuracy: %.2f%%' % (
         state['epoch'], meter_loss.value()[0], meter_accuracy.value()[0], meter_accuracy.value()[1]))
 
-    torch.save(model.state_dict(), 'epochs/epoch_%s_%s_%d.pth' % (DATA_TYPE, ROUTING_TYPE, state['epoch']))
+    torch.save(model.state_dict(), 'epochs/epoch_%s_%d.pth' % (DATA_TYPE, state['epoch']))
 
     # save statistics at every 10 epochs
     if state['epoch'] % 10 == 0:
@@ -93,7 +93,7 @@ def on_end_epoch(state):
                   'train_top5_accuracy': results['train_top5_accuracy'],
                   'test_top5_accuracy': results['test_top5_accuracy']},
             index=range(1, state['epoch'] + 1))
-        data_frame.to_csv(out_path + DATA_TYPE + '_' + ROUTING_TYPE + '_results.csv', index_label='epoch')
+        data_frame.to_csv(out_path + DATA_TYPE + '_results.csv', index_label='epoch')
 
     # features visualization
     train_image, _ = next(iter(get_iterator(True, DATA_TYPE, 25, USE_DA)))
@@ -113,9 +113,6 @@ if __name__ == '__main__':
                         choices=['MNIST', 'FashionMNIST', 'SVHN', 'CIFAR10', 'CIFAR100', 'STL10'],
                         help='dataset type')
     parser.add_argument('--use_da', action='store_true', help='use data augmentation or not')
-    parser.add_argument('--routing_type', default='sum', type=str,
-                        choices=['sum', 'dynamic', 'contract', 'means', 'cosine', 'tonimoto', 'pearson'],
-                        help='routing type')
     parser.add_argument('--num_iterations', default=3, type=int, help='routing iterations number')
     parser.add_argument('--batch_size', default=100, type=int, help='train batch size')
     parser.add_argument('--num_epochs', default=100, type=int, help='train epochs number')
@@ -125,7 +122,6 @@ if __name__ == '__main__':
 
     DATA_TYPE = opt.data_type
     USE_DA = opt.use_da
-    ROUTING_TYPE = opt.routing_type
     NUM_ITERATIONS = opt.num_iterations
     BATCH_SIZE = opt.batch_size
     NUM_EPOCHS = opt.num_epochs
@@ -139,7 +135,7 @@ if __name__ == '__main__':
     if DATA_TYPE == 'CIFAR100':
         CLASSES = 100
 
-    model = models[DATA_TYPE](ROUTING_TYPE, NUM_ITERATIONS)
+    model = models[DATA_TYPE](NUM_ITERATIONS)
     loss_criterion = MarginLoss()
     if torch.cuda.is_available():
         model.cuda()
