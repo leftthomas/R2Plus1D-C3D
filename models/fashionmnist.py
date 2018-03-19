@@ -38,7 +38,7 @@ class FashionMNISTCapsuleNet(nn.Module):
                                                       routing_type='dynamic', share_weight=True,
                                                       num_iterations=num_iterations),
                                         CapsuleLinear(in_capsules=96, out_capsules=64, in_length=6, out_length=8,
-                                                      routing_type='dynamic', share_weight=True,
+                                                      routing_type='contract', share_weight=False,
                                                       num_iterations=num_iterations),
                                         CapsuleLinear(in_capsules=64, out_capsules=10, in_length=8, out_length=10,
                                                       routing_type='contract', share_weight=False,
