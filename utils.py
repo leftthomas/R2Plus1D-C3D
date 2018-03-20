@@ -1,3 +1,6 @@
+import cv2
+import numpy as np
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as transforms
@@ -76,17 +79,30 @@ class MarginLoss(nn.Module):
         return loss.mean()
 
 
-def show_features(model, target_layer, data):
-    model = model.eval()
-    target_layer = len(model.features) - 1 if target_layer is None else target_layer
-    if target_layer > len(model.features) - 1:
-        raise ValueError("Expected target layer must less than the total layers({}) "
-                         "of features.".format(len(model.features)))
-    for idx, module in enumerate(model.features.children()):
-        data = module(data)
-        if idx == target_layer:
-            features = data
-    return features.mean(dim=1, keepdim=True).data.cpu()
+class GradCam:
+    def __init__(self, model, target_layer):
+        self.model = model.eval()
+        self.target_layer = target_layer
+        self.features = None
+        self.gradients = None
+
+    def __call__(self, x):
+        image_size = (x.size(-2), x.size(-1))
+        classes = self.model(x)
+        one_hot, _ = classes.max(dim=-1)
+        self.model.zero_grad()
+        one_hot.backward()
+
+        cams = F.relu((x.grad * x).sum(dim=1)).cpu().data
+        heat_maps = []
+        for i in range(cams.size(0)):
+            mask = cv2.resize(cams[i].numpy(), image_size)
+            mask = mask - np.min(mask)
+            mask = mask / np.max(mask)
+            heat_map = np.float32(cv2.applyColorMap(np.uint8(255 * mask), cv2.COLORMAP_JET))
+            heat_maps.append(transforms.ToTensor()(cv2.cvtColor(np.uint8(255 * heat_map), cv2.COLOR_BGR2RGB)))
+        heat_maps = torch.stack(heat_maps)
+        return heat_maps
 
 
 def get_iterator(mode, data_type, batch_size=64, use_data_augmentation=True):

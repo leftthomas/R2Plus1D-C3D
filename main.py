@@ -11,7 +11,7 @@ from torchnet.logger import VisdomPlotLogger, VisdomLogger
 from torchvision.utils import make_grid
 from tqdm import tqdm
 
-from utils import get_iterator, MarginLoss, CLASS_NAME, models
+from utils import get_iterator, MarginLoss, CLASS_NAME, models, GradCam
 
 
 def processor(sample):
@@ -97,11 +97,10 @@ def on_end_epoch(state):
 
     # features visualization
     test_image, _ = next(iter(get_iterator(False, DATA_TYPE, 25, USE_DA)))
-    feature_image, _ = next(iter(get_iterator(True, DATA_TYPE, 25, USE_DA)))
-    # data = Variable(test_image, volatile=True)
-    # if torch.cuda.is_available():
-    #     data = data.cuda()
-    # features = show_features(model, TARGET_LAYER, data)
+    feature_image = Variable(test_image, requires_grad=True)
+    if torch.cuda.is_available():
+        feature_image = feature_image.cuda()
+    feature_image = grad_cam(feature_image)
     test_image_logger.log(make_grid(test_image, nrow=5, normalize=True).numpy())
     feature_image_logger.log(make_grid(feature_image, nrow=5, normalize=True).numpy())
 
@@ -137,6 +136,7 @@ if __name__ == '__main__':
 
     model = models[DATA_TYPE](NUM_ITERATIONS)
     loss_criterion = MarginLoss()
+    grad_cam = GradCam(model, TARGET_LAYER)
     if torch.cuda.is_available():
         model.cuda()
         loss_criterion.cuda()
