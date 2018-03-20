@@ -48,7 +48,7 @@ class FashionMNISTCapsuleNet(nn.Module):
         self.classifier = nn.Sequential(CapsuleLinear(in_capsules=128, out_capsules=64, in_length=4, out_length=6,
                                                       routing_type='dynamic', share_weight=True,
                                                       num_iterations=num_iterations),
-                                        CapsuleLinear(in_capsules=64, out_capsules=10, in_length=6, out_length=8,
+                                        CapsuleLinear(in_capsules=64, out_capsules=10, in_length=6, out_length=12,
                                                       routing_type='contract', share_weight=False,
                                                       num_iterations=num_iterations))
 
