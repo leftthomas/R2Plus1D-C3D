@@ -88,16 +88,17 @@ class GradCam:
         classes = self.model(x)
         one_hot, _ = classes.max(dim=-1)
         self.model.zero_grad()
-        one_hot.backward()
+        one_hot.backward(torch.ones_like(one_hot))
 
         cams = F.relu((x.grad * x).sum(dim=1)).cpu().data
         heat_maps = []
         for i in range(cams.size(0)):
             mask = cams[i].numpy()
             mask = mask - np.min(mask)
-            mask = mask / np.max(mask)
-            heat_map = np.float32(cv2.applyColorMap(np.uint8(255 * mask), cv2.COLORMAP_JET))
-            heat_maps.append(transforms.ToTensor()(cv2.cvtColor(np.uint8(255 * heat_map), cv2.COLOR_BGR2RGB)))
+            if np.max(mask) != 0:
+                mask = mask / np.max(mask)
+            heat_map = cv2.applyColorMap(np.uint8(255 * mask), cv2.COLORMAP_JET)
+            heat_maps.append(transforms.ToTensor()(cv2.cvtColor(heat_map, cv2.COLOR_BGR2RGB)))
         heat_maps = torch.stack(heat_maps)
         return heat_maps
 
