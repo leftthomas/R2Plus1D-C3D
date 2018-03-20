@@ -87,10 +87,11 @@ class GradCam:
     def __call__(self, x):
         classes = self.model(x)
         one_hot, _ = classes.max(dim=-1)
+        x.zero_grad()
         self.model.zero_grad()
         one_hot.backward(torch.ones_like(one_hot))
 
-        cams = F.relu((x.grad * x).sum(dim=1)).cpu().data
+        cams = (x.grad * x).sum(dim=1).cpu().data
         heat_maps = []
         for i in range(cams.size(0)):
             mask = cams[i].numpy()
