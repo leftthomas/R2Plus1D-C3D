@@ -16,7 +16,7 @@ class FashionMNISTCapsuleNet(nn.Module):
             nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=64),
             nn.ReLU(inplace=True),
-            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2d(num_features=64),
         )
         self.block3 = nn.Sequential(
