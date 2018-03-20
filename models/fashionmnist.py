@@ -51,10 +51,13 @@ class FashionMNISTCapsuleNet(nn.Module):
         self.down_block4 = nn.Sequential(nn.Conv2d(in_channels=128, out_channels=128, kernel_size=1, stride=2),
                                          nn.BatchNorm2d(num_features=128))
         self.relu = nn.ReLU(inplace=True)
-        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=128, out_capsules=64, in_length=4, out_length=8,
+        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=128, out_capsules=96, in_length=4, out_length=8,
                                                       routing_type='contract', share_weight=False,
                                                       num_iterations=num_iterations),
-                                        CapsuleLinear(in_capsules=64, out_capsules=10, in_length=8, out_length=16,
+                                        CapsuleLinear(in_capsules=96, out_capsules=64, in_length=8, out_length=12,
+                                                      routing_type='contract', share_weight=False,
+                                                      num_iterations=num_iterations),
+                                        CapsuleLinear(in_capsules=64, out_capsules=10, in_length=12, out_length=16,
                                                       routing_type='contract', share_weight=False,
                                                       num_iterations=num_iterations))
 
