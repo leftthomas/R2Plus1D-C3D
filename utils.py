@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as transforms
+from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from torchvision.datasets import CIFAR100, CIFAR10, MNIST, FashionMNIST, STL10, SVHN
 
@@ -85,13 +86,14 @@ class GradCam:
         self.target_layer = target_layer
 
     def __call__(self, x):
+        x = Variable(x, requires_grad=True)
         classes = self.model(x)
         one_hot, _ = classes.max(dim=-1)
         self.model.zero_grad()
         one_hot.backward(torch.ones_like(one_hot))
 
-        cams = (x.grad * x).sum(dim=1).cpu().data
-        x.requires_grad = False
+        cams = F.relu(1 + (x.grad * x).sum(dim=1)).cpu().data
+        x.grad = None
 
         heat_maps = []
         for i in range(cams.size(0)):
