@@ -96,14 +96,14 @@ def on_end_epoch(state):
         data_frame.to_csv(out_path + DATA_TYPE + '_results.csv', index_label='epoch')
 
     # features visualization
-    train_image, _ = next(iter(get_iterator(True, DATA_TYPE, 25, USE_DA)))
     test_image, _ = next(iter(get_iterator(False, DATA_TYPE, 25, USE_DA)))
+    feature_image, _ = next(iter(get_iterator(True, DATA_TYPE, 25, USE_DA)))
     # data = Variable(test_image, volatile=True)
     # if torch.cuda.is_available():
     #     data = data.cuda()
     # features = show_features(model, TARGET_LAYER, data)
-    train_image_logger.log(make_grid(train_image, nrow=5, normalize=True).numpy())
     test_image_logger.log(make_grid(test_image, nrow=5, normalize=True).numpy())
+    feature_image_logger.log(make_grid(feature_image, nrow=5, normalize=True).numpy())
 
 
 if __name__ == '__main__':
@@ -160,10 +160,10 @@ if __name__ == '__main__':
     confusion_logger = VisdomLogger('heatmap', env=DATA_TYPE,
                                     opts={'title': 'Confusion Matrix', 'columnnames': class_name,
                                           'rownames': class_name})
-    train_image_logger = VisdomLogger('image', env=DATA_TYPE,
-                                      opts={'title': 'Train Image', 'width': 371, 'height': 335})
     test_image_logger = VisdomLogger('image', env=DATA_TYPE,
                                      opts={'title': 'Test Image', 'width': 371, 'height': 335})
+    feature_image_logger = VisdomLogger('image', env=DATA_TYPE,
+                                        opts={'title': 'Feature Image', 'width': 371, 'height': 335})
 
     engine.hooks['on_sample'] = on_sample
     engine.hooks['on_forward'] = on_forward
