@@ -63,7 +63,10 @@ class CIFAR100CapsuleNet(nn.Module):
         self.down_block5 = nn.Sequential(nn.Conv2d(in_channels=512, out_channels=512, kernel_size=1, stride=2),
                                          nn.BatchNorm2d(num_features=512))
         self.relu = nn.ReLU(inplace=True)
-        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=512, out_capsules=100, in_length=4, out_length=8,
+        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=512, out_capsules=256, in_length=4, out_length=8,
+                                                      routing_type='contract', share_weight=False,
+                                                      num_iterations=num_iterations),
+                                        CapsuleLinear(in_capsules=256, out_capsules=100, in_length=8, out_length=16,
                                                       routing_type='contract', share_weight=False,
                                                       num_iterations=num_iterations))
 
