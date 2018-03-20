@@ -81,7 +81,7 @@ def on_end_epoch(state):
     print('[Epoch %d] Testing Loss: %.4f Top1 Accuracy: %.2f%% Top5 Accuracy: %.2f%%' % (
         state['epoch'], meter_loss.value()[0], meter_accuracy.value()[0], meter_accuracy.value()[1]))
 
-    torch.save(model.state_dict(), 'epochs/epoch_%s_%d.pth' % (DATA_TYPE, state['epoch']))
+    torch.save(model.state_dict(), 'epochs/%s_%d.pth' % (DATA_TYPE, state['epoch']))
 
     # save statistics at every 10 epochs
     if state['epoch'] % 10 == 0:
