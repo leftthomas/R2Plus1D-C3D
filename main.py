@@ -18,11 +18,11 @@ def processor(sample):
     data, labels, training = sample
     labels = torch.eye(CLASSES).index_select(dim=0, index=labels)
 
-    data = Variable(data)
-    labels = Variable(labels)
     if torch.cuda.is_available():
         data = data.cuda()
         labels = labels.cuda()
+    data = Variable(data)
+    labels = Variable(labels)
 
     model.train(training)
 
@@ -97,11 +97,11 @@ def on_end_epoch(state):
 
     # features visualization
     test_image, _ = next(iter(get_iterator(False, DATA_TYPE, 25, USE_DA)))
-    feature_image = Variable(test_image, requires_grad=True)
-    if torch.cuda.is_available():
-        feature_image = feature_image.cuda()
-    feature_image = grad_cam(feature_image)
     test_image_logger.log(make_grid(test_image, nrow=5, normalize=True).numpy())
+    if torch.cuda.is_available():
+        test_image = test_image.cuda()
+    test_image = Variable(test_image, requires_grad=True)
+    feature_image = grad_cam(test_image)
     feature_image_logger.log(make_grid(feature_image, nrow=5, normalize=True).numpy())
 
 

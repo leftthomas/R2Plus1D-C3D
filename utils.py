@@ -83,11 +83,8 @@ class GradCam:
     def __init__(self, model, target_layer):
         self.model = model.eval()
         self.target_layer = target_layer
-        self.features = None
-        self.gradients = None
 
     def __call__(self, x):
-        image_size = (x.size(-2), x.size(-1))
         classes = self.model(x)
         one_hot, _ = classes.max(dim=-1)
         self.model.zero_grad()
@@ -96,7 +93,7 @@ class GradCam:
         cams = F.relu((x.grad * x).sum(dim=1)).cpu().data
         heat_maps = []
         for i in range(cams.size(0)):
-            mask = cv2.resize(cams[i].numpy(), image_size)
+            mask = cams[i].numpy()
             mask = mask - np.min(mask)
             mask = mask / np.max(mask)
             heat_map = np.float32(cv2.applyColorMap(np.uint8(255 * mask), cv2.COLORMAP_JET))
