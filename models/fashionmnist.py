@@ -52,7 +52,7 @@ class FashionMNISTCapsuleNet(nn.Module):
                                          nn.BatchNorm2d(num_features=128))
         self.relu = nn.ReLU(inplace=True)
         self.classifier = nn.Sequential(CapsuleLinear(in_capsules=128, out_capsules=64, in_length=4, out_length=8,
-                                                      routing_type='dynamic', share_weight=True,
+                                                      routing_type='contract', share_weight=True,
                                                       num_iterations=num_iterations),
                                         CapsuleLinear(in_capsules=64, out_capsules=10, in_length=8, out_length=16,
                                                       routing_type='contract', share_weight=False,
