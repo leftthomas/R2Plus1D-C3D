@@ -51,10 +51,13 @@ class CIFAR10CapsuleNet(nn.Module):
         self.down_block5 = nn.Sequential(nn.Conv2d(in_channels=512, out_channels=512, kernel_size=1, stride=2),
                                          nn.BatchNorm2d(num_features=512))
         self.relu = nn.ReLU(inplace=True)
-        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=512, out_capsules=128, in_length=4, out_length=8,
-                                                      routing_type='dynamic', share_weight=False,
+        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=512, out_capsules=256, in_length=4, out_length=8,
+                                                      routing_type='contract', share_weight=False,
                                                       num_iterations=num_iterations),
-                                        CapsuleLinear(in_capsules=128, out_capsules=10, in_length=8, out_length=16,
+                                        CapsuleLinear(in_capsules=256, out_capsules=128, in_length=8, out_length=16,
+                                                      routing_type='contract', share_weight=False,
+                                                      num_iterations=num_iterations),
+                                        CapsuleLinear(in_capsules=128, out_capsules=10, in_length=16, out_length=32,
                                                       routing_type='contract', share_weight=False,
                                                       num_iterations=num_iterations))
 
