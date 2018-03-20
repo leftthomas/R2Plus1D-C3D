@@ -9,7 +9,7 @@ class FashionMNISTCapsuleNet(nn.Module):
             nn.Conv2d(in_channels=1, out_channels=32, kernel_size=7, stride=1, padding=3),
             nn.BatchNorm2d(num_features=32),
             nn.ReLU(inplace=True),
-            nn.Conv2d(in_channels=32, out_channels=32, kernel_size=5, stride=2, padding=2),
+            nn.Conv2d(in_channels=32, out_channels=32, kernel_size=5, stride=1, padding=2),
             nn.BatchNorm2d(num_features=32)
         )
         self.block2 = nn.Sequential(
@@ -18,9 +18,6 @@ class FashionMNISTCapsuleNet(nn.Module):
             nn.ReLU(inplace=True),
             nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=64),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=2, padding=1),
-            nn.BatchNorm2d(num_features=64)
         )
         self.block3 = nn.Sequential(
             nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=1, padding=1),
@@ -36,7 +33,7 @@ class FashionMNISTCapsuleNet(nn.Module):
             nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2d(num_features=128)
         )
-        self.down_block1 = nn.Sequential(nn.Conv2d(in_channels=1, out_channels=32, kernel_size=1, stride=2),
+        self.down_block1 = nn.Sequential(nn.Conv2d(in_channels=1, out_channels=32, kernel_size=1, stride=1),
                                          nn.BatchNorm2d(num_features=32))
         self.down_block2 = nn.Sequential(nn.Conv2d(in_channels=32, out_channels=64, kernel_size=1, stride=2),
                                          nn.BatchNorm2d(num_features=64))
@@ -45,10 +42,10 @@ class FashionMNISTCapsuleNet(nn.Module):
         self.down_block4 = nn.Sequential(nn.Conv2d(in_channels=128, out_channels=128, kernel_size=1, stride=2),
                                          nn.BatchNorm2d(num_features=128))
         self.relu = nn.ReLU(inplace=True)
-        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=128, out_capsules=64, in_length=4, out_length=8,
+        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=256, out_capsules=128, in_length=8, out_length=12,
                                                       routing_type='dynamic', share_weight=True,
                                                       num_iterations=num_iterations),
-                                        CapsuleLinear(in_capsules=64, out_capsules=10, in_length=8, out_length=16,
+                                        CapsuleLinear(in_capsules=128, out_capsules=10, in_length=12, out_length=16,
                                                       routing_type='contract', share_weight=False,
                                                       num_iterations=num_iterations))
 
@@ -75,7 +72,7 @@ class FashionMNISTCapsuleNet(nn.Module):
 
         out = out.view(*out.size()[:2], -1)
         out = out.transpose(-1, -2)
-        out = out.contiguous().view(out.size(0), -1, 4)
+        out = out.contiguous().view(out.size(0), -1, 8)
 
         out = self.classifier(out)
         classes = out.norm(dim=-1)
