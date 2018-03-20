@@ -6,10 +6,10 @@ class CIFAR100CapsuleNet(nn.Module):
     def __init__(self, num_iterations=3):
         super(CIFAR100CapsuleNet, self).__init__()
         self.block1 = nn.Sequential(
-            nn.Conv2d(in_channels=3, out_channels=64, kernel_size=7, stride=1, padding=3),
+            nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=64),
             nn.ReLU(inplace=True),
-            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=5, stride=1, padding=2),
+            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=64)
         )
         self.block2 = nn.Sequential(
@@ -63,7 +63,7 @@ class CIFAR100CapsuleNet(nn.Module):
         self.down_block5 = nn.Sequential(nn.Conv2d(in_channels=512, out_channels=512, kernel_size=1, stride=2),
                                          nn.BatchNorm2d(num_features=512))
         self.relu = nn.ReLU(inplace=True)
-        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=512, out_capsules=100, in_length=4, out_length=16,
+        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=512, out_capsules=100, in_length=4, out_length=8,
                                                       routing_type='contract', share_weight=False,
                                                       num_iterations=num_iterations))
 
