@@ -84,25 +84,51 @@ class GradCam:
     def __init__(self, model, target_layer):
         self.model = model.eval()
         self.target_layer = target_layer
+        self.feature = None
+        self.gradient = None
+
+    def save_gradient(self, grad):
+        self.gradient = grad
 
     def __call__(self, x):
-        x = Variable(x, requires_grad=True)
-        classes = self.model(x)
-        one_hot, _ = classes.max(dim=-1)
-        self.model.zero_grad()
-        one_hot.backward(torch.ones_like(one_hot))
-
-        cams = F.relu((x.grad * x).sum(dim=1)).cpu().data
-        x.grad = None
-
+        image_size = (x.size(-2), x.size(-1))
+        image_channel = x.size(1)
+        datas = Variable(x)
         heat_maps = []
-        for i in range(cams.size(0)):
-            mask = cams[i].numpy()
+        for i in range(datas.size(0)):
+            img = datas[i].data.cpu().numpy()
+            img = img - np.min(img)
+            if np.max(img) != 0:
+                img = img / np.max(img)
+
+            feature = datas[i].unsqueeze(0)
+            for idx, name, module in enumerate(self.model.named_children()):
+                if name == 'classifier':
+                    feature = feature.view(feature.size(0), -1, self.model.classifier.children()[0].in_length)
+                feature = module(feature)
+                if idx == self.target_layer:
+                    x.register_hook(self.save_gradient)
+                    self.feature = feature
+            classes = feature.norm(dim=-1)
+            one_hot, _ = classes.max(dim=-1)
+            self.model.zero_grad()
+            one_hot.backward()
+
+            weight = self.gradient.mean(dim=-1, keepdim=True).mean(dim=-2, keepdim=True)
+            mask = F.relu(1 + (weight * self.feature).sum(dim=1)).squeeze(0)
+            mask = cv2.resize(mask.cpu().data.numpy(), image_size)
             mask = mask - np.min(mask)
             if np.max(mask) != 0:
                 mask = mask / np.max(mask)
-            heat_map = cv2.applyColorMap(np.uint8(255 * mask), cv2.COLORMAP_JET)
-            heat_maps.append(transforms.ToTensor()(cv2.cvtColor(heat_map, cv2.COLOR_BGR2RGB)))
+            heat_map = np.float32(cv2.applyColorMap(np.uint8(255 * mask), cv2.COLORMAP_JET))
+            cam = heat_map + np.float32(cv2.cvtColor(img.transpose((1, 2, 0)) * 255,
+                                                     cv2.COLOR_RGB2BGR if image_channel == 3 else cv2.COLOR_GRAY2BGR))
+            cam = cam - np.min(cam)
+            if np.max(cam) != 0:
+                cam = cam / np.max(cam)
+            heat_maps.append(transforms.ToTensor()(cv2.cvtColor(np.uint8(255 * cam), cv2.COLOR_BGR2RGB)))
+            self.feature = None
+            self.gradient = None
         heat_maps = torch.stack(heat_maps)
         return heat_maps
 

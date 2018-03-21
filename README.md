@@ -29,6 +29,6 @@ optional arguments:
 --num_iterations              routing iterations number [default value is 3](it not work for sum routing)
 --batch_size                  train batch size [default value is 100]
 --num_epochs                  train epochs number [default value is 100]
---target_layer                the layer of visualization [default value is None]
+--target_layer                the layer of visualization [default value is 0]
 ```
 Visdom now can be accessed by going to `127.0.0.1:8097/env/$data_type` in your browser, `$data_type` means the dataset type which you are training.

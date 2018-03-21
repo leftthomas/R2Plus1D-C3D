@@ -98,10 +98,10 @@ def on_end_epoch(state):
     # features visualization
     test_image, _ = next(iter(get_iterator(False, DATA_TYPE, 25, USE_DA)))
     test_image_logger.log(make_grid(test_image, nrow=5, normalize=True).numpy())
-    if torch.cuda.is_available():
-        test_image = test_image.cuda()
-    feature_image = grad_cam(test_image)
-    feature_image_logger.log(make_grid(feature_image, nrow=5, normalize=True).numpy())
+    # if torch.cuda.is_available():
+    #     test_image = test_image.cuda()
+    # feature_image = grad_cam(test_image)
+    feature_image_logger.log(make_grid(test_image, nrow=5, normalize=True).numpy())
 
 
 if __name__ == '__main__':
@@ -114,7 +114,7 @@ if __name__ == '__main__':
     parser.add_argument('--num_iterations', default=3, type=int, help='routing iterations number')
     parser.add_argument('--batch_size', default=100, type=int, help='train batch size')
     parser.add_argument('--num_epochs', default=100, type=int, help='train epochs number')
-    parser.add_argument('--target_layer', default=None, type=int, help='the layer of visualization')
+    parser.add_argument('--target_layer', default=0, type=int, help='the layer of visualization')
 
     opt = parser.parse_args()
 
