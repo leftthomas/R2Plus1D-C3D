@@ -8,35 +8,35 @@ class CIFAR10CapsuleNet(nn.Module):
         self.block1 = nn.Sequential(
             nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=64),
-            nn.ReLU(inplace=True),
+            nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=64)
         )
         self.block2 = nn.Sequential(
             nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=128),
-            nn.ReLU(inplace=True),
+            nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2d(num_features=128)
         )
         self.block3 = nn.Sequential(
             nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=256),
-            nn.ReLU(inplace=True),
+            nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2d(num_features=256)
         )
         self.block4 = nn.Sequential(
             nn.Conv2d(in_channels=256, out_channels=512, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=512),
-            nn.ReLU(inplace=True),
+            nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2d(num_features=512)
         )
         self.block5 = nn.Sequential(
             nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=512),
-            nn.ReLU(inplace=True),
+            nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2d(num_features=512)
         )
@@ -50,10 +50,10 @@ class CIFAR10CapsuleNet(nn.Module):
                                          nn.BatchNorm2d(num_features=512))
         self.down_block5 = nn.Sequential(nn.Conv2d(in_channels=512, out_channels=512, kernel_size=1, stride=2),
                                          nn.BatchNorm2d(num_features=512))
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = nn.LeakyReLU(0.2, inplace=True)
         self.classifier = nn.Sequential(CapsuleLinear(in_capsules=512, out_capsules=128, in_length=4, out_length=8,
                                                       routing_type='contract', share_weight=True,
-                                                      num_iterations=num_iterations), nn.ReLU(),
+                                                      num_iterations=num_iterations), nn.LeakyReLU(0.2, inplace=True),
                                         CapsuleLinear(in_capsules=128, out_capsules=10, in_length=8, out_length=16,
                                                       routing_type='contract', share_weight=False,
                                                       num_iterations=num_iterations))
