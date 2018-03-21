@@ -92,7 +92,7 @@ class GradCam:
         self.model.zero_grad()
         one_hot.backward(torch.ones_like(one_hot))
 
-        cams = ((F.relu(1 + x.grad * x) + x).sum(dim=1)).cpu().data
+        cams = F.relu((x.grad * x).sum(dim=1)).cpu().data
         x.grad = None
 
         heat_maps = []
