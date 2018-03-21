@@ -8,47 +8,47 @@ class CIFAR100CapsuleNet(nn.Module):
         self.block1 = nn.Sequential(
             nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=64),
-            nn.LeakyReLU(0.2, inplace=True),
+            nn.PReLU(),
             nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=64)
         )
         self.block2 = nn.Sequential(
             nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=128),
-            nn.LeakyReLU(0.2, inplace=True),
+            nn.PReLU(),
             nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=128),
-            nn.LeakyReLU(0.2, inplace=True),
+            nn.PReLU(),
             nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2d(num_features=128)
         )
         self.block3 = nn.Sequential(
             nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=256),
-            nn.LeakyReLU(0.2, inplace=True),
+            nn.PReLU(),
             nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=256),
-            nn.LeakyReLU(0.2, inplace=True),
+            nn.PReLU(),
             nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2d(num_features=256)
         )
         self.block4 = nn.Sequential(
             nn.Conv2d(in_channels=256, out_channels=512, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=512),
-            nn.LeakyReLU(0.2, inplace=True),
+            nn.PReLU(),
             nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=512),
-            nn.LeakyReLU(0.2, inplace=True),
+            nn.PReLU(),
             nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2d(num_features=512)
         )
         self.block5 = nn.Sequential(
             nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=512),
-            nn.LeakyReLU(0.2, inplace=True),
+            nn.PReLU(),
             nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(num_features=512),
-            nn.LeakyReLU(0.2, inplace=True),
+            nn.PReLU(),
             nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2d(num_features=512)
         )
@@ -62,10 +62,14 @@ class CIFAR100CapsuleNet(nn.Module):
                                          nn.BatchNorm2d(num_features=512))
         self.down_block5 = nn.Sequential(nn.Conv2d(in_channels=512, out_channels=512, kernel_size=1, stride=2),
                                          nn.BatchNorm2d(num_features=512))
-        self.relu = nn.LeakyReLU(0.2, inplace=True)
+        self.relu1 = nn.PReLU()
+        self.relu2 = nn.PReLU()
+        self.relu3 = nn.PReLU()
+        self.relu4 = nn.PReLU()
+        self.relu5 = nn.PReLU()
         self.classifier = nn.Sequential(CapsuleLinear(in_capsules=512, out_capsules=128, in_length=4, out_length=8,
                                                       routing_type='contract', share_weight=True,
-                                                      num_iterations=num_iterations), nn.LeakyReLU(0.2, inplace=True),
+                                                      num_iterations=num_iterations), nn.PReLU(),
                                         CapsuleLinear(in_capsules=128, out_capsules=100, in_length=8, out_length=16,
                                                       routing_type='contract', share_weight=False,
                                                       num_iterations=num_iterations))
@@ -74,27 +78,27 @@ class CIFAR100CapsuleNet(nn.Module):
         features = x
         out = self.block1(features)
         out += self.down_block1(features)
-        out = self.relu(out)
+        out = self.relu1(out)
 
         features = out
         out = self.block2(features)
         out += self.down_block2(features)
-        out = self.relu(out)
+        out = self.relu2(out)
 
         features = out
         out = self.block3(features)
         out += self.down_block3(features)
-        out = self.relu(out)
+        out = self.relu3(out)
 
         features = out
         out = self.block4(features)
         out += self.down_block4(features)
-        out = self.relu(out)
+        out = self.relu4(out)
 
         features = out
         out = self.block5(features)
         out += self.down_block5(features)
-        out = self.relu(out)
+        out = self.relu5(out)
 
         out = out.view(*out.size()[:2], -1)
         out = out.transpose(-1, -2)
