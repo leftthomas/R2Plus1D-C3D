@@ -1,6 +1,6 @@
 from capsule_layer import CapsuleLinear
 from torch import nn
-from torchvision.models.resnet import resnet18
+from torchvision.models.resnet import resnet50
 
 
 class STL10CapsuleNet(nn.Module):
@@ -8,7 +8,7 @@ class STL10CapsuleNet(nn.Module):
         super(STL10CapsuleNet, self).__init__()
 
         layers = [nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)]
-        for name, module in resnet18().named_children():
+        for name, module in resnet50().named_children():
             if name == 'conv1' or isinstance(module, nn.MaxPool2d) or isinstance(module, nn.AvgPool2d) or isinstance(
                     module, nn.Linear):
                 continue
@@ -30,3 +30,9 @@ class STL10CapsuleNet(nn.Module):
         out = self.classifier(out)
         classes = out.norm(dim=-1)
         return classes
+
+
+if __name__ == '__main__':
+    model = STL10CapsuleNet()
+    for m in model.named_children():
+        print(m)

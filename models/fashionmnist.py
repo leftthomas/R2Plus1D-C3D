@@ -30,3 +30,9 @@ class FashionMNISTCapsuleNet(nn.Module):
         out = self.classifier(out)
         classes = out.norm(dim=-1)
         return classes
+
+
+if __name__ == '__main__':
+    model = FashionMNISTCapsuleNet()
+    for m in model.named_children():
+        print(m)
