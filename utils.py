@@ -81,7 +81,7 @@ class MarginLoss(nn.Module):
 
 
 class GradCam:
-    def __init__(self, model, target_layer):
+    def __init__(self, model):
         self.model = model.eval()
         self.feature = None
         self.gradient = None

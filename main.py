@@ -114,7 +114,6 @@ if __name__ == '__main__':
     parser.add_argument('--num_iterations', default=3, type=int, help='routing iterations number')
     parser.add_argument('--batch_size', default=100, type=int, help='train batch size')
     parser.add_argument('--num_epochs', default=100, type=int, help='train epochs number')
-    parser.add_argument('--target_layer', default=0, type=int, help='the layer of visualization')
 
     opt = parser.parse_args()
 
@@ -123,7 +122,6 @@ if __name__ == '__main__':
     NUM_ITERATIONS = opt.num_iterations
     BATCH_SIZE = opt.batch_size
     NUM_EPOCHS = opt.num_epochs
-    TARGET_LAYER = opt.target_layer
 
     results = {'train_loss': [], 'test_loss': [], 'train_top1_accuracy': [], 'test_top1_accuracy': [],
                'train_top5_accuracy': [], 'test_top5_accuracy': []}
@@ -135,7 +133,7 @@ if __name__ == '__main__':
 
     model = models[DATA_TYPE](NUM_ITERATIONS)
     loss_criterion = MarginLoss()
-    grad_cam = GradCam(model, TARGET_LAYER)
+    grad_cam = GradCam(model)
     if torch.cuda.is_available():
         model.cuda()
         loss_criterion.cuda()
