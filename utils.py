@@ -122,8 +122,7 @@ class GradCam:
             if np.max(mask) != 0:
                 mask = mask / np.max(mask)
             heat_map = np.float32(cv2.applyColorMap(np.uint8(255 * mask), cv2.COLORMAP_JET))
-            cam = heat_map + np.float32(cv2.cvtColor(np.uint8(img.transpose((1, 2, 0)) * 255),
-                                                     cv2.COLOR_RGB2BGR if image_channel == 3 else cv2.COLOR_GRAY2BGR))
+            cam = heat_map + np.float32(cv2.cvtColor(np.uint8(img.transpose((1, 2, 0)) * 255), cv2.COLOR_RGB2BGR))
             cam = cam - np.min(cam)
             if np.max(cam) != 0:
                 cam = cam / np.max(cam)
