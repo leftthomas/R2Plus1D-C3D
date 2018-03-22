@@ -96,12 +96,12 @@ def on_end_epoch(state):
         data_frame.to_csv(out_path + DATA_TYPE + '_results.csv', index_label='epoch')
 
     # features visualization
-    test_image, _ = next(iter(get_iterator(False, DATA_TYPE, 25, USE_DA)))
-    test_image_logger.log(make_grid(test_image, nrow=5, normalize=True).numpy())
+    test_image, _ = next(iter(get_iterator(False, DATA_TYPE, 9, USE_DA)))
+    test_image_logger.log(make_grid(test_image, nrow=3, normalize=True).numpy())
     if torch.cuda.is_available():
         test_image = test_image.cuda()
     feature_image = grad_cam(test_image)
-    feature_image_logger.log(make_grid(feature_image, nrow=5, normalize=True).numpy())
+    feature_image_logger.log(make_grid(feature_image, nrow=3, normalize=True).numpy())
 
 
 if __name__ == '__main__':
