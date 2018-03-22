@@ -7,16 +7,15 @@ class CIFAR100CapsuleNet(nn.Module):
     def __init__(self, num_iterations=3):
         super(CIFAR100CapsuleNet, self).__init__()
 
-        layers = []
+        layers = [nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)]
         for name, module in resnet18().named_children():
-            if isinstance(module, nn.MaxPool2d) or isinstance(module, nn.AvgPool2d) or isinstance(module, nn.Linear):
+            if name == 'conv1' or isinstance(module, nn.MaxPool2d) or isinstance(module, nn.AvgPool2d) or isinstance(
+                    module, nn.Linear):
                 continue
             layers.append(module)
+        layers.append(nn.AvgPool2d(kernel_size=4))
         self.features = nn.Sequential(*layers)
-        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=512, out_capsules=128, in_length=4, out_length=8,
-                                                      routing_type='contract', share_weight=True,
-                                                      num_iterations=num_iterations),
-                                        CapsuleLinear(in_capsules=128, out_capsules=100, in_length=8, out_length=16,
+        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=128, out_capsules=100, in_length=4, out_length=8,
                                                       routing_type='contract', share_weight=False,
                                                       num_iterations=num_iterations))
 
