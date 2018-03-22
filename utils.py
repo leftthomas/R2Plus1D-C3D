@@ -108,7 +108,7 @@ class GradCam:
                     feature = feature.contiguous().view(feature.size(0), -1, module[0].weight.size(-1))
                 feature = module(feature)
                 if name == 'features':
-                    x.register_hook(self.save_gradient)
+                    feature.register_hook(self.save_gradient)
                     self.feature = feature
             classes = feature.norm(dim=-1)
             one_hot, _ = classes.max(dim=-1)
@@ -122,14 +122,12 @@ class GradCam:
             if np.max(mask) != 0:
                 mask = mask / np.max(mask)
             heat_map = np.float32(cv2.applyColorMap(np.uint8(255 * mask), cv2.COLORMAP_JET))
-            cam = heat_map + np.float32(cv2.cvtColor(img.transpose((1, 2, 0)) * 255,
+            cam = heat_map + np.float32(cv2.cvtColor(np.uint8(img.transpose((1, 2, 0)) * 255),
                                                      cv2.COLOR_RGB2BGR if image_channel == 3 else cv2.COLOR_GRAY2BGR))
             cam = cam - np.min(cam)
             if np.max(cam) != 0:
                 cam = cam / np.max(cam)
             heat_maps.append(transforms.ToTensor()(cv2.cvtColor(np.uint8(255 * cam), cv2.COLOR_BGR2RGB)))
-            self.feature = None
-            self.gradient = None
         heat_maps = torch.stack(heat_maps)
         return heat_maps
 
