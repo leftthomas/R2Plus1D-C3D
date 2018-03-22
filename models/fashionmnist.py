@@ -7,12 +7,11 @@ class FashionMNISTCapsuleNet(nn.Module):
     def __init__(self, num_iterations=3):
         super(FashionMNISTCapsuleNet, self).__init__()
 
-        layers = []
+        layers = [nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)]
         for name, module in resnet18().named_children():
-            if isinstance(module, nn.MaxPool2d) or isinstance(module, nn.AvgPool2d) or isinstance(module, nn.Linear):
+            if name == 'conv1' or isinstance(module, nn.MaxPool2d) or isinstance(module, nn.AvgPool2d) or isinstance(
+                    module, nn.Linear):
                 continue
-            if name == 'conv1':
-                module.in_channels = 1
             layers.append(module)
         self.features = nn.Sequential(*layers)
         self.classifier = nn.Sequential(CapsuleLinear(in_capsules=512, out_capsules=128, in_length=4, out_length=8,
