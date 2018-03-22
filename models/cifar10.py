@@ -13,14 +13,15 @@ class CIFAR10CapsuleNet(nn.Module):
                     module, nn.Linear):
                 continue
             layers.append(module)
-        layers.append(nn.AvgPool2d(kernel_size=4))
         self.features = nn.Sequential(*layers)
+        self.pool = nn.AvgPool2d(kernel_size=4)
         self.classifier = nn.Sequential(CapsuleLinear(in_capsules=128, out_capsules=10, in_length=4, out_length=8,
                                                       routing_type='contract', share_weight=False,
                                                       num_iterations=num_iterations))
 
     def forward(self, x):
         out = self.features(x)
+        out = self.pool(out)
 
         out = out.view(*out.size()[:2], -1)
         out = out.transpose(-1, -2)
