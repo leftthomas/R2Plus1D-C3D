@@ -1,6 +1,6 @@
 from capsule_layer import CapsuleLinear
 from torch import nn
-from torchvision.models.resnet import resnet18
+from torchvision.models.resnet import resnet34
 
 
 class FashionMNISTCapsuleNet(nn.Module):
@@ -8,7 +8,7 @@ class FashionMNISTCapsuleNet(nn.Module):
         super(FashionMNISTCapsuleNet, self).__init__()
 
         layers = [nn.Conv2d(1, 64, kernel_size=3, stride=1, padding=1, bias=False)]
-        for name, module in resnet18().named_children():
+        for name, module in resnet34().named_children():
             if name == 'conv1' or isinstance(module, nn.MaxPool2d) or isinstance(module, nn.AvgPool2d) or isinstance(
                     module, nn.Linear):
                 continue
