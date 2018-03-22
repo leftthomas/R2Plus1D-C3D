@@ -32,10 +32,3 @@ class FashionMNISTCapsuleNet(nn.Module):
         out = self.classifier(out)
         classes = out.norm(dim=-1)
         return classes
-
-
-if __name__ == '__main__':
-    model = FashionMNISTCapsuleNet()
-    for name, module in model.named_children():
-        if name == 'classifier':
-            print(module[0].weight.size(-1))
