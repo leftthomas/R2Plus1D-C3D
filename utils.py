@@ -83,7 +83,6 @@ class MarginLoss(nn.Module):
 class GradCam:
     def __init__(self, model, target_layer):
         self.model = model.eval()
-        self.target_layer = target_layer
         self.feature = None
         self.gradient = None
 
@@ -102,11 +101,13 @@ class GradCam:
                 img = img / np.max(img)
 
             feature = datas[i].unsqueeze(0)
-            for idx, name, module in enumerate(self.model.named_children()):
+            for name, module in self.model.named_children():
                 if name == 'classifier':
-                    feature = feature.view(feature.size(0), -1, self.model.classifier.children()[0].in_length)
+                    feature = feature.view(*feature.size()[:2], -1)
+                    feature = feature.transpose(-1, -2)
+                    feature = feature.contiguous().view(feature.size(0), -1, module[0].weight.size(-1))
                 feature = module(feature)
-                if idx == self.target_layer:
+                if name == 'features':
                     x.register_hook(self.save_gradient)
                     self.feature = feature
             classes = feature.norm(dim=-1)
