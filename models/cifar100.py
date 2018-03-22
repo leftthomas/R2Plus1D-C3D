@@ -1,104 +1,27 @@
 from capsule_layer import CapsuleLinear
 from torch import nn
+from torchvision.models.resnet import resnet18
 
 
 class CIFAR100CapsuleNet(nn.Module):
     def __init__(self, num_iterations=3):
         super(CIFAR100CapsuleNet, self).__init__()
-        self.block1 = nn.Sequential(
-            nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(num_features=64),
-            nn.PReLU(),
-            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(num_features=64)
-        )
-        self.block2 = nn.Sequential(
-            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(num_features=128),
-            nn.PReLU(),
-            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(num_features=128),
-            nn.PReLU(),
-            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, stride=2, padding=1),
-            nn.BatchNorm2d(num_features=128)
-        )
-        self.block3 = nn.Sequential(
-            nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(num_features=256),
-            nn.PReLU(),
-            nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(num_features=256),
-            nn.PReLU(),
-            nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=2, padding=1),
-            nn.BatchNorm2d(num_features=256)
-        )
-        self.block4 = nn.Sequential(
-            nn.Conv2d(in_channels=256, out_channels=512, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(num_features=512),
-            nn.PReLU(),
-            nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(num_features=512),
-            nn.PReLU(),
-            nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=2, padding=1),
-            nn.BatchNorm2d(num_features=512)
-        )
-        self.block5 = nn.Sequential(
-            nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(num_features=512),
-            nn.PReLU(),
-            nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(num_features=512),
-            nn.PReLU(),
-            nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=2, padding=1),
-            nn.BatchNorm2d(num_features=512)
-        )
-        self.down_block1 = nn.Sequential(nn.Conv2d(in_channels=3, out_channels=64, kernel_size=1, stride=1),
-                                         nn.BatchNorm2d(num_features=64))
-        self.down_block2 = nn.Sequential(nn.Conv2d(in_channels=64, out_channels=128, kernel_size=1, stride=2),
-                                         nn.BatchNorm2d(num_features=128))
-        self.down_block3 = nn.Sequential(nn.Conv2d(in_channels=128, out_channels=256, kernel_size=1, stride=2),
-                                         nn.BatchNorm2d(num_features=256))
-        self.down_block4 = nn.Sequential(nn.Conv2d(in_channels=256, out_channels=512, kernel_size=1, stride=2),
-                                         nn.BatchNorm2d(num_features=512))
-        self.down_block5 = nn.Sequential(nn.Conv2d(in_channels=512, out_channels=512, kernel_size=1, stride=2),
-                                         nn.BatchNorm2d(num_features=512))
-        self.relu1 = nn.PReLU()
-        self.relu2 = nn.PReLU()
-        self.relu3 = nn.PReLU()
-        self.relu4 = nn.PReLU()
-        self.relu5 = nn.PReLU()
+
+        layers = []
+        for name, module in resnet18().named_children():
+            if isinstance(module, nn.MaxPool2d) or isinstance(module, nn.AvgPool2d) or isinstance(module, nn.Linear):
+                continue
+            layers.append(module)
+        self.features = nn.Sequential(*layers)
         self.classifier = nn.Sequential(CapsuleLinear(in_capsules=512, out_capsules=128, in_length=4, out_length=8,
                                                       routing_type='contract', share_weight=True,
-                                                      num_iterations=num_iterations), nn.PReLU(),
+                                                      num_iterations=num_iterations),
                                         CapsuleLinear(in_capsules=128, out_capsules=100, in_length=8, out_length=16,
                                                       routing_type='contract', share_weight=False,
                                                       num_iterations=num_iterations))
 
     def forward(self, x):
-        features = x
-        out = self.block1(features)
-        out += self.down_block1(features)
-        out = self.relu1(out)
-
-        features = out
-        out = self.block2(features)
-        out += self.down_block2(features)
-        out = self.relu2(out)
-
-        features = out
-        out = self.block3(features)
-        out += self.down_block3(features)
-        out = self.relu3(out)
-
-        features = out
-        out = self.block4(features)
-        out += self.down_block4(features)
-        out = self.relu4(out)
-
-        features = out
-        out = self.block5(features)
-        out += self.down_block5(features)
-        out = self.relu5(out)
+        out = self.features(x)
 
         out = out.view(*out.size()[:2], -1)
         out = out.transpose(-1, -2)
