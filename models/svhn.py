@@ -1,24 +1,24 @@
 from capsule_layer import CapsuleLinear
 from torch import nn
-from torchvision.models.resnet import resnet34
+
+from models.resnet import resnet20
 
 
 class SVHNCapsuleNet(nn.Module):
     def __init__(self, num_iterations=3):
         super(SVHNCapsuleNet, self).__init__()
 
-        layers = [nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)]
-        for name, module in resnet34().named_children():
-            if name == 'conv1' or isinstance(module, nn.MaxPool2d) or isinstance(module, nn.AvgPool2d) or isinstance(
-                    module, nn.Linear):
+        layers = []
+        for name, module in resnet20().named_children():
+            if isinstance(module, nn.AvgPool2d) or isinstance(module, nn.Linear):
                 continue
             layers.append(module)
         self.features = nn.Sequential(*layers)
-        self.pool = nn.AvgPool2d(kernel_size=4)
-        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=128, out_capsules=32, in_length=4, out_length=8,
+        self.pool = nn.AvgPool2d(kernel_size=8)
+        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=32, out_capsules=16, in_length=2, out_length=4,
                                                       routing_type='contract', share_weight=True,
-                                                      num_iterations=num_iterations), nn.ReLU(),
-                                        CapsuleLinear(in_capsules=32, out_capsules=10, in_length=8, out_length=16,
+                                                      num_iterations=num_iterations),
+                                        CapsuleLinear(in_capsules=16, out_capsules=10, in_length=4, out_length=8,
                                                       routing_type='contract', share_weight=False,
                                                       num_iterations=num_iterations))
 
@@ -28,7 +28,7 @@ class SVHNCapsuleNet(nn.Module):
 
         out = out.view(*out.size()[:2], -1)
         out = out.transpose(-1, -2)
-        out = out.contiguous().view(out.size(0), -1, 4)
+        out = out.contiguous().view(out.size(0), -1, 2)
 
         out = self.classifier(out)
         classes = out.norm(dim=-1)
