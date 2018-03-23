@@ -1,7 +1,7 @@
 from capsule_layer import CapsuleLinear
 from torch import nn
 
-from models.resnet import resnet20
+from resnet import resnet20
 
 
 class MNISTCapsuleNet(nn.Module):
