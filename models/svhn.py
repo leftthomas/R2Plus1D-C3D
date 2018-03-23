@@ -14,17 +14,15 @@ class SVHNCapsuleNet(nn.Module):
                 continue
             layers.append(module)
         self.features = nn.Sequential(*layers)
-        self.pool = nn.AvgPool2d(kernel_size=4)
-        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=128, out_capsules=32, in_length=4, out_length=8,
-                                                      routing_type='dynamic', share_weight=True,
-                                                      num_iterations=num_iterations),
-                                        CapsuleLinear(in_capsules=32, out_capsules=10, in_length=8, out_length=16,
-                                                      routing_type='contract', share_weight=False,
-                                                      num_iterations=num_iterations))
+
+        self.classifier = nn.Sequential(
+            CapsuleLinear(in_capsules=128 * 4 * 4, out_capsules=128, in_length=4, out_length=8,
+                          routing_type='contract', share_weight=True, num_iterations=num_iterations),
+            CapsuleLinear(in_capsules=128, out_capsules=10, in_length=8, out_length=16,
+                          routing_type='contract', share_weight=False, num_iterations=num_iterations))
 
     def forward(self, x):
         out = self.features(x)
-        out = self.pool(out)
 
         out = out.view(*out.size()[:2], -1)
         out = out.transpose(-1, -2)
