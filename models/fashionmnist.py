@@ -1,7 +1,7 @@
 from capsule_layer import CapsuleLinear
 from torch import nn
 
-from resnet import preact_resnet32
+from resnet import resnet44
 
 
 class FashionMNISTCapsuleNet(nn.Module):
@@ -9,16 +9,16 @@ class FashionMNISTCapsuleNet(nn.Module):
         super(FashionMNISTCapsuleNet, self).__init__()
 
         layers = [nn.Conv2d(1, 16, kernel_size=3, stride=1, padding=1, bias=False)]
-        for name, module in preact_resnet32().named_children():
+        for name, module in resnet44().named_children():
             if name == 'conv1' or isinstance(module, nn.AvgPool2d) or isinstance(module, nn.Linear):
                 continue
             layers.append(module)
         self.features = nn.Sequential(*layers)
         self.pool = nn.AvgPool2d(kernel_size=7)
-        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=32, out_capsules=16, in_length=2, out_length=4,
+        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=32, out_capsules=24, in_length=2, out_length=4,
                                                       routing_type='contract', share_weight=True,
                                                       num_iterations=num_iterations),
-                                        CapsuleLinear(in_capsules=16, out_capsules=10, in_length=4, out_length=8,
+                                        CapsuleLinear(in_capsules=24, out_capsules=10, in_length=4, out_length=8,
                                                       routing_type='contract', share_weight=False,
                                                       num_iterations=num_iterations))
 
