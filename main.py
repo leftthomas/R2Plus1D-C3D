@@ -112,7 +112,7 @@ if __name__ == '__main__':
                         help='dataset type')
     parser.add_argument('--use_da', action='store_true', help='use data augmentation or not')
     parser.add_argument('--num_iterations', default=3, type=int, help='routing iterations number')
-    parser.add_argument('--batch_size', default=100, type=int, help='train batch size')
+    parser.add_argument('--batch_size', default=50, type=int, help='train batch size')
     parser.add_argument('--num_epochs', default=100, type=int, help='train epochs number')
 
     opt = parser.parse_args()
