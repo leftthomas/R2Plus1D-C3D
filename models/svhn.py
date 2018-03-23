@@ -1,7 +1,7 @@
 from capsule_layer import CapsuleLinear
 from torch import nn
 
-from resnet import preact_resnet20
+from resnet import resnet32
 
 
 class SVHNCapsuleNet(nn.Module):
@@ -9,7 +9,7 @@ class SVHNCapsuleNet(nn.Module):
         super(SVHNCapsuleNet, self).__init__()
 
         layers = []
-        for name, module in preact_resnet20().named_children():
+        for name, module in resnet32().named_children():
             if isinstance(module, nn.AvgPool2d) or isinstance(module, nn.Linear):
                 continue
             layers.append(module)
