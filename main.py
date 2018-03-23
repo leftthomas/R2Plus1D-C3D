@@ -63,9 +63,6 @@ def on_end_epoch(state):
     results['train_top1_accuracy'].append(meter_accuracy.value()[0])
     results['train_top5_accuracy'].append(meter_accuracy.value()[1])
 
-    # learning rate scheduler
-    scheduler.step(meter_loss.value()[0], epoch=state['epoch'])
-
     reset_meters()
 
     engine.test(processor, get_iterator(False, DATA_TYPE, BATCH_SIZE, USE_DA))
@@ -82,6 +79,9 @@ def on_end_epoch(state):
         state['epoch'], meter_loss.value()[0], meter_accuracy.value()[0], meter_accuracy.value()[1]))
 
     torch.save(model.state_dict(), 'epochs/%s_%d.pth' % (DATA_TYPE, state['epoch']))
+
+    # learning rate scheduler
+    scheduler.step(meter_loss.value()[0], epoch=state['epoch'])
 
     # save statistics at every 10 epochs
     if state['epoch'] % 10 == 0:
