@@ -107,7 +107,7 @@ class GradCam:
                     feature = feature.transpose(-1, -2)
                     feature = feature.contiguous().view(feature.size(0), -1, module[0].weight.size(-1))
                 feature = module(feature)
-                if name == 'conv1':
+                if name == 'features':
                     feature.register_hook(self.save_gradient)
                     self.feature = feature
             classes = feature.norm(dim=-1)
