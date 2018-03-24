@@ -8,9 +8,10 @@ class CIFAR10CapsuleNet(nn.Module):
     def __init__(self, num_iterations=3):
         super(CIFAR10CapsuleNet, self).__init__()
 
+        self.conv1 = nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1, bias=False)
         layers = []
         for name, module in resnet110().named_children():
-            if isinstance(module, nn.AvgPool2d) or isinstance(module, nn.Linear):
+            if name == 'conv1' or isinstance(module, nn.AvgPool2d) or isinstance(module, nn.Linear):
                 continue
             layers.append(module)
         self.features = nn.Sequential(*layers)
@@ -23,7 +24,8 @@ class CIFAR10CapsuleNet(nn.Module):
                                                       num_iterations=num_iterations))
 
     def forward(self, x):
-        out = self.features(x)
+        out = self.conv1(x)
+        out = self.features(out)
         out = self.pool(out)
 
         out = out.view(*out.size()[:2], -1)

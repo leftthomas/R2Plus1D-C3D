@@ -8,7 +8,8 @@ class FashionMNISTCapsuleNet(nn.Module):
     def __init__(self, num_iterations=3):
         super(FashionMNISTCapsuleNet, self).__init__()
 
-        layers = [nn.Conv2d(1, 16, kernel_size=3, stride=1, padding=1, bias=False)]
+        self.conv1 = nn.Conv2d(1, 16, kernel_size=3, stride=1, padding=1, bias=False)
+        layers = []
         for name, module in resnet110().named_children():
             if name == 'conv1' or isinstance(module, nn.AvgPool2d) or isinstance(module, nn.Linear):
                 continue
@@ -23,7 +24,8 @@ class FashionMNISTCapsuleNet(nn.Module):
                                                       num_iterations=num_iterations))
 
     def forward(self, x):
-        out = self.features(x)
+        out = self.conv1(x)
+        out = self.features(out)
         out = self.pool(out)
 
         out = out.view(*out.size()[:2], -1)
