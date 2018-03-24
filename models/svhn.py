@@ -17,7 +17,7 @@ class SVHNCapsuleNet(nn.Module):
         self.pool = nn.AvgPool2d(kernel_size=8)
         self.classifier = nn.Sequential(CapsuleLinear(in_capsules=16, out_capsules=10, in_length=4, out_length=16,
                                                       routing_type='contract', share_weight=True,
-                                                      num_iterations=num_iterations))
+                                                      num_iterations=num_iterations), nn.ReLU())
 
     def forward(self, x):
         out = self.features(x)
