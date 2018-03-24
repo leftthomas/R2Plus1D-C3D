@@ -1,7 +1,7 @@
 from capsule_layer import CapsuleLinear
 from torch import nn
 
-from resnet import resnet110
+from resnet import preact_resnet110
 
 
 class FashionMNISTCapsuleNet(nn.Module):
@@ -10,7 +10,7 @@ class FashionMNISTCapsuleNet(nn.Module):
 
         self.conv1 = nn.Conv2d(1, 16, kernel_size=3, stride=1, padding=1, bias=False)
         layers = []
-        for name, module in resnet110().named_children():
+        for name, module in preact_resnet110().named_children():
             if name == 'conv1' or isinstance(module, nn.AvgPool2d) or isinstance(module, nn.Linear):
                 continue
             layers.append(module)
