@@ -116,7 +116,7 @@ class GradCam:
             one_hot.backward()
 
             weight = self.gradient.mean(dim=-1, keepdim=True).mean(dim=-2, keepdim=True)
-            mask = F.relu(1 + (weight * self.feature).sum(dim=1)).squeeze(0)
+            mask = F.relu((weight * self.feature).sum(dim=1)).squeeze(0)
             mask = cv2.resize(mask.cpu().data.numpy(), image_size)
             mask = mask - np.min(mask)
             if np.max(mask) != 0:
