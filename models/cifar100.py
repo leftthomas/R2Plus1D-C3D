@@ -27,7 +27,7 @@ class CIFAR100CapsuleNet(nn.Module):
 
         out = out.view(*out.size()[:2], -1)
         out = out.transpose(-1, -2)
-        out = out.contiguous().view(out.size(0), -1, 2)
+        out = out.contiguous().view(out.size(0), -1, 4)
 
         out = self.classifier(out)
         classes = out.norm(dim=-1)
