@@ -1,169 +1,89 @@
 import math
+from collections import OrderedDict
 
 import torch
 import torch.nn as nn
 
 
-def conv3x3(in_planes, out_planes, stride=1):
-    return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=False)
-
-
-class BasicBlock(nn.Module):
-    expansion = 1
-
-    def __init__(self, inplanes, planes, stride=1, downsample=None):
-        super(BasicBlock, self).__init__()
-        self.conv1 = conv3x3(inplanes, planes, stride)
-        self.bn1 = nn.BatchNorm2d(planes)
-        self.relu = nn.ReLU(inplace=True)
-        self.conv2 = conv3x3(planes, planes)
-        self.bn2 = nn.BatchNorm2d(planes)
-        self.downsample = downsample
-        self.stride = stride
+class _DenseLayer(nn.Sequential):
+    def __init__(self, num_input_features, growth_rate, bn_size):
+        super(_DenseLayer, self).__init__()
+        self.add_module('norm.1', nn.BatchNorm2d(num_input_features)),
+        self.add_module('relu.1', nn.ReLU(inplace=True)),
+        self.add_module('conv.1', nn.Conv2d(num_input_features, bn_size *
+                                            growth_rate, kernel_size=1, stride=1, bias=False)),
+        self.add_module('norm.2', nn.BatchNorm2d(bn_size * growth_rate)),
+        self.add_module('relu.2', nn.ReLU(inplace=True)),
+        self.add_module('conv.2', nn.Conv2d(bn_size * growth_rate, growth_rate,
+                                            kernel_size=3, stride=1, padding=1, bias=False)),
 
     def forward(self, x):
-        residual = x
-
-        out = self.conv1(x)
-        out = self.bn1(out)
-        out = self.relu(out)
-
-        out = self.conv2(out)
-        out = self.bn2(out)
-
-        if self.downsample is not None:
-            residual = self.downsample(x)
-
-        out += residual
-        out = self.relu(out)
-
-        return out
+        new_features = super(_DenseLayer, self).forward(x)
+        return torch.cat([x, new_features], 1)
 
 
-class Bottleneck(nn.Module):
-    expansion = 4
+class _DenseBlock(nn.Sequential):
+    def __init__(self, num_layers, num_input_features, bn_size, growth_rate):
+        super(_DenseBlock, self).__init__()
+        for i in range(num_layers):
+            layer = _DenseLayer(num_input_features + i * growth_rate, growth_rate, bn_size)
+            self.add_module('denselayer%d' % (i + 1), layer)
 
-    def __init__(self, inplanes, planes, stride=1, downsample=None):
-        super(Bottleneck, self).__init__()
-        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(planes)
-        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
-        self.bn2 = nn.BatchNorm2d(planes)
-        self.conv3 = nn.Conv2d(planes, planes * 4, kernel_size=1, bias=False)
-        self.bn3 = nn.BatchNorm2d(planes * 4)
+
+class _Transition(nn.Sequential):
+    def __init__(self, num_input_features, num_output_features):
+        super(_Transition, self).__init__()
+        self.add_module('norm', nn.BatchNorm2d(num_input_features))
+        self.add_module('relu', nn.ReLU(inplace=True))
+        self.add_module('conv', nn.Conv2d(num_input_features, num_output_features,
+                                          kernel_size=1, stride=1, bias=False))
+        self.add_module('pool', nn.AvgPool2d(kernel_size=2, stride=2))
+
+
+class DenseNet(nn.Module):
+    r"""Densenet model class, based on
+    `"Densely Connected Convolutional Networks" <https://arxiv.org/pdf/1608.06993.pdf>`_
+    Args:
+        growth_rate (int) - how many filters to add each layer (`k` in paper)
+        block_config (list of 4 ints) - how many layers in each pooling block
+        num_init_features (int) - the number of filters to learn in the first convolution layer
+        bn_size (int) - multiplicative factor for number of bottle neck layers
+          (i.e. bn_size * k features in the bottleneck layer)
+        num_classes (int) - number of classification classes
+    """
+
+    def __init__(self, growth_rate=12, block_config=(16, 16, 16),
+                 num_init_features=24, bn_size=4, num_classes=10):
+
+        super(DenseNet, self).__init__()
+
+        # First convolution
+        self.features = nn.Sequential(OrderedDict([
+            ('conv0', nn.Conv2d(3, num_init_features, kernel_size=3, stride=1, padding=1, bias=False)),
+        ]))
+
+        # Each denseblock
+        num_features = num_init_features
+        for i, num_layers in enumerate(block_config):
+            block = _DenseBlock(num_layers=num_layers, num_input_features=num_features, bn_size=bn_size,
+                                growth_rate=growth_rate)
+            self.features.add_module('denseblock%d' % (i + 1), block)
+            num_features = num_features + num_layers * growth_rate
+            if i != len(block_config) - 1:
+                trans = _Transition(num_input_features=num_features, num_output_features=num_features // 2)
+                self.features.add_module('transition%d' % (i + 1), trans)
+                num_features = num_features // 2
+
+        # Final batch norm
+        self.features.add_module('norm5', nn.BatchNorm2d(num_features))
+
         self.relu = nn.ReLU(inplace=True)
-        self.downsample = downsample
-        self.stride = stride
+        self.avgpool = nn.AvgPool2d(kernel_size=8, stride=1)
 
-    def forward(self, x):
-        residual = x
+        # Linear layer
+        self.classifier = nn.Linear(num_features, num_classes)
 
-        out = self.conv1(x)
-        out = self.bn1(out)
-        out = self.relu(out)
-
-        out = self.conv2(out)
-        out = self.bn2(out)
-        out = self.relu(out)
-
-        out = self.conv3(out)
-        out = self.bn3(out)
-
-        if self.downsample is not None:
-            residual = self.downsample(x)
-
-        out += residual
-        out = self.relu(out)
-
-        return out
-
-
-class PreActBasicBlock(nn.Module):
-    expansion = 1
-
-    def __init__(self, inplanes, planes, stride=1, downsample=None):
-        super(PreActBasicBlock, self).__init__()
-        self.bn1 = nn.BatchNorm2d(inplanes)
-        self.relu = nn.ReLU(inplace=True)
-        self.conv1 = conv3x3(inplanes, planes, stride)
-        self.bn2 = nn.BatchNorm2d(planes)
-        self.conv2 = conv3x3(planes, planes)
-        self.downsample = downsample
-        self.stride = stride
-
-    def forward(self, x):
-        residual = x
-
-        out = self.bn1(x)
-        out = self.relu(out)
-
-        if self.downsample is not None:
-            residual = self.downsample(out)
-
-        out = self.conv1(out)
-
-        out = self.bn2(out)
-        out = self.relu(out)
-        out = self.conv2(out)
-
-        out += residual
-
-        return out
-
-
-class PreActBottleneck(nn.Module):
-    expansion = 4
-
-    def __init__(self, inplanes, planes, stride=1, downsample=None):
-        super(PreActBottleneck, self).__init__()
-        self.bn1 = nn.BatchNorm2d(inplanes)
-        self.relu = nn.ReLU(inplace=True)
-        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
-        self.bn2 = nn.BatchNorm2d(planes)
-        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
-        self.bn3 = nn.BatchNorm2d(planes)
-        self.conv3 = nn.Conv2d(planes, planes * 4, kernel_size=1, bias=False)
-        self.downsample = downsample
-        self.stride = stride
-
-    def forward(self, x):
-        residual = x
-
-        out = self.bn1(x)
-        out = self.relu(out)
-
-        if self.downsample is not None:
-            residual = self.downsample(out)
-
-        out = self.conv1(out)
-
-        out = self.bn2(out)
-        out = self.relu(out)
-        out = self.conv2(out)
-
-        out = self.bn3(out)
-        out = self.relu(out)
-        out = self.conv3(out)
-
-        out += residual
-
-        return out
-
-
-class ResNet(nn.Module):
-
-    def __init__(self, block, layers, num_classes=10):
-        super(ResNet, self).__init__()
-        self.inplanes = 16
-        self.conv1 = nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(16)
-        self.relu = nn.ReLU(inplace=True)
-        self.layer1 = self._make_layer(block, 16, layers[0])
-        self.layer2 = self._make_layer(block, 32, layers[1], stride=2)
-        self.layer3 = self._make_layer(block, 64, layers[2], stride=2)
-        self.avgpool = nn.AvgPool2d(8, stride=1)
-        self.fc = nn.Linear(64 * block.expansion, num_classes)
-
+        # initialize conv and bn parameters
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
@@ -172,160 +92,24 @@ class ResNet(nn.Module):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
 
-    def _make_layer(self, block, planes, blocks, stride=1):
-        downsample = None
-        if stride != 1 or self.inplanes != planes * block.expansion:
-            downsample = nn.Sequential(
-                nn.Conv2d(self.inplanes, planes * block.expansion, kernel_size=1, stride=stride, bias=False),
-                nn.BatchNorm2d(planes * block.expansion)
-            )
-
-        layers = [block(self.inplanes, planes, stride, downsample)]
-        self.inplanes = planes * block.expansion
-        for _ in range(1, blocks):
-            layers.append(block(self.inplanes, planes))
-
-        return nn.Sequential(*layers)
-
     def forward(self, x):
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu(x)
-
-        x = self.layer1(x)
-        x = self.layer2(x)
-        x = self.layer3(x)
-
-        x = self.avgpool(x)
-        x = x.view(x.size(0), -1)
-        x = self.fc(x)
-
-        return x
+        features = self.features(x)
+        out = self.relu(features)
+        out = self.avgpool(out)
+        out = out.view(features.size(0), -1)
+        out = self.classifier(out)
+        return out
 
 
-class PreActResNet(nn.Module):
-
-    def __init__(self, block, layers, num_classes=10):
-        super(PreActResNet, self).__init__()
-        self.inplanes = 16
-        self.conv1 = nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1, bias=False)
-        self.layer1 = self._make_layer(block, 16, layers[0])
-        self.layer2 = self._make_layer(block, 32, layers[1], stride=2)
-        self.layer3 = self._make_layer(block, 64, layers[2], stride=2)
-        self.bn = nn.BatchNorm2d(64 * block.expansion)
-        self.relu = nn.ReLU(inplace=True)
-        self.avgpool = nn.AvgPool2d(8, stride=1)
-        self.fc = nn.Linear(64 * block.expansion, num_classes)
-
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-                m.weight.data.normal_(0, math.sqrt(2. / n))
-            elif isinstance(m, nn.BatchNorm2d):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
-
-    def _make_layer(self, block, planes, blocks, stride=1):
-        downsample = None
-        if stride != 1 or self.inplanes != planes * block.expansion:
-            downsample = nn.Sequential(
-                nn.Conv2d(self.inplanes, planes * block.expansion, kernel_size=1, stride=stride, bias=False)
-            )
-
-        layers = [block(self.inplanes, planes, stride, downsample)]
-        self.inplanes = planes * block.expansion
-        for _ in range(1, blocks):
-            layers.append(block(self.inplanes, planes))
-        return nn.Sequential(*layers)
-
-    def forward(self, x):
-        x = self.conv1(x)
-
-        x = self.layer1(x)
-        x = self.layer2(x)
-        x = self.layer3(x)
-
-        x = self.bn(x)
-        x = self.relu(x)
-        x = self.avgpool(x)
-        x = x.view(x.size(0), -1)
-        x = self.fc(x)
-
-        return x
-
-
-def resnet20(**kwargs):
-    model = ResNet(BasicBlock, [3, 3, 3], **kwargs)
-    return model
-
-
-def resnet32(**kwargs):
-    model = ResNet(BasicBlock, [5, 5, 5], **kwargs)
-    return model
-
-
-def resnet44(**kwargs):
-    model = ResNet(BasicBlock, [7, 7, 7], **kwargs)
-    return model
-
-
-def resnet56(**kwargs):
-    model = ResNet(BasicBlock, [9, 9, 9], **kwargs)
-    return model
-
-
-def resnet110(**kwargs):
-    model = ResNet(BasicBlock, [18, 18, 18], **kwargs)
-    return model
-
-
-def resnet164(**kwargs):
-    model = ResNet(Bottleneck, [18, 18, 18], **kwargs)
-    return model
-
-
-def resnet1001(**kwargs):
-    model = ResNet(Bottleneck, [111, 111, 111], **kwargs)
-    return model
-
-
-def preact_resnet20(**kwargs):
-    model = PreActResNet(PreActBasicBlock, [3, 3, 3], **kwargs)
-    return model
-
-
-def preact_resnet32(**kwargs):
-    model = PreActResNet(PreActBasicBlock, [5, 5, 5], **kwargs)
-    return model
-
-
-def preact_resnet44(**kwargs):
-    model = PreActResNet(PreActBasicBlock, [7, 7, 7], **kwargs)
-    return model
-
-
-def preact_resnet56(**kwargs):
-    model = PreActResNet(PreActBasicBlock, [9, 9, 9], **kwargs)
-    return model
-
-
-def preact_resnet110(**kwargs):
-    model = PreActResNet(PreActBasicBlock, [18, 18, 18], **kwargs)
-    return model
-
-
-def preact_resnet164(**kwargs):
-    model = PreActResNet(PreActBottleneck, [18, 18, 18], **kwargs)
-    return model
-
-
-def preact_resnet1001(**kwargs):
-    model = PreActResNet(PreActBottleneck, [111, 111, 111], **kwargs)
+def densenet(depth, k, **kwargs):
+    N = (depth - 4) // 6
+    model = DenseNet(growth_rate=k, block_config=[N, N, N], num_init_features=2 * k, **kwargs)
     return model
 
 
 if __name__ == '__main__':
-    net = preact_resnet110()
-    y = net(torch.autograd.Variable(torch.randn(1, 3, 32, 32)))
+    net = densenet(100, 12, num_classes=100)
+    input = torch.autograd.Variable(torch.randn(1, 3, 32, 32))
+    y = net(input)
     print(net)
     print(y.size())
