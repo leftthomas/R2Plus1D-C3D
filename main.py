@@ -64,7 +64,7 @@ def on_end_epoch(state):
     results['train_top5_accuracy'].append(meter_accuracy.value()[1])
 
     # learning rate scheduler
-    # scheduler.step(meter_loss.value()[0], epoch=state['epoch'])
+    scheduler.step(meter_loss.value()[0], epoch=state['epoch'])
 
     reset_meters()
 
