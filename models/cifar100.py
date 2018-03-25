@@ -15,8 +15,8 @@ class CIFAR100CapsuleNet(nn.Module):
                 continue
             layers.append(module)
         self.features = nn.Sequential(*layers)
-        self.pool = nn.AvgPool2d(kernel_size=1)
-        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=256, out_capsules=100, in_length=2, out_length=4,
+        self.pool = nn.AvgPool2d(kernel_size=2)
+        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=256, out_capsules=100, in_length=4, out_length=8,
                                                       routing_type='contract', share_weight=False,
                                                       num_iterations=num_iterations))
 
