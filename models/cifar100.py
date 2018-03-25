@@ -1,7 +1,7 @@
 from capsule_layer import CapsuleLinear
 from torch import nn
 
-from resnet import resnet110
+from resnet import resnet20
 
 
 class CIFAR100CapsuleNet(nn.Module):
@@ -10,16 +10,13 @@ class CIFAR100CapsuleNet(nn.Module):
 
         self.conv1 = nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1, bias=False)
         layers = []
-        for name, module in resnet110().named_children():
+        for name, module in resnet20().named_children():
             if name == 'conv1' or isinstance(module, nn.AvgPool2d) or isinstance(module, nn.Linear):
                 continue
             layers.append(module)
         self.features = nn.Sequential(*layers)
         self.pool = nn.AvgPool2d(kernel_size=1)
-        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=256, out_capsules=128, in_length=2, out_length=4,
-                                                      routing_type='contract', share_weight=True,
-                                                      num_iterations=num_iterations),
-                                        CapsuleLinear(in_capsules=128, out_capsules=100, in_length=4, out_length=8,
+        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=256, out_capsules=100, in_length=2, out_length=4,
                                                       routing_type='contract', share_weight=False,
                                                       num_iterations=num_iterations))
 

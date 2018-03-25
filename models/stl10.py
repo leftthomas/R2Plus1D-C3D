@@ -1,7 +1,7 @@
 from capsule_layer import CapsuleLinear
 from torch import nn
 
-from resnet import resnet110
+from resnet import resnet20
 
 
 class STL10CapsuleNet(nn.Module):
@@ -10,16 +10,13 @@ class STL10CapsuleNet(nn.Module):
 
         self.conv1 = nn.Conv2d(3, 16, kernel_size=7, stride=2, padding=3, bias=False)
         layers = []
-        for name, module in resnet110().named_children():
+        for name, module in resnet20().named_children():
             if name == 'conv1' or isinstance(module, nn.AvgPool2d) or isinstance(module, nn.Linear):
                 continue
             layers.append(module)
         self.features = nn.Sequential(*layers)
         self.pool = nn.AvgPool2d(kernel_size=6)
-        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=64, out_capsules=32, in_length=2, out_length=4,
-                                                      routing_type='contract', share_weight=True,
-                                                      num_iterations=num_iterations),
-                                        CapsuleLinear(in_capsules=32, out_capsules=10, in_length=4, out_length=8,
+        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=64, out_capsules=10, in_length=2, out_length=4,
                                                       routing_type='contract', share_weight=False,
                                                       num_iterations=num_iterations))
 
