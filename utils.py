@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as transforms
 from torch.autograd import Variable
@@ -67,17 +66,6 @@ transform_trains = {'MNIST': transforms.Compose(
          transforms.Normalize((0.44671062, 0.43980984, 0.40664645), (0.26034098, 0.25657727, 0.27126738))])}
 models = {'MNIST': MNISTCapsuleNet, 'FashionMNIST': FashionMNISTCapsuleNet, 'SVHN': SVHNCapsuleNet,
           'CIFAR10': CIFAR10CapsuleNet, 'CIFAR100': CIFAR100CapsuleNet, 'STL10': STL10CapsuleNet}
-
-
-class MarginLoss(nn.Module):
-    def __init__(self):
-        super(MarginLoss, self).__init__()
-
-    def forward(self, classes, labels):
-        left = F.relu(0.9 - classes, inplace=True) ** 2
-        right = F.relu(classes - 0.1, inplace=True) ** 2
-        loss = labels * left + 0.25 * (1 - labels) * right
-        return loss.mean()
 
 
 class GradCam:
