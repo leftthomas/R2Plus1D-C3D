@@ -30,7 +30,7 @@ class STL10CapsuleNet(nn.Module):
         out = out.contiguous().view(out.size(0), -1, 4)
 
         out = self.classifier(out)
-        classes = out.norm(dim=-1)
+        classes = out.sum(dim=-1)
         return classes
 
 

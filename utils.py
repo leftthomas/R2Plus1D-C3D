@@ -98,7 +98,7 @@ class GradCam:
                 if name == 'features':
                     feature.register_hook(self.save_gradient)
                     self.feature = feature
-            classes = feature.norm(dim=-1)
+            classes = feature.sum(dim=-1)
             one_hot, _ = classes.max(dim=-1)
             self.model.zero_grad()
             one_hot.backward()
