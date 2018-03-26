@@ -78,7 +78,7 @@ class GradCam:
         self.gradient = grad
 
     def __call__(self, x):
-        image_size = (x.size(-2), x.size(-1))
+        image_size = (x.size(-1), x.size(-2))
         image_channel = x.size(1)
         datas = Variable(x)
         heat_maps = []
