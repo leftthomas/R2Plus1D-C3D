@@ -1,31 +1,33 @@
 from capsule_layer import CapsuleLinear
 from torch import nn
 
-from densenet import densenet
+from resnet import resnet20
 
 
 class CIFAR10CapsuleNet(nn.Module):
     def __init__(self, num_iterations=3):
         super(CIFAR10CapsuleNet, self).__init__()
 
+        self.conv1 = nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1, bias=False)
         layers = []
-        for name, module in densenet(depth=100, k=12).named_children():
-            if isinstance(module, nn.AvgPool2d) or isinstance(module, nn.Linear):
+        for name, module in resnet20().named_children():
+            if name == 'conv1' or isinstance(module, nn.AvgPool2d) or isinstance(module, nn.Linear):
                 continue
             layers.append(module)
         self.features = nn.Sequential(*layers)
-        self.pool = nn.AvgPool2d(kernel_size=8, stride=1)
-        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=57, out_capsules=10, in_length=6, out_length=16,
+        self.pool = nn.AvgPool2d(kernel_size=8)
+        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=32, out_capsules=10, in_length=2, out_length=4,
                                                       routing_type='contract', share_weight=False,
                                                       num_iterations=num_iterations))
 
     def forward(self, x):
-        out = self.features(x)
+        out = self.conv1(x)
+        out = self.features(out)
         out = self.pool(out)
 
         out = out.view(*out.size()[:2], -1)
         out = out.transpose(-1, -2)
-        out = out.contiguous().view(out.size(0), -1, 6)
+        out = out.contiguous().view(out.size(0), -1, 2)
 
         out = self.classifier(out)
         classes = out.sum(dim=-1)
