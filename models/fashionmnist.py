@@ -16,7 +16,7 @@ class FashionMNISTCapsuleNet(nn.Module):
             layers.append(module)
         self.features = nn.Sequential(*layers)
         self.pool = nn.AvgPool2d(kernel_size=7)
-        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=32, out_capsules=10, in_length=2, out_length=4,
+        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=64, out_capsules=10, in_length=1, out_length=1,
                                                       routing_type='contract', share_weight=False,
                                                       num_iterations=num_iterations))
 
@@ -27,7 +27,7 @@ class FashionMNISTCapsuleNet(nn.Module):
 
         out = out.view(*out.size()[:2], -1)
         out = out.transpose(-1, -2)
-        out = out.contiguous().view(out.size(0), -1, 2)
+        out = out.contiguous().view(out.size(0), -1, 1)
 
         out = self.classifier(out)
         classes = out.sum(dim=-1)
