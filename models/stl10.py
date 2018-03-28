@@ -15,19 +15,16 @@ class STL10CapsuleNet(nn.Module):
                 continue
             layers.append(module)
         self.features = nn.Sequential(*layers)
-        self.pool = nn.AvgPool2d(kernel_size=6)
-        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=64, out_capsules=10, in_length=4, out_length=8,
-                                                      routing_type='contract', share_weight=False,
+        self.classifier = nn.Sequential(CapsuleLinear(out_capsules=10, in_length=64, out_length=16, in_capsules=12 * 12,
+                                                      share_weight=False, routing_type='contract',
                                                       num_iterations=num_iterations))
 
     def forward(self, x):
         out = self.conv1(x)
         out = self.features(out)
-        out = self.pool(out)
 
-        out = out.view(*out.size()[:2], -1)
-        out = out.transpose(-1, -2)
-        out = out.contiguous().view(out.size(0), -1, 4)
+        out = out.permute(0, 2, 3, 1)
+        out = out.contiguous().view(out.size(0), -1, 64)
 
         out = self.classifier(out)
         classes = out.sum(dim=-1)

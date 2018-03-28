@@ -1,31 +1,30 @@
 from capsule_layer import CapsuleLinear
 from torch import nn
 
-from densenet import densenet
+from resnet import resnet20
 
 
 class SVHNCapsuleNet(nn.Module):
     def __init__(self, num_iterations=3):
         super(SVHNCapsuleNet, self).__init__()
 
+        self.conv1 = nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1, bias=False)
         layers = []
-        for name, module in densenet(depth=40, k=6).named_children():
-            if isinstance(module, nn.AvgPool2d) or isinstance(module, nn.Linear):
+        for name, module in resnet20().named_children():
+            if name == 'conv1' or isinstance(module, nn.AvgPool2d) or isinstance(module, nn.Linear):
                 continue
             layers.append(module)
         self.features = nn.Sequential(*layers)
-        self.pool = nn.AvgPool2d(kernel_size=8, stride=1)
-        self.classifier = nn.Sequential(CapsuleLinear(in_capsules=22, out_capsules=10, in_length=3, out_length=8,
-                                                      routing_type='contract', share_weight=False,
+        self.classifier = nn.Sequential(CapsuleLinear(out_capsules=10, in_length=64, out_length=16, in_capsules=8 * 8,
+                                                      share_weight=False, routing_type='contract',
                                                       num_iterations=num_iterations))
 
     def forward(self, x):
-        out = self.features(x)
-        out = self.pool(out)
+        out = self.conv1(x)
+        out = self.features(out)
 
-        out = out.view(*out.size()[:2], -1)
-        out = out.transpose(-1, -2)
-        out = out.contiguous().view(out.size(0), -1, 3)
+        out = out.permute(0, 2, 3, 1)
+        out = out.contiguous().view(out.size(0), -1, 64)
 
         out = self.classifier(out)
         classes = out.sum(dim=-1)
