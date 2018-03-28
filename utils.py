@@ -79,7 +79,6 @@ class GradCam:
 
     def __call__(self, x):
         image_size = (x.size(-1), x.size(-2))
-        image_channel = x.size(1)
         datas = Variable(x)
         heat_maps = []
         for i in range(datas.size(0)):
@@ -104,17 +103,16 @@ class GradCam:
 
             weight = self.gradient.mean(dim=-1, keepdim=True).mean(dim=-2, keepdim=True)
             mask = F.relu((weight * self.feature).sum(dim=1)).squeeze(0)
-            mask = cv2.resize(mask.cpu().data.numpy(), image_size)
+            mask = cv2.resize(mask.data.cpu().numpy(), image_size)
             mask = mask - np.min(mask)
             if np.max(mask) != 0:
                 mask = mask / np.max(mask)
             heat_map = np.float32(cv2.applyColorMap(np.uint8(255 * mask), cv2.COLORMAP_JET))
-            cam = heat_map + np.float32(cv2.cvtColor(np.uint8(img.transpose((1, 2, 0)) * 255),
-                                                     cv2.COLOR_RGB2BGR if image_channel == 3 else cv2.COLOR_GRAY2BGR))
+            cam = heat_map + np.float32((np.uint8(img.transpose((1, 2, 0)) * 255)))
             cam = cam - np.min(cam)
             if np.max(cam) != 0:
                 cam = cam / np.max(cam)
-            heat_maps.append(transforms.ToTensor()(cv2.cvtColor(np.uint8(255 * cam), cv2.COLOR_BGR2RGB)))
+            heat_maps.append(transforms.ToTensor()(np.uint8(255 * cam)))
         heat_maps = torch.stack(heat_maps)
         return heat_maps
 
