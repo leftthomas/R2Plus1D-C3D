@@ -289,26 +289,6 @@ def resnet1001(**kwargs):
     return model
 
 
-def preact_resnet20(**kwargs):
-    model = PreActResNet(PreActBasicBlock, [3, 3, 3], **kwargs)
-    return model
-
-
-def preact_resnet32(**kwargs):
-    model = PreActResNet(PreActBasicBlock, [5, 5, 5], **kwargs)
-    return model
-
-
-def preact_resnet44(**kwargs):
-    model = PreActResNet(PreActBasicBlock, [7, 7, 7], **kwargs)
-    return model
-
-
-def preact_resnet56(**kwargs):
-    model = PreActResNet(PreActBasicBlock, [9, 9, 9], **kwargs)
-    return model
-
-
 def preact_resnet110(**kwargs):
     model = PreActResNet(PreActBasicBlock, [18, 18, 18], **kwargs)
     return model
