@@ -15,8 +15,8 @@ class CIFAR10CapsuleNet(nn.Module):
                 continue
             layers.append(module)
         self.features = nn.Sequential(*layers)
-        self.classifier = nn.Sequential(CapsuleLinear(out_capsules=10, in_length=64, out_length=16, in_capsules=8 * 8,
-                                                      share_weight=False, routing_type='contract',
+        self.classifier = nn.Sequential(CapsuleLinear(out_capsules=10, in_length=8, out_length=16, in_capsules=None,
+                                                      share_weight=True, routing_type='contract',
                                                       num_iterations=num_iterations))
 
     def forward(self, x):
@@ -24,7 +24,7 @@ class CIFAR10CapsuleNet(nn.Module):
         out = self.features(out)
 
         out = out.permute(0, 2, 3, 1)
-        out = out.contiguous().view(out.size(0), -1, 64)
+        out = out.contiguous().view(out.size(0), -1, 8)
 
         out = self.classifier(out)
         classes = out.sum(dim=-1)
