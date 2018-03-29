@@ -16,7 +16,7 @@ class MNISTCapsuleNet(nn.Module):
             layers.append(module)
         self.features = nn.Sequential(*layers)
         self.classifier = nn.Sequential(CapsuleLinear(out_capsules=10, in_length=64, out_length=16, in_capsules=None,
-                                                      share_weight=True, routing_type='contract',
+                                                      share_weight=False, routing_type='contract',
                                                       num_iterations=num_iterations))
 
     def forward(self, x):
