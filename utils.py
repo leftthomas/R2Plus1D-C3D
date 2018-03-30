@@ -8,12 +8,7 @@ from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from torchvision.datasets import CIFAR100, CIFAR10, MNIST, FashionMNIST, STL10, SVHN
 
-from models.cifar10 import CIFAR10CapsuleNet
-from models.cifar100 import CIFAR100CapsuleNet
-from models.fashionmnist import FashionMNISTCapsuleNet
-from models.mnist import MNISTCapsuleNet
-from models.stl10 import STL10CapsuleNet
-from models.svhn import SVHNCapsuleNet
+from models import MNISTNet, FashionMNISTNet, CIFAR10Net, CIFAR100Net, SVHNNet, STL10Net
 
 CLASS_NAME = {'MNIST': ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
               'FashionMNIST': ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat', 'Sandal', 'Shirt', 'Sneaker',
@@ -65,8 +60,8 @@ transform_trains = {'MNIST': transforms.Compose(
     'STL10': transforms.Compose(
         [transforms.RandomCrop(96, padding=6), transforms.RandomHorizontalFlip(), transforms.ToTensor(),
          transforms.Normalize((0.44671062, 0.43980984, 0.40664645), (0.26034098, 0.25657727, 0.27126738))])}
-models = {'MNIST': MNISTCapsuleNet, 'FashionMNIST': FashionMNISTCapsuleNet, 'SVHN': SVHNCapsuleNet,
-          'CIFAR10': CIFAR10CapsuleNet, 'CIFAR100': CIFAR100CapsuleNet, 'STL10': STL10CapsuleNet}
+models = {'MNIST': MNISTNet, 'FashionMNIST': FashionMNISTNet, 'SVHN': SVHNNet, 'CIFAR10': CIFAR10Net,
+          'CIFAR100': CIFAR100Net, 'STL10': STL10Net}
 
 
 class MarginLoss(nn.Module):
@@ -103,7 +98,7 @@ class GradCam:
             for name, module in self.model.named_children():
                 if name == 'classifier':
                     feature = feature.permute(0, 2, 3, 1)
-                    feature = feature.contiguous().view(feature.size(0), -1, module[0].weight.size(-1))
+                    feature = feature.contiguous().view(feature.size(0), -1, module.weight.size(-1))
                 feature = module(feature)
                 if name == 'features':
                     feature.register_hook(self.save_gradient)

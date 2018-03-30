@@ -1,37 +1,25 @@
 from capsule_layer import CapsuleLinear
 from torch import nn
 
-from resnet import resnet20
 
-
-class CIFAR10CapsuleNet(nn.Module):
+class CIFAR10Net(nn.Module):
     def __init__(self, num_iterations=3):
-        super(CIFAR10CapsuleNet, self).__init__()
+        super(CIFAR10Net, self).__init__()
 
-        self.conv1 = nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1, bias=False)
-        layers = []
-        for name, module in resnet20().named_children():
-            if name == 'conv1' or isinstance(module, nn.AvgPool2d) or isinstance(module, nn.Linear):
-                continue
-            layers.append(module)
-        self.features = nn.Sequential(*layers)
-        self.classifier = nn.Sequential(CapsuleLinear(out_capsules=10, in_length=8, out_length=16, in_capsules=None,
-                                                      share_weight=True, routing_type='contract',
-                                                      num_iterations=num_iterations))
+        self.conv1 = nn.Sequential(nn.Conv2d(3, 64, kernel_size=3, padding=1), nn.ReLU())
+        self.features = nn.Sequential(nn.Conv2d(64, 64, kernel_size=3, padding=1), nn.ReLU(),
+                                      nn.AvgPool2d(kernel_size=2),
+                                      nn.Conv2d(64, 128, kernel_size=3, padding=1), nn.ReLU(),
+                                      nn.Conv2d(128, 128, kernel_size=3, padding=1), nn.ReLU())
+        self.classifier = CapsuleLinear(out_capsules=10, in_length=128, out_length=16, in_capsules=16 * 16,
+                                        share_weight=False, routing_type='dynamic', num_iterations=num_iterations)
 
     def forward(self, x):
         out = self.conv1(x)
         out = self.features(out)
 
         out = out.permute(0, 2, 3, 1)
-        out = out.contiguous().view(out.size(0), -1, 8)
-
+        out = out.contiguous().view(out.size(0), -1, 128)
         out = self.classifier(out)
         classes = out.norm(dim=-1)
         return classes
-
-
-if __name__ == '__main__':
-    model = CIFAR10CapsuleNet()
-    for m in model.named_children():
-        print(m)
