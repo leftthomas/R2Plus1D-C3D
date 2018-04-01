@@ -11,7 +11,7 @@ class MNISTNet(nn.Module):
                                       nn.Conv2d(16, 32, kernel_size=3, padding=1), nn.ReLU(),
                                       nn.Conv2d(32, 32, kernel_size=3, stride=2, padding=1), nn.ReLU())
         self.classifier = CapsuleLinear(out_capsules=10, in_length=32, out_length=4, in_capsules=7 * 7,
-                                        share_weight=False, routing_type='dynamic', num_iterations=num_iterations)
+                                        share_weight=True, routing_type='dynamic', num_iterations=num_iterations)
 
     def forward(self, x):
         out = self.conv1(x)
