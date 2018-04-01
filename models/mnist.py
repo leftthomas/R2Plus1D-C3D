@@ -9,7 +9,7 @@ class MNISTNet(nn.Module):
         self.conv1 = nn.Sequential(nn.Conv2d(1, 64, kernel_size=3, padding=1), nn.ReLU())
         self.features = nn.Sequential(nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1), nn.ReLU(),
                                       nn.Conv2d(64, 128, kernel_size=3, padding=1), nn.ReLU(),
-                                      nn.Conv2d(128, 128, kernel_size=3, padding=1), nn.ReLU())
+                                      nn.Conv2d(128, 128, kernel_size=3, stride=2, padding=1), nn.ReLU())
         self.classifier = CapsuleLinear(out_capsules=10, in_length=128, out_length=16, in_capsules=None,
                                         share_weight=True, routing_type='k_means', num_iterations=num_iterations)
 
