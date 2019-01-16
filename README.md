@@ -1,5 +1,6 @@
-# CCN
-Convolutional Capsule Network
+# CapsGCNN
+A PyTorch implementation of Capsule Graph Convolutional Neural Network based on the paper 
+[Capsule Graph Convolutional Neural Network For Graph Classification]().
 
 ## Requirements
 * [Anaconda](https://www.anaconda.com/download/)
@@ -15,12 +16,16 @@ pip install git+https://github.com/pytorch/tnt.git@master
 ```
 pip install git+https://github.com/leftthomas/CapsuleLayer.git@master
 ```
-* tqdm
-```
-conda install tqdm
-```
+
+## Datasets
+
+The datasets are collected from [perceptual-reflection-removal](https://github.com/ceciliavision/perceptual-reflection-removal)
+and [CEILNet](https://github.com/fqnchina/CEILNet).
+Download the datasets from [BaiduYun](https://pan.baidu.com/s/1PJuEvmFdpuJIZwtNU6NgtQ) 
+or [GoogleDrive](https://drive.google.com/open?id=1abYah24PZKQS8K9G3Xsd_6a8Raptp30a), and extract them into `data` directory.
 
 ## Usage
+### Train Model
 ```
 python -m visdom.server -logging_level WARNING & python main.py --data_type FashionMNIST --use_da --num_epochs 300
 optional arguments:
