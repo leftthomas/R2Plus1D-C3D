@@ -19,10 +19,8 @@ pip install git+https://github.com/leftthomas/CapsuleLayer.git@master
 
 ## Datasets
 
-The datasets are collected from [perceptual-reflection-removal](https://github.com/ceciliavision/perceptual-reflection-removal)
-and [CEILNet](https://github.com/fqnchina/CEILNet).
-Download the datasets from [BaiduYun](https://pan.baidu.com/s/1PJuEvmFdpuJIZwtNU6NgtQ) 
-or [GoogleDrive](https://drive.google.com/open?id=1abYah24PZKQS8K9G3Xsd_6a8Raptp30a), and extract them into `data` directory.
+The datasets are collected from [graph kernel datasets](https://ls11-www.cs.tu-dortmund.de/staff/morris/graphkerneldatasets#file_format).
+Download the datasets from there and extract them into `data` directory.
 
 ## Usage
 ### Train Model
