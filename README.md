@@ -12,6 +12,10 @@ conda install pytorch torchvision -c pytorch
 ```
 pip install git+https://github.com/pytorch/tnt.git@master
 ```
+* PyTorch Geometric
+```
+pip install torch-geometric
+```
 * capsule-layer
 ```
 pip install git+https://github.com/leftthomas/CapsuleLayer.git@master
