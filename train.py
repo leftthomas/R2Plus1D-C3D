@@ -113,8 +113,8 @@ if __name__ == '__main__':
     # create a 90/10 train/test split
     train_len = int(0.9 * len(data_set))
     train_set, test_set = data_set[:train_len], data_set[train_len:]
-    train_loader = DataLoader(dataset=train_set, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
-    test_loader = DataLoader(dataset=test_set, batch_size=BATCH_SIZE, shuffle=False, num_workers=4)
+    train_loader = DataLoader(dataset=train_set, batch_size=BATCH_SIZE, shuffle=True)
+    test_loader = DataLoader(dataset=test_set, batch_size=BATCH_SIZE, shuffle=False)
 
     CLASSES = train_set.num_classes
 
