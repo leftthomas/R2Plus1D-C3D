@@ -24,17 +24,16 @@ pip install git+https://github.com/leftthomas/CapsuleLayer.git@master
 ## Datasets
 
 The datasets are collected from [graph kernel datasets](https://ls11-www.cs.tu-dortmund.de/staff/morris/graphkerneldatasets#file_format).
-Download the datasets from there and extract them into `data` directory.
+You can download them from there and extract them into `data` directory, or the code will download them automatically.
 
 ## Usage
 ### Train Model
 ```
-python -m visdom.server -logging_level WARNING & python main.py --data_type FashionMNIST --use_da --num_epochs 300
+python -m visdom.server -logging_level WARNING & python train.py --data_type PTC_MR --num_epochs 200
 optional arguments:
---data_type                   dataset type [default value is 'MNIST'](choices:['MNIST', 'FashionMNIST', 'SVHN', 'CIFAR10', 'CIFAR100', 'STL10'])
---use_da                      use data augmentation or not [default value is False]
+--data_type                   dataset type [default value is 'DD'](choices:['REDDIT-BINARY', 'DD', 'REDDIT-MULTI-12K', 'REDDIT-MULTI-5K', 'PTC_MR', 'NCI1', 'NCI109', 'PROTEINS', 'IMDB-BINARY', 'IMDB-MULTI', 'MUTAG', 'ENZYMES', 'COLLAB'])
 --num_iterations              routing iterations number [default value is 3]
---batch_size                  train batch size [default value is 100]
+--batch_size                  train batch size [default value is 32]
 --num_epochs                  train epochs number [default value is 100]
 ```
 Visdom now can be accessed by going to `127.0.0.1:8097/env/$data_type` in your browser, `$data_type` means the dataset type which you are training.

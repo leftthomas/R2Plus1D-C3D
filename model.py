@@ -2,15 +2,15 @@ from capsule_layer import CapsuleLinear
 from torch import nn
 
 
-class MNISTNet(nn.Module):
-    def __init__(self, num_iterations=3):
-        super(MNISTNet, self).__init__()
+class Model(nn.Module):
+    def __init__(self, classes, num_iterations=3):
+        super(Model, self).__init__()
 
         self.conv1 = nn.Sequential(nn.Conv2d(1, 64, kernel_size=3, padding=1), nn.ReLU())
         self.features = nn.Sequential(nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1), nn.ReLU(),
                                       nn.Conv2d(64, 128, kernel_size=3, padding=1), nn.ReLU(),
                                       nn.Conv2d(128, 128, kernel_size=3, stride=2, padding=1), nn.ReLU())
-        self.classifier = CapsuleLinear(out_capsules=10, in_length=128, out_length=32, in_capsules=None,
+        self.classifier = CapsuleLinear(out_capsules=classes, in_length=128, out_length=32, in_capsules=None,
                                         share_weight=True, routing_type='k_means', num_iterations=num_iterations)
 
     def forward(self, x):
