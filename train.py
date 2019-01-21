@@ -109,8 +109,10 @@ if __name__ == '__main__':
     # record current best measures
     best_accuracy = 0
 
-    train_set = TUDataset('data/%s' % DATA_TYPE, DATA_TYPE)
-    test_set = TUDataset('data/%s' % DATA_TYPE, DATA_TYPE)
+    data_set = TUDataset('data/%s' % DATA_TYPE, DATA_TYPE).shuffle()
+    # create a 90/10 train/test split
+    train_len = int(0.9 * len(data_set))
+    train_set, test_set = data_set[:train_len], data_set[train_len:]
     train_loader = DataLoader(dataset=train_set, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
     test_loader = DataLoader(dataset=test_set, batch_size=BATCH_SIZE, shuffle=False, num_workers=4)
 
