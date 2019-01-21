@@ -24,7 +24,7 @@ pip install git+https://github.com/leftthomas/CapsuleLayer.git@master
 ## Datasets
 
 The datasets are collected from [graph kernel datasets](https://ls11-www.cs.tu-dortmund.de/staff/morris/graphkerneldatasets#file_format).
-You can download them from there and extract them into `data` directory, or the code will download them automatically.
+The code will download and extract them into `data` directory automatically.
 
 ## Usage
 ### Train Model
