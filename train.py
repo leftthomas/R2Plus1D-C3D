@@ -71,8 +71,6 @@ def on_end_epoch(state):
     print('[Epoch %d] Testing Loss: %.4f Testing Accuracy: %.2f%%' % (
         state['epoch'], meter_loss.value()[0], meter_accuracy.value()))
 
-    torch.save(model.state_dict(), 'epochs/%s_%d.pth' % (DATA_TYPE, state['epoch']))
-
     # save best model
     global best_accuracy
     if meter_accuracy.value() > best_accuracy:
