@@ -12,6 +12,10 @@ conda install pytorch torchvision -c pytorch
 ```
 pip install git+https://github.com/pytorch/tnt.git@master
 ```
+* PyTorch Scatter
+```
+pip install torch-scatter
+```
 * PyTorch Geometric
 ```
 pip install torch-geometric

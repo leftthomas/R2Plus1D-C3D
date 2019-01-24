@@ -1,24 +1,26 @@
+import torch.nn.functional as F
 from capsule_layer import CapsuleLinear
 from torch import nn
+from torch_geometric.nn import GCNConv
+from torch_scatter import scatter_mean
 
 
 class Model(nn.Module):
-    def __init__(self, classes, num_iterations=3):
+    def __init__(self, num_features, num_classes, num_iterations=3):
         super(Model, self).__init__()
 
-        self.conv1 = nn.Sequential(nn.Conv2d(1, 64, kernel_size=3, padding=1), nn.ReLU())
-        self.features = nn.Sequential(nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1), nn.ReLU(),
-                                      nn.Conv2d(64, 128, kernel_size=3, padding=1), nn.ReLU(),
-                                      nn.Conv2d(128, 128, kernel_size=3, stride=2, padding=1), nn.ReLU())
-        self.classifier = CapsuleLinear(out_capsules=classes, in_length=128, out_length=32, in_capsules=None,
+        self.conv1 = GCNConv(num_features, 16)
+        self.conv2 = GCNConv(16, num_classes)
+        self.classifier = CapsuleLinear(out_capsules=num_classes, in_length=128, out_length=32, in_capsules=None,
                                         share_weight=True, routing_type='k_means', num_iterations=num_iterations)
 
-    def forward(self, x):
-        out = self.conv1(x)
-        out = self.features(out)
+    def forward(self, data):
+        x, edge_index = data.x, data.edge_index
 
-        out = out.permute(0, 2, 3, 1)
-        out = out.contiguous().view(out.size(0), -1, 128)
-        out = self.classifier(out)
-        classes = out.norm(dim=-1)
-        return classes
+        x = self.conv1(x, edge_index)
+        x = F.relu(x)
+        x = F.dropout(x, training=self.training)
+        x = self.conv2(x, edge_index)
+        x = scatter_mean(x, data.batch, dim=0)
+
+        return F.sigmoid(x)

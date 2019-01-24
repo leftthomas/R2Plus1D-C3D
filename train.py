@@ -15,8 +15,8 @@ from utils import MarginLoss
 
 
 def processor(sample):
-    data, labels, training = sample
-    labels = torch.eye(CLASSES).index_select(dim=0, index=labels)
+    data, training = sample
+    labels = torch.eye(NUM_CLASSES).index_select(dim=0, index=data.y)
 
     if torch.cuda.is_available():
         data, labels = data.to('cuda'), labels.to('cuda')
@@ -29,7 +29,7 @@ def processor(sample):
 
 
 def on_sample(state):
-    state['sample'].append(state['train'])
+    state['sample'] = state['sample'], state['train']
 
 
 def reset_meters():
@@ -40,8 +40,8 @@ def reset_meters():
 
 def on_forward(state):
     meter_loss.add(state['loss'].detach().cpu().item())
-    meter_accuracy.add(state['output'].detach().cpu(), state['sample'][1])
-    meter_confusion.add(state['output'].detach().cpu(), state['sample'][1])
+    meter_accuracy.add(state['output'].detach().cpu(), state['sample'][0].y)
+    meter_confusion.add(state['output'].detach().cpu(), state['sample'][0].y)
 
 
 def on_start_epoch(state):
@@ -110,15 +110,14 @@ if __name__ == '__main__':
     best_accuracy = 0
 
     data_set = TUDataset('data/%s' % DATA_TYPE, DATA_TYPE).shuffle()
+    NUM_FEATURES, NUM_CLASSES = data_set.num_features, data_set.num_classes
     # create a 90/10 train/test split
     train_len = int(0.9 * len(data_set))
     train_set, test_set = data_set[:train_len], data_set[train_len:]
     train_loader = DataLoader(dataset=train_set, batch_size=BATCH_SIZE, shuffle=True)
     test_loader = DataLoader(dataset=test_set, batch_size=BATCH_SIZE, shuffle=False)
 
-    CLASSES = train_set.num_classes
-
-    model = Model(CLASSES, NUM_ITERATIONS)
+    model = Model(NUM_FEATURES, NUM_CLASSES, NUM_ITERATIONS)
     loss_criterion = MarginLoss()
     if torch.cuda.is_available():
         model = model.to('cuda')
@@ -131,7 +130,7 @@ if __name__ == '__main__':
     engine = Engine()
     meter_loss = tnt.meter.AverageValueMeter()
     meter_accuracy = tnt.meter.ClassErrorMeter(accuracy=True)
-    meter_confusion = tnt.meter.ConfusionMeter(CLASSES, normalized=True)
+    meter_confusion = tnt.meter.ConfusionMeter(NUM_CLASSES, normalized=True)
 
     train_loss_logger = VisdomPlotLogger('line', env=DATA_TYPE, opts={'title': 'Train Loss'})
     train_accuracy_logger = VisdomPlotLogger('line', env=DATA_TYPE, opts={'title': 'Train Accuracy'})
