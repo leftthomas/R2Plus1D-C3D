@@ -1,3 +1,4 @@
+import torch
 import torch.nn.functional as F
 from capsule_layer import CapsuleLinear
 from torch import nn
@@ -23,4 +24,4 @@ class Model(nn.Module):
         x = self.conv2(x, edge_index)
         x = scatter_mean(x, data.batch, dim=0)
 
-        return F.sigmoid(x)
+        return torch.sigmoid(x)

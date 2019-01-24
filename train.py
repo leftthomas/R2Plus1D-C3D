@@ -51,31 +51,31 @@ def on_start_epoch(state):
 
 def on_end_epoch(state):
     print('[Epoch %d] Training Loss: %.4f Training Accuracy: %.2f%%' % (
-        state['epoch'], meter_loss.value()[0], meter_accuracy.value()))
+        state['epoch'], meter_loss.value()[0], meter_accuracy.value()[0]))
 
     train_loss_logger.log(state['epoch'], meter_loss.value()[0])
-    train_accuracy_logger.log(state['epoch'], meter_accuracy.value())
+    train_accuracy_logger.log(state['epoch'], meter_accuracy.value()[0])
     results['train_loss'].append(meter_loss.value()[0])
-    results['train_accuracy'].append(meter_accuracy.value())
+    results['train_accuracy'].append(meter_accuracy.value()[0])
 
     reset_meters()
     with torch.no_grad():
         engine.test(processor, test_loader)
 
     test_loss_logger.log(state['epoch'], meter_loss.value()[0])
-    test_accuracy_logger.log(state['epoch'], meter_accuracy.value())
+    test_accuracy_logger.log(state['epoch'], meter_accuracy.value()[0])
     confusion_logger.log(meter_confusion.value())
     results['test_loss'].append(meter_loss.value()[0])
-    results['test_accuracy'].append(meter_accuracy.value())
+    results['test_accuracy'].append(meter_accuracy.value()[0])
 
     print('[Epoch %d] Testing Loss: %.4f Testing Accuracy: %.2f%%' % (
-        state['epoch'], meter_loss.value()[0], meter_accuracy.value()))
+        state['epoch'], meter_loss.value()[0], meter_accuracy.value()[0]))
 
     # save best model
     global best_accuracy
-    if meter_accuracy.value() > best_accuracy:
+    if meter_accuracy.value()[0] > best_accuracy:
         torch.save(model.state_dict(), 'epochs/%s.pth' % DATA_TYPE)
-        best_accuracy = meter_accuracy.value()
+        best_accuracy = meter_accuracy.value()[0]
 
     # save statistics at every 10 epochs
     if state['epoch'] % 10 == 0:
