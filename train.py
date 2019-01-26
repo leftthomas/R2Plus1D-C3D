@@ -91,11 +91,11 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Train Model')
     parser.add_argument('--data_type', default='DD', type=str,
-                        choices=['REDDIT-BINARY', 'DD', 'REDDIT-MULTI-12K', 'REDDIT-MULTI-5K', 'PTC_MR', 'NCI1',
+                        choices=['DD', 'REDDIT-BINARY', 'REDDIT-MULTI-5K', 'REDDIT-MULTI-12K', 'PTC_MR', 'NCI1',
                                  'NCI109', 'PROTEINS', 'IMDB-BINARY', 'IMDB-MULTI', 'MUTAG', 'ENZYMES', 'COLLAB'],
                         help='dataset type')
     parser.add_argument('--num_iterations', default=3, type=int, help='routing iterations number')
-    parser.add_argument('--batch_size', default=32, type=int, help='train batch size')
+    parser.add_argument('--batch_size', default=20, type=int, help='train batch size')
     parser.add_argument('--num_epochs', default=100, type=int, help='train epochs number')
 
     opt = parser.parse_args()

@@ -31,9 +31,9 @@ The code will download and extract them into `data` directory automatically.
 ```
 python -m visdom.server -logging_level WARNING & python train.py --data_type PTC_MR --num_epochs 200
 optional arguments:
---data_type                   dataset type [default value is 'DD'](choices:['REDDIT-BINARY', 'DD', 'REDDIT-MULTI-12K', 'REDDIT-MULTI-5K', 'PTC_MR', 'NCI1', 'NCI109', 'PROTEINS', 'IMDB-BINARY', 'IMDB-MULTI', 'MUTAG', 'ENZYMES', 'COLLAB'])
+--data_type                   dataset type [default value is 'DD'](choices:['DD', 'REDDIT-BINARY', 'REDDIT-MULTI-5K', 'REDDIT-MULTI-12K', 'PTC_MR', 'NCI1', 'NCI109', 'PROTEINS', 'IMDB-BINARY', 'IMDB-MULTI', 'MUTAG', 'ENZYMES', 'COLLAB'])
 --num_iterations              routing iterations number [default value is 3]
---batch_size                  train batch size [default value is 32]
+--batch_size                  train batch size [default value is 20]
 --num_epochs                  train epochs number [default value is 100]
 ```
 Visdom now can be accessed by going to `127.0.0.1:8097/env/$data_type` in your browser, `$data_type` means the dataset type which you are training.
