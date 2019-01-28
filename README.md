@@ -23,7 +23,7 @@ pip install git+https://github.com/leftthomas/CapsuleLayer.git@master
 
 ## Datasets
 
-The datasets are collected from [graph kernel datasets](https://ls11-www.cs.tu-dortmund.de/staff/morris/graphkerneldatasets#file_format).
+The datasets are collected from [graph kernel datasets](https://ls11-www.cs.tu-dortmund.de/staff/morris/graphkerneldatasets).
 The code will download and extract them into `data` directory automatically.
 
 ## Usage

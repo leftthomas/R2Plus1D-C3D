@@ -117,13 +117,16 @@ if __name__ == '__main__':
     train_loader = DataLoader(dataset=train_set, batch_size=BATCH_SIZE, shuffle=True)
     test_loader = DataLoader(dataset=test_set, batch_size=BATCH_SIZE, shuffle=False)
 
+    print('#%s details:' % data_set, '[train] ', len(train_set), '[test] ', len(test_set), '[num_classes] ',
+          data_set.num_classes)
+
     model = Model(NUM_FEATURES, NUM_CLASSES, NUM_ITERATIONS)
     loss_criterion = MarginLoss()
     if torch.cuda.is_available():
         model = model.to('cuda')
         loss_criterion = loss_criterion.to('cuda')
 
-    print("# parameters:", sum(param.numel() for param in model.parameters()))
+    print('#model parameters:', sum(param.numel() for param in model.parameters()))
 
     optimizer = Adam(model.parameters())
 
