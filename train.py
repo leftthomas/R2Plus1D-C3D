@@ -46,15 +46,11 @@ def on_forward(state):
     meter_confusion.add(state['output'].detach().cpu(), state['sample'][0].y)
 
 
-def on_start_epoch(state):
+def on_start_epoch():
     reset_meters()
-    state['iterator'] = tqdm(state['iterator'])
 
 
 def on_end_epoch(state):
-    print('[Epoch %d] Training Loss: %.4f Training Accuracy: %.2f%%' % (
-        state['epoch'], meter_loss.value()[0], meter_accuracy.value()[0]))
-
     train_loss_logger.log(state['epoch'], meter_loss.value()[0])
     train_accuracy_logger.log(state['epoch'], meter_accuracy.value()[0])
     fold_results['train_loss'].append(meter_loss.value()[0])
@@ -69,9 +65,6 @@ def on_end_epoch(state):
     confusion_logger.log(meter_confusion.value())
     fold_results['test_loss'].append(meter_loss.value()[0])
     fold_results['test_accuracy'].append(meter_accuracy.value()[0])
-
-    print('[Epoch %d] Testing Loss: %.4f Testing Accuracy: %.2f%%' % (
-        state['epoch'], meter_loss.value()[0], meter_accuracy.value()[0]))
 
     # save best model at every fold
     global best_accuracy
@@ -105,9 +98,13 @@ if __name__ == '__main__':
     # record current best measures
     best_accuracy = 0
 
+    model = Model(NUM_FEATURES, NUM_CLASSES, NUM_ITERATIONS)
     loss_criterion = MarginLoss()
     if torch.cuda.is_available():
+        model = model.to('cuda')
         loss_criterion = loss_criterion.to('cuda')
+
+    print('# model parameters:', sum(param.numel() for param in model.parameters()))
 
     engine = Engine()
     meter_loss = tnt.meter.AverageValueMeter()
@@ -122,7 +119,8 @@ if __name__ == '__main__':
     # create a 10 times 10-fold cross validation
     rskf = RepeatedStratifiedKFold(n_splits=10, n_repeats=10)
     fold_number = 1
-    for train_index, test_index in rskf.split(data_set, data_set.data.y):
+    train_iter = tqdm(rskf.split(data_set, data_set.data.y))
+    for train_index, test_index in train_iter:
         # 90/10 train/test split
         train_index = torch.zeros(len(data_set)).index_fill(0, torch.as_tensor(train_index), 1).byte()
         test_index = torch.zeros(len(data_set)).index_fill(0, torch.as_tensor(test_index), 1).byte()
@@ -142,11 +140,6 @@ if __name__ == '__main__':
         confusion_logger = VisdomLogger('heatmap', env='%s_%d' % (DATA_TYPE, fold_number),
                                         opts={'title': 'Confusion Matrix'})
 
-        model = Model(NUM_FEATURES, NUM_CLASSES, NUM_ITERATIONS)
-        if torch.cuda.is_available():
-            model = model.to('cuda')
-
-        print('# model parameters:', sum(param.numel() for param in model.parameters()))
         optimizer = Adam(model.parameters())
 
         engine.train(processor, train_loader, maxepoch=NUM_EPOCHS, optimizer=optimizer)
@@ -160,9 +153,16 @@ if __name__ == '__main__':
 
         over_results['train_accuracy'].append(np.array(fold_results['train_accuracy']).max())
         over_results['test_accuracy'].append(np.array(fold_results['test_accuracy']).max())
+
+        train_iter.set_description('[Fold %d] Training Accuracy: %.2f%% Testing Accuracy: %.2f%%' % (
+            fold_number, np.array(fold_results['train_accuracy']).max(), np.array(fold_results['test_accuracy']).max()))
+
         fold_number += 1
-        # reset it for each fold
+        # reset them for each fold
         best_accuracy = 0
+        model = Model(NUM_FEATURES, NUM_CLASSES, NUM_ITERATIONS)
+        if torch.cuda.is_available():
+            model = model.to('cuda')
 
     # save statistics at all fold
     data_frame = pd.DataFrame(
