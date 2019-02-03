@@ -46,7 +46,7 @@ def on_forward(state):
     meter_confusion.add(state['output'].detach().cpu(), state['sample'][0].y)
 
 
-def on_start_epoch():
+def on_start_epoch(state):
     reset_meters()
 
 
