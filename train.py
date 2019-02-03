@@ -1,5 +1,6 @@
 import argparse
 
+import numpy as np
 import pandas as pd
 import torch
 import torchnet as tnt
@@ -56,8 +57,8 @@ def on_end_epoch(state):
 
     train_loss_logger.log(state['epoch'], meter_loss.value()[0])
     train_accuracy_logger.log(state['epoch'], meter_accuracy.value()[0])
-    results['train_loss'].append(meter_loss.value()[0])
-    results['train_accuracy'].append(meter_accuracy.value()[0])
+    fold_results['train_loss'].append(meter_loss.value()[0])
+    fold_results['train_accuracy'].append(meter_accuracy.value()[0])
 
     reset_meters()
     with torch.no_grad():
@@ -66,26 +67,17 @@ def on_end_epoch(state):
     test_loss_logger.log(state['epoch'], meter_loss.value()[0])
     test_accuracy_logger.log(state['epoch'], meter_accuracy.value()[0])
     confusion_logger.log(meter_confusion.value())
-    results['test_loss'].append(meter_loss.value()[0])
-    results['test_accuracy'].append(meter_accuracy.value()[0])
+    fold_results['test_loss'].append(meter_loss.value()[0])
+    fold_results['test_accuracy'].append(meter_accuracy.value()[0])
 
     print('[Epoch %d] Testing Loss: %.4f Testing Accuracy: %.2f%%' % (
         state['epoch'], meter_loss.value()[0], meter_accuracy.value()[0]))
 
-    # save best model
+    # save best model at every fold
     global best_accuracy
     if meter_accuracy.value()[0] > best_accuracy:
-        torch.save(model.state_dict(), 'epochs/%s.pth' % DATA_TYPE)
+        torch.save(model.state_dict(), 'epochs/%s_%d.pth' % (DATA_TYPE, fold_number))
         best_accuracy = meter_accuracy.value()[0]
-
-    # save statistics at every 10 epochs
-    if state['epoch'] % 10 == 0:
-        data_frame = pd.DataFrame(
-            data={'train_loss': results['train_loss'], 'test_loss': results['test_loss'],
-                  'train_accuracy': results['train_accuracy'],
-                  'test_accuracy': results['test_accuracy']},
-            index=range(1, state['epoch'] + 1))
-        data_frame.to_csv('statistics/%s_results.csv' % DATA_TYPE, index_label='epoch')
 
 
 if __name__ == '__main__':
@@ -118,7 +110,7 @@ if __name__ == '__main__':
     print('# model parameters:', sum(param.numel() for param in model.parameters()))
     optimizer = Adam(model.parameters())
 
-    results = {'train_loss': [], 'test_loss': [], 'train_accuracy': [], 'test_accuracy': []}
+    over_results = {'train_accuracy': [], 'test_accuracy': []}
     # record current best measures
     best_accuracy = 0
 
@@ -127,12 +119,6 @@ if __name__ == '__main__':
     meter_accuracy = tnt.meter.ClassErrorMeter(accuracy=True)
     meter_confusion = tnt.meter.ConfusionMeter(NUM_CLASSES, normalized=True)
 
-    train_loss_logger = VisdomPlotLogger('line', env=DATA_TYPE, opts={'title': 'Train Loss'})
-    train_accuracy_logger = VisdomPlotLogger('line', env=DATA_TYPE, opts={'title': 'Train Accuracy'})
-    test_loss_logger = VisdomPlotLogger('line', env=DATA_TYPE, opts={'title': 'Test Loss'})
-    test_accuracy_logger = VisdomPlotLogger('line', env=DATA_TYPE, opts={'title': 'Test Accuracy'})
-    confusion_logger = VisdomLogger('heatmap', env=DATA_TYPE, opts={'title': 'Confusion Matrix'})
-
     engine.hooks['on_sample'] = on_sample
     engine.hooks['on_forward'] = on_forward
     engine.hooks['on_start_epoch'] = on_start_epoch
@@ -140,7 +126,7 @@ if __name__ == '__main__':
 
     # create a 10 times 10-fold cross validation
     rskf = RepeatedStratifiedKFold(n_splits=10, n_repeats=10)
-    cv_number = 1
+    fold_number = 1
     for train_index, test_index in rskf.split(data_set, data_set.data.y):
         # 90/10 train/test split
         train_index = torch.zeros(len(data_set)).index_fill(0, torch.as_tensor(train_index), 1).byte()
@@ -149,5 +135,38 @@ if __name__ == '__main__':
         train_loader = DataLoader(dataset=train_set, batch_size=BATCH_SIZE, shuffle=True)
         test_loader = DataLoader(dataset=test_set, batch_size=BATCH_SIZE, shuffle=False)
 
+        fold_results = {'train_loss': [], 'test_loss': [], 'train_accuracy': [], 'test_accuracy': []}
+
+        train_loss_logger = VisdomPlotLogger('line', env='%s_%d' % (DATA_TYPE, fold_number),
+                                             opts={'title': 'Train Loss'})
+        train_accuracy_logger = VisdomPlotLogger('line', env='%s_%d' % (DATA_TYPE, fold_number),
+                                                 opts={'title': 'Train Accuracy'})
+        test_loss_logger = VisdomPlotLogger('line', env='%s_%d' % (DATA_TYPE, fold_number), opts={'title': 'Test Loss'})
+        test_accuracy_logger = VisdomPlotLogger('line', env='%s_%d' % (DATA_TYPE, fold_number),
+                                                opts={'title': 'Test Accuracy'})
+        confusion_logger = VisdomLogger('heatmap', env='%s_%d' % (DATA_TYPE, fold_number),
+                                        opts={'title': 'Confusion Matrix'})
+
         engine.train(processor, train_loader, maxepoch=NUM_EPOCHS, optimizer=optimizer)
-        cv_number += 1
+        # save statistics at every fold
+        fold_data_frame = pd.DataFrame(
+            data={'train_loss': fold_results['train_loss'], 'test_loss': fold_results['test_loss'],
+                  'train_accuracy': fold_results['train_accuracy'],
+                  'test_accuracy': fold_results['test_accuracy']},
+            index=range(1, NUM_EPOCHS + 1))
+        fold_data_frame.to_csv('statistics/%s_results_%d.csv' % (DATA_TYPE, fold_number), index_label='epoch')
+
+        over_results['train_accuracy'].append(np.array(fold_results['train_accuracy']).max())
+        over_results['test_accuracy'].append(np.array(fold_results['test_accuracy']).max())
+        fold_number += 1
+        # reset it for each fold
+        best_accuracy = 0
+
+    # save statistics at all fold
+    data_frame = pd.DataFrame(
+        data={'train_accuracy': over_results['train_accuracy'], 'test_accuracy': over_results['test_accuracy']},
+        index=range(1, fold_number))
+    data_frame.to_csv('statistics/%s_results_overall.csv' % DATA_TYPE, index_label='fold')
+
+    print('Overall Training Accuracy: %.2f%% Testing Accuracy: %.2f%%' %
+          (np.array(over_results['train_accuracy']).mean(), np.array(over_results['test_accuracy']).mean()))
