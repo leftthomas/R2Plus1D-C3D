@@ -3,7 +3,7 @@ import argparse
 import pandas as pd
 import torch
 import torchnet as tnt
-from sklearn.model_selection import StratifiedShuffleSplit
+from sklearn.model_selection import RepeatedStratifiedKFold
 from torch.optim import Adam
 from torch_geometric.data import DataLoader
 from torch_geometric.datasets import TUDataset
@@ -106,23 +106,8 @@ if __name__ == '__main__':
     BATCH_SIZE = opt.batch_size
     NUM_EPOCHS = opt.num_epochs
 
-    results = {'train_loss': [], 'test_loss': [], 'train_accuracy': [], 'test_accuracy': []}
-    # record current best measures
-    best_accuracy = 0
-
     data_set = TUDataset('data/%s' % DATA_TYPE, DATA_TYPE)
     NUM_FEATURES, NUM_CLASSES = data_set.num_features, data_set.num_classes
-    # create a 90/10 train/test split
-    sss = StratifiedShuffleSplit(n_splits=10, test_size=0.1)
-    for train_index, test_index in sss.split(data_set, data_set.data.y):
-        train_index = torch.zeros(len(data_set)).index_fill(0, torch.as_tensor(train_index), 1).byte()
-        test_index = torch.zeros(len(data_set)).index_fill(0, torch.as_tensor(test_index), 1).byte()
-        train_set, test_set = data_set[train_index], data_set[test_index]
-        train_loader = DataLoader(dataset=train_set, batch_size=BATCH_SIZE, shuffle=True)
-        test_loader = DataLoader(dataset=test_set, batch_size=BATCH_SIZE, shuffle=False)
-
-    print('# %s details:' % data_set, '[train] ', len(train_set), '[test] ', len(test_set), '[num_classes] ',
-          data_set.num_classes)
 
     model = Model(NUM_FEATURES, NUM_CLASSES, NUM_ITERATIONS)
     loss_criterion = MarginLoss()
@@ -131,8 +116,11 @@ if __name__ == '__main__':
         loss_criterion = loss_criterion.to('cuda')
 
     print('# model parameters:', sum(param.numel() for param in model.parameters()))
-
     optimizer = Adam(model.parameters())
+
+    results = {'train_loss': [], 'test_loss': [], 'train_accuracy': [], 'test_accuracy': []}
+    # record current best measures
+    best_accuracy = 0
 
     engine = Engine()
     meter_loss = tnt.meter.AverageValueMeter()
@@ -150,4 +138,16 @@ if __name__ == '__main__':
     engine.hooks['on_start_epoch'] = on_start_epoch
     engine.hooks['on_end_epoch'] = on_end_epoch
 
-    engine.train(processor, train_loader, maxepoch=NUM_EPOCHS, optimizer=optimizer)
+    # create a 10 times 10-fold cross validation
+    rskf = RepeatedStratifiedKFold(n_splits=10, n_repeats=10)
+    cv_number = 1
+    for train_index, test_index in rskf.split(data_set, data_set.data.y):
+        # 90/10 train/test split
+        train_index = torch.zeros(len(data_set)).index_fill(0, torch.as_tensor(train_index), 1).byte()
+        test_index = torch.zeros(len(data_set)).index_fill(0, torch.as_tensor(test_index), 1).byte()
+        train_set, test_set = data_set[train_index], data_set[test_index]
+        train_loader = DataLoader(dataset=train_set, batch_size=BATCH_SIZE, shuffle=True)
+        test_loader = DataLoader(dataset=test_set, batch_size=BATCH_SIZE, shuffle=False)
+
+        engine.train(processor, train_loader, maxepoch=NUM_EPOCHS, optimizer=optimizer)
+        cv_number += 1
