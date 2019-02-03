@@ -101,18 +101,13 @@ if __name__ == '__main__':
     data_set = TUDataset('data/%s' % DATA_TYPE, DATA_TYPE)
     NUM_FEATURES, NUM_CLASSES = data_set.num_features, data_set.num_classes
 
-    model = Model(NUM_FEATURES, NUM_CLASSES, NUM_ITERATIONS)
-    loss_criterion = MarginLoss()
-    if torch.cuda.is_available():
-        model = model.to('cuda')
-        loss_criterion = loss_criterion.to('cuda')
-
-    print('# model parameters:', sum(param.numel() for param in model.parameters()))
-    optimizer = Adam(model.parameters())
-
     over_results = {'train_accuracy': [], 'test_accuracy': []}
     # record current best measures
     best_accuracy = 0
+
+    loss_criterion = MarginLoss()
+    if torch.cuda.is_available():
+        loss_criterion = loss_criterion.to('cuda')
 
     engine = Engine()
     meter_loss = tnt.meter.AverageValueMeter()
@@ -146,6 +141,13 @@ if __name__ == '__main__':
                                                 opts={'title': 'Test Accuracy'})
         confusion_logger = VisdomLogger('heatmap', env='%s_%d' % (DATA_TYPE, fold_number),
                                         opts={'title': 'Confusion Matrix'})
+
+        model = Model(NUM_FEATURES, NUM_CLASSES, NUM_ITERATIONS)
+        if torch.cuda.is_available():
+            model = model.to('cuda')
+
+        print('# model parameters:', sum(param.numel() for param in model.parameters()))
+        optimizer = Adam(model.parameters())
 
         engine.train(processor, train_loader, maxepoch=NUM_EPOCHS, optimizer=optimizer)
         # save statistics at every fold
