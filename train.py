@@ -119,7 +119,7 @@ if __name__ == '__main__':
     # create a 10 times 10-fold cross validation
     rskf = RepeatedStratifiedKFold(n_splits=10, n_repeats=10)
     fold_number = 1
-    train_iter = tqdm(rskf.split(data_set, data_set.data.y))
+    train_iter = tqdm(rskf.split(data_set, data_set.data.y), desc='Training Model......')
     for train_index, test_index in train_iter:
         # 90/10 train/test split
         train_index = torch.zeros(len(data_set)).index_fill(0, torch.as_tensor(train_index), 1).byte()
