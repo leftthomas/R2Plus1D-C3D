@@ -3,6 +3,7 @@ import argparse
 import pandas as pd
 import torch
 import torchnet as tnt
+from sklearn.model_selection import StratifiedShuffleSplit
 from torch.optim import Adam
 from torch_geometric.data import DataLoader
 from torch_geometric.datasets import TUDataset
@@ -109,13 +110,16 @@ if __name__ == '__main__':
     # record current best measures
     best_accuracy = 0
 
-    data_set = TUDataset('data/%s' % DATA_TYPE, DATA_TYPE).shuffle()
+    data_set = TUDataset('data/%s' % DATA_TYPE, DATA_TYPE)
     NUM_FEATURES, NUM_CLASSES = data_set.num_features, data_set.num_classes
     # create a 90/10 train/test split
-    train_len = int(0.9 * len(data_set))
-    train_set, test_set = data_set[:train_len], data_set[train_len:]
-    train_loader = DataLoader(dataset=train_set, batch_size=BATCH_SIZE, shuffle=True)
-    test_loader = DataLoader(dataset=test_set, batch_size=BATCH_SIZE, shuffle=False)
+    sss = StratifiedShuffleSplit(n_splits=10, test_size=0.1)
+    for train_index, test_index in sss.split(data_set, data_set.data.y):
+        train_index = torch.zeros(len(data_set)).index_fill(0, torch.as_tensor(train_index), 1).byte()
+        test_index = torch.zeros(len(data_set)).index_fill(0, torch.as_tensor(test_index), 1).byte()
+        train_set, test_set = data_set[train_index], data_set[test_index]
+        train_loader = DataLoader(dataset=train_set, batch_size=BATCH_SIZE, shuffle=True)
+        test_loader = DataLoader(dataset=test_set, batch_size=BATCH_SIZE, shuffle=False)
 
     print('# %s details:' % data_set, '[train] ', len(train_set), '[test] ', len(test_set), '[num_classes] ',
           data_set.num_classes)
