@@ -170,5 +170,6 @@ if __name__ == '__main__':
         index=range(1, fold_number))
     data_frame.to_csv('statistics/%s_results_overall.csv' % DATA_TYPE, index_label='fold')
 
-    print('Overall Training Accuracy: %.2f%% Testing Accuracy: %.2f%%' %
-          (np.array(over_results['train_accuracy']).mean(), np.array(over_results['test_accuracy']).mean()))
+    print('Overall Training Accuracy: %.2f%% (std: %.2f) Testing Accuracy: %.2f%% (std: %.2f)' %
+          (np.array(over_results['train_accuracy']).mean(), np.array(over_results['train_accuracy']).std(),
+           np.array(over_results['test_accuracy']).mean(), np.array(over_results['test_accuracy']).std()))
