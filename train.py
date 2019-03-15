@@ -9,7 +9,7 @@ from torch.optim import Adam
 from torch_geometric.data import DataLoader
 from torch_geometric.datasets import TUDataset
 from torchnet.engine import Engine
-from torchnet.logger import VisdomPlotLogger, VisdomLogger
+from torchnet.logger import VisdomPlotLogger
 from tqdm import tqdm
 
 from model import Model
@@ -37,13 +37,11 @@ def on_sample(state):
 def reset_meters():
     meter_loss.reset()
     meter_accuracy.reset()
-    meter_confusion.reset()
 
 
 def on_forward(state):
     meter_loss.add(state['loss'].detach().cpu().item())
     meter_accuracy.add(state['output'].detach().cpu(), state['sample'][0].y)
-    meter_confusion.add(state['output'].detach().cpu(), state['sample'][0].y)
 
 
 def on_start_epoch(state):
@@ -51,8 +49,8 @@ def on_start_epoch(state):
 
 
 def on_end_epoch(state):
-    train_loss_logger.log(state['epoch'], meter_loss.value()[0])
-    train_accuracy_logger.log(state['epoch'], meter_accuracy.value()[0])
+    train_loss_logger.log(state['epoch'], meter_loss.value()[0], name='fold_' + str(fold_number))
+    train_accuracy_logger.log(state['epoch'], meter_accuracy.value()[0], name='fold_' + str(fold_number))
     fold_results['train_loss'].append(meter_loss.value()[0])
     fold_results['train_accuracy'].append(meter_accuracy.value()[0])
 
@@ -60,9 +58,8 @@ def on_end_epoch(state):
     with torch.no_grad():
         engine.test(processor, test_loader)
 
-    test_loss_logger.log(state['epoch'], meter_loss.value()[0])
-    test_accuracy_logger.log(state['epoch'], meter_accuracy.value()[0])
-    confusion_logger.log(meter_confusion.value())
+    test_loss_logger.log(state['epoch'], meter_loss.value()[0], name='fold_' + str(fold_number))
+    test_accuracy_logger.log(state['epoch'], meter_accuracy.value()[0], name='fold_' + str(fold_number))
     fold_results['test_loss'].append(meter_loss.value()[0])
     fold_results['test_accuracy'].append(meter_accuracy.value()[0])
 
@@ -109,7 +106,10 @@ if __name__ == '__main__':
     engine = Engine()
     meter_loss = tnt.meter.AverageValueMeter()
     meter_accuracy = tnt.meter.ClassErrorMeter(accuracy=True)
-    meter_confusion = tnt.meter.ConfusionMeter(NUM_CLASSES, normalized=True)
+    train_loss_logger = VisdomPlotLogger('line', env=DATA_TYPE, opts={'title': 'Train Loss'})
+    train_accuracy_logger = VisdomPlotLogger('line', env=DATA_TYPE, opts={'title': 'Train Accuracy'})
+    test_loss_logger = VisdomPlotLogger('line', env=DATA_TYPE, opts={'title': 'Test Loss'})
+    test_accuracy_logger = VisdomPlotLogger('line', env=DATA_TYPE, opts={'title': 'Test Accuracy'})
 
     engine.hooks['on_sample'] = on_sample
     engine.hooks['on_forward'] = on_forward
@@ -129,16 +129,6 @@ if __name__ == '__main__':
         test_loader = DataLoader(dataset=test_set, batch_size=BATCH_SIZE, shuffle=False)
 
         fold_results = {'train_loss': [], 'test_loss': [], 'train_accuracy': [], 'test_accuracy': []}
-
-        train_loss_logger = VisdomPlotLogger('line', env='%s_%d' % (DATA_TYPE, fold_number),
-                                             opts={'title': 'Train Loss'})
-        train_accuracy_logger = VisdomPlotLogger('line', env='%s_%d' % (DATA_TYPE, fold_number),
-                                                 opts={'title': 'Train Accuracy'})
-        test_loss_logger = VisdomPlotLogger('line', env='%s_%d' % (DATA_TYPE, fold_number), opts={'title': 'Test Loss'})
-        test_accuracy_logger = VisdomPlotLogger('line', env='%s_%d' % (DATA_TYPE, fold_number),
-                                                opts={'title': 'Test Accuracy'})
-        confusion_logger = VisdomLogger('heatmap', env='%s_%d' % (DATA_TYPE, fold_number),
-                                        opts={'title': 'Confusion Matrix'})
 
         optimizer = Adam(model.parameters())
 
