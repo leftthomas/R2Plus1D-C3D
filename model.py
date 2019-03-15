@@ -1,7 +1,9 @@
 import torch
 from capsule_layer import CapsuleLinear
 from torch import nn
-from torch_geometric.nn import GCNConv, global_sort_pool
+from torch_geometric.nn import GCNConv
+
+from utils import global_sort_pool
 
 
 class Model(nn.Module):
@@ -22,8 +24,7 @@ class Model(nn.Module):
         x_2 = torch.tanh(self.conv2(x_1, edge_index))
         x_3 = torch.tanh(self.conv3(x_2, edge_index))
         x = torch.cat([x_1, x_2, x_3], dim=-1)
-        x = global_sort_pool(x, batch, k=50)
-        x = x.view(x.size(0), 50 * 3, -1)
+        x = global_sort_pool(x, batch)
         out = self.classifier(x)
         classes = out.norm(dim=-1)
 
