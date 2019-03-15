@@ -13,7 +13,7 @@ class Model(nn.Module):
         self.conv1 = GCNConv(num_features, 32)
         self.conv2 = GCNConv(32, 32)
         self.conv3 = GCNConv(32, 32)
-        self.classifier = CapsuleLinear(out_capsules=num_classes, in_length=32, out_length=16, in_capsules=None,
+        self.classifier = CapsuleLinear(out_capsules=num_classes, in_length=96, out_length=16, in_capsules=None,
                                         share_weight=True, routing_type='k_means', similarity='tonimoto',
                                         num_iterations=num_iterations)
 
