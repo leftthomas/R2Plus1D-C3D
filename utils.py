@@ -7,7 +7,7 @@ from torch_geometric.utils import to_dense_batch
 def global_sort_pool(x, batch, k=None):
     r"""where node features are first sorted individually and then sorted in
     descending order based on their last features. The first :math:`k` nodes
-    form the output of the layer, if k equals None, than don't select.
+    form the output of the layer, if k equals None, than don't select nodes.
 
     Args:
         x (Tensor): Node feature matrix
