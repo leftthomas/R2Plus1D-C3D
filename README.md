@@ -3,26 +3,29 @@ A PyTorch implementation of Capsule Graph Convolutional Neural Network based on 
 [Capsule Graph Convolutional Neural Network For Graph Classification]().
 
 ## Requirements
-* [Anaconda](https://www.anaconda.com/download/)
-* PyTorch
+- [Anaconda](https://www.anaconda.com/download/)
+- [PyTorch](https://pytorch.org)
 ```
 conda install pytorch torchvision -c pytorch
 ```
-* PyTorchNet
+- PyTorchNet
 ```
 pip install git+https://github.com/pytorch/tnt.git@master
 ```
-* PyTorch Geometric
+- [PyTorch Geometric](https://rusty1s.github.io/pytorch_geometric/build/html/index.html)
 ```
+pip install torch-scatter
+pip install torch-sparse
+pip install torch-cluster
+pip install torch-spline-conv (optional)
 pip install torch-geometric
 ```
-* capsule-layer
+- capsule-layer
 ```
 pip install git+https://github.com/leftthomas/CapsuleLayer.git@master
 ```
 
 ## Datasets
-
 The datasets are collected from [graph kernel datasets](https://ls11-www.cs.tu-dortmund.de/staff/morris/graphkerneldatasets).
 The code will download and extract them into `data` directory automatically.
 
