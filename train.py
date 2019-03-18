@@ -15,6 +15,11 @@ from tqdm import tqdm
 from model import Model
 from utils import MarginLoss
 
+torch.manual_seed(0)
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
+np.random.seed(0)
+
 
 def processor(sample):
     data, training = sample
