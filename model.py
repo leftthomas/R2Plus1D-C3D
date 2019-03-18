@@ -2,6 +2,7 @@ import torch
 from capsule_layer import CapsuleLinear
 from torch import nn
 from torch_geometric.nn import GCNConv
+from torch_geometric.utils import remove_self_loops
 
 from utils import global_sort_pool
 
@@ -20,6 +21,7 @@ class Model(nn.Module):
 
     def forward(self, data):
         x, edge_index, batch = data.x, data.edge_index, data.batch
+        edge_index, _ = remove_self_loops(edge_index)
 
         x_1 = torch.tanh(self.conv1(x, edge_index))
         x_2 = torch.tanh(self.conv2(x_1, edge_index))
