@@ -93,7 +93,7 @@ if __name__ == '__main__':
     BATCH_SIZE = opt.batch_size
     NUM_EPOCHS = opt.num_epochs
 
-    data_set = TUDataset('data/%s' % DATA_TYPE, DATA_TYPE)
+    data_set = TUDataset('data/%s' % DATA_TYPE, DATA_TYPE, use_node_attr=True)
     NUM_FEATURES, NUM_CLASSES = data_set.num_features, data_set.num_classes
 
     over_results = {'train_accuracy': [], 'test_accuracy': []}
