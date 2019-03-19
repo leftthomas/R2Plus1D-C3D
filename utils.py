@@ -1,6 +1,4 @@
 import torch
-import torch.nn.functional as F
-from torch import nn
 from torch_geometric.utils import to_dense_batch, degree
 
 
@@ -76,14 +74,4 @@ class Indegree(object):
     def __repr__(self):
         return '{}(norm={}, max_value={})'.format(self.__class__.__name__, self.norm, self.max)
 
-
-class MarginLoss(nn.Module):
-    def __init__(self):
-        super(MarginLoss, self).__init__()
-
-    def forward(self, classes, labels):
-        left = F.relu(0.9 - classes, inplace=True) ** 2
-        right = F.relu(classes - 0.1, inplace=True) ** 2
-        loss = labels * left + 0.5 * (1 - labels) * right
-        return loss.sum(dim=-1).mean()
 
