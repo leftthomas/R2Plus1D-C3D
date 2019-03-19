@@ -94,7 +94,7 @@ The model was trained with 100 epochs and batch size of 20 on a NVIDIA GTX 1070 
       <td align="center">8</td>
       <td align="center">19</td>
       <td align="center">38</td>
-      <td align="center">5</td>
+      <td align="center">39</td>
       <td align="center">5</td>
       <td align="center">90</td>
       <td align="center">1</td>
