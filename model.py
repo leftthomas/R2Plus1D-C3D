@@ -39,7 +39,7 @@ class Model(nn.Module):
         x = torch.cat([x_1, x_2, x_3, x_4], dim=-1)
         x = global_sort_pool(x, batch)
         x = self.pool_1(x)
-        x = x.view(x.size(0), 1, x.size(-1))
+        x = x.view(x.size(0), 1, -1)
         x = self.relu(self.conv5(x))
         x = self.pool_2(x)
         x = self.relu(self.conv6(x))
