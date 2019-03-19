@@ -33,7 +33,7 @@ class Model(nn.Module):
         x_3 = torch.tanh(self.conv3(x_2, edge_index))
         x_4 = torch.tanh(self.conv4(x_3, edge_index))
         x = torch.cat([x_1, x_2, x_3, x_4], dim=-1)
-        x = self.pool(global_sort_pool(x, batch))
+        x = self.pool(global_sort_pool(x, batch, k=50))
         out = x.view(x.size(0), -1)
         out = self.relu(self.classifier_1(out))
         classes = F.log_softmax(self.classifier_2(out), dim=-1)
