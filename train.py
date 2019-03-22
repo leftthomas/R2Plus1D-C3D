@@ -1,4 +1,5 @@
 import argparse
+import random
 
 import numpy as np
 import pandas as pd
@@ -13,11 +14,6 @@ from tqdm import tqdm
 
 from model import Model
 from utils import Indegree, MarginLoss
-
-torch.manual_seed(0)
-torch.backends.cudnn.deterministic = True
-torch.backends.cudnn.benchmark = False
-np.random.seed(0)
 
 
 def processor(sample):
@@ -58,6 +54,17 @@ def on_end_epoch(state):
     fold_results['train_loss'].append(meter_loss.value()[0])
     fold_results['train_accuracy'].append(meter_accuracy.value()[0])
 
+    # val
+    reset_meters()
+    with torch.no_grad():
+        engine.test(processor, val_loader)
+
+    val_loss_logger.log(state['epoch'], meter_loss.value()[0], name='fold_' + str(fold_number))
+    val_accuracy_logger.log(state['epoch'], meter_accuracy.value()[0], name='fold_' + str(fold_number))
+    fold_results['val_loss'].append(meter_loss.value()[0])
+    fold_results['val_accuracy'].append(meter_accuracy.value()[0])
+
+    # test
     reset_meters()
     with torch.no_grad():
         engine.test(processor, test_loader)
@@ -92,7 +99,7 @@ if __name__ == '__main__':
     NUM_FEATURES, NUM_CLASSES = data_set.num_features, data_set.num_classes
     print('# %s: [FEATURES]-%d [NUM_CLASSES]-%d' % (data_set, NUM_FEATURES, NUM_CLASSES))
 
-    over_results = {'train_accuracy': [], 'test_accuracy': []}
+    over_results = {'train_accuracy': [], 'val_accuracy': [], 'test_accuracy': []}
 
     model = Model(NUM_FEATURES, NUM_CLASSES, NUM_ITERATIONS)
     loss_criterion = MarginLoss()
@@ -107,6 +114,8 @@ if __name__ == '__main__':
     meter_accuracy = tnt.meter.ClassErrorMeter(accuracy=True)
     train_loss_logger = VisdomPlotLogger('line', env=DATA_TYPE, opts={'title': 'Train Loss'})
     train_accuracy_logger = VisdomPlotLogger('line', env=DATA_TYPE, opts={'title': 'Train Accuracy'})
+    val_loss_logger = VisdomPlotLogger('line', env=DATA_TYPE, opts={'title': 'Val Loss'})
+    val_accuracy_logger = VisdomPlotLogger('line', env=DATA_TYPE, opts={'title': 'Val Accuracy'})
     test_loss_logger = VisdomPlotLogger('line', env=DATA_TYPE, opts={'title': 'Test Loss'})
     test_accuracy_logger = VisdomPlotLogger('line', env=DATA_TYPE, opts={'title': 'Test Accuracy'})
 
@@ -121,42 +130,56 @@ if __name__ == '__main__':
         # 90/10 train/test split
         train_idxes = torch.as_tensor(np.loadtxt('data/%s/10fold_idx/train_idx-%d.txt' % (DATA_TYPE, fold_number),
                                                  dtype=np.int32), dtype=torch.long)
+        # randomly sample 10% from train split as val split
+        val_idxes = random.sample(train_idxes, int(len(train_idxes) * 0.1))
+        train_idxes = list(set(train_idxes) - set(val_idxes))
         test_idxes = torch.as_tensor(np.loadtxt('data/%s/10fold_idx/test_idx-%d.txt' % (DATA_TYPE, fold_number),
                                                 dtype=np.int32), dtype=torch.long)
-        train_set, test_set = data_set[train_idxes], data_set[test_idxes]
+        train_set, val_set, test_set = data_set[train_idxes], data_set[val_idxes], data_set[test_idxes]
         train_loader = DataLoader(dataset=train_set, batch_size=BATCH_SIZE, shuffle=True)
+        val_loader = DataLoader(dataset=val_idxes, batch_size=BATCH_SIZE, shuffle=False)
         test_loader = DataLoader(dataset=test_set, batch_size=BATCH_SIZE, shuffle=False)
 
-        fold_results = {'train_loss': [], 'test_loss': [], 'train_accuracy': [], 'test_accuracy': []}
+        fold_results = {'train_loss': [], 'val_loss': [], 'test_loss': [], 'train_accuracy': [], 'val_accuracy': [],
+                        'test_accuracy': []}
 
         optimizer = Adam(model.parameters())
 
         engine.train(processor, train_loader, maxepoch=NUM_EPOCHS, optimizer=optimizer)
         # save statistics at every fold
         fold_data_frame = pd.DataFrame(
-            data={'train_loss': fold_results['train_loss'], 'test_loss': fold_results['test_loss'],
-                  'train_accuracy': fold_results['train_accuracy'],
-                  'test_accuracy': fold_results['test_accuracy']},
+            data={'train_loss': fold_results['train_loss'], 'val_loss': fold_results['val_loss'],
+                  'test_loss': fold_results['test_loss'], 'train_accuracy': fold_results['train_accuracy'],
+                  'val_accuracy': fold_results['val_accuracy'], 'test_accuracy': fold_results['test_accuracy']},
             index=range(1, NUM_EPOCHS + 1))
         fold_data_frame.to_csv('statistics/%s_results_%d.csv' % (DATA_TYPE, fold_number), index_label='epoch')
 
-        over_results['train_accuracy'].append(fold_results['train_accuracy'][-1])
-        over_results['test_accuracy'].append(fold_results['test_accuracy'][-1])
+        # record the results when the model obtains best result on val split
+        best_index = fold_results['val_accuracy'].index(max(fold_results['val_accuracy']))
+        over_results['train_accuracy'].append(fold_results['train_accuracy'][best_index])
+        over_results['val_accuracy'].append(fold_results['val_accuracy'][best_index])
+        over_results['test_accuracy'].append(fold_results['test_accuracy'][best_index])
 
-        train_iter.set_description('[Fold %d] Training Accuracy: %.2f%% Testing Accuracy: %.2f%%' % (
-            fold_number, fold_results['train_accuracy'][-1], fold_results['test_accuracy'][-1]))
+        train_iter.set_description(
+            '[Fold %d] Training Accuracy: %.2f%% Valing Accuracy: %.2f%% Testing Accuracy: %.2f%%' % (
+                fold_number, fold_results['train_accuracy'][best_index], fold_results['val_accuracy'][best_index],
+                fold_results['test_accuracy'][best_index]))
 
-        # reset them for each fold
+        # reset model for each fold
         model = Model(NUM_FEATURES, NUM_CLASSES, NUM_ITERATIONS)
         if torch.cuda.is_available():
             model = model.to('cuda')
 
     # save statistics at all fold
     data_frame = pd.DataFrame(
-        data={'train_accuracy': over_results['train_accuracy'], 'test_accuracy': over_results['test_accuracy']},
-        index=range(1, 11))
+        data={'train_accuracy': over_results['train_accuracy'], 'val_accuracy': over_results['val_accuracy'],
+              'test_accuracy': over_results['test_accuracy']}, index=range(1, 11))
     data_frame.to_csv('statistics/%s_results_overall.csv' % DATA_TYPE, index_label='fold')
 
-    print('Overall Training Accuracy: %.2f%% (std: %.2f) Testing Accuracy: %.2f%% (std: %.2f)' %
-          (np.array(over_results['train_accuracy']).mean(), np.array(over_results['train_accuracy']).std(),
-           np.array(over_results['test_accuracy']).mean(), np.array(over_results['test_accuracy']).std()))
+    print('Overall Training Accuracy: %.2f%% (std: %.2f) Valing Accuracy: %.2f%% (std: %.2f) '
+          'Testing Accuracy: %.2f%% (std: %.2f)' % (np.array(over_results['train_accuracy']).mean(),
+                                                    np.array(over_results['train_accuracy']).std(),
+                                                    np.array(over_results['val_accuracy']).mean(),
+                                                    np.array(over_results['val_accuracy']).std(),
+                                                    np.array(over_results['test_accuracy']).mean(),
+                                                    np.array(over_results['test_accuracy']).std()))
