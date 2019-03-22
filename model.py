@@ -22,8 +22,8 @@ class Model(nn.Module):
         edge_index, _ = remove_self_loops(edge_index)
 
         x_1 = torch.tanh(self.gcn1(x, edge_index))
-        x_2 = torch.tanh(self.gcn2(x_1 + x, edge_index))
-        x_3 = torch.tanh(self.gcn3(x_2 + x_1 + x, edge_index))
+        x_2 = torch.tanh(self.gcn2(x_1, edge_index))
+        x_3 = torch.tanh(self.gcn3(x_2 + x_1, edge_index))
         x = torch.cat([x_1, x_2, x_3], dim=-1)
         out = self.classifier(global_sort_pool(x, batch, k=50))
         classes = out.norm(dim=-1)
