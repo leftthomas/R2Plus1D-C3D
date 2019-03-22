@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import torch.nn.functional as F
 from torch import nn
@@ -41,6 +42,16 @@ def global_sort_pool(x, batch, k=None):
     batch_x[batch_x == fill_value] = 0
 
     return batch_x
+
+
+def position_encoding(data):
+    batch_size, number_node, feature_dim = data.size()
+    position_enc = np.array([[pos / np.power(10000, 2 * (i // 2) / feature_dim) for i in
+                              range(feature_dim)] for pos in range(number_node)])
+
+    position_enc[:, 0::2] = np.sin(position_enc[:, 0::2])  # apply sin on dim 2i
+    position_enc[:, 1::2] = np.cos(position_enc[:, 1::2])  # apply cos on dim 2i+1
+    return torch.as_tensor(position_enc, dtype=data.dtype, device=data.device).expand(data.size())
 
 
 class Indegree(object):

@@ -4,7 +4,7 @@ from torch import nn
 from torch_geometric.nn import GCNConv
 from torch_geometric.utils import remove_self_loops
 
-from utils import global_sort_pool
+from utils import global_sort_pool, position_encoding
 
 
 class Model(nn.Module):
@@ -25,7 +25,10 @@ class Model(nn.Module):
         x_2 = torch.tanh(self.gcn2(x_1, edge_index))
         x_3 = torch.tanh(self.gcn3(x_2, edge_index))
         x = torch.cat([x_1, x_2, x_3], dim=-1)
-        out = self.classifier(global_sort_pool(x, batch, k=None))
+        x = global_sort_pool(x, batch, k=None)
+        x = x + position_encoding(x)
+
+        out = self.classifier(x)
         classes = out.norm(dim=-1)
 
         return classes
