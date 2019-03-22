@@ -6,6 +6,7 @@ import pandas as pd
 import torch
 import torchnet as tnt
 from torch.optim import Adam
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch_geometric.data import DataLoader
 from torch_geometric.datasets import TUDataset
 from torchnet.engine import Engine
@@ -63,6 +64,9 @@ def on_end_epoch(state):
     val_accuracy_logger.log(state['epoch'], meter_accuracy.value()[0], name='fold_' + str(fold_number))
     fold_results['val_loss'].append(meter_loss.value()[0])
     fold_results['val_accuracy'].append(meter_accuracy.value()[0])
+
+    # scheduler optimizer
+    scheduler.step(meter_loss.value()[0])
 
     # test
     reset_meters()
@@ -148,6 +152,7 @@ if __name__ == '__main__':
                         'test_accuracy': []}
 
         optimizer = Adam(model.parameters())
+        scheduler = ReduceLROnPlateau(optimizer)
 
         engine.train(processor, train_loader, maxepoch=NUM_EPOCHS, optimizer=optimizer)
         # save statistics at every fold
