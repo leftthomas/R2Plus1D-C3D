@@ -128,13 +128,17 @@ if __name__ == '__main__':
     train_iter = tqdm(range(1, 11), desc='Training Model......')
     for fold_number in train_iter:
         # 90/10 train/test split
-        train_idxes = torch.as_tensor(np.loadtxt('data/%s/10fold_idx/train_idx-%d.txt' % (DATA_TYPE, fold_number),
-                                                 dtype=np.int32), dtype=torch.long)
+        train_idxes = np.loadtxt('data/%s/10fold_idx/train_idx-%d.txt' % (DATA_TYPE, fold_number),
+                                 dtype=np.int32).tolist()
         # randomly sample 10% from train split as val split
         val_idxes = random.sample(train_idxes, int(len(train_idxes) * 0.1))
         train_idxes = list(set(train_idxes) - set(val_idxes))
-        test_idxes = torch.as_tensor(np.loadtxt('data/%s/10fold_idx/test_idx-%d.txt' % (DATA_TYPE, fold_number),
-                                                dtype=np.int32), dtype=torch.long)
+        test_idxes = np.loadtxt('data/%s/10fold_idx/test_idx-%d.txt' % (DATA_TYPE, fold_number),
+                                dtype=np.int32).tolist()
+        train_idxes = torch.as_tensor(train_idxes, dtype=torch.long)
+        val_idxes = torch.as_tensor(val_idxes, dtype=torch.long)
+        test_idxes = torch.as_tensor(test_idxes, dtype=torch.long)
+
         train_set, val_set, test_set = data_set[train_idxes], data_set[val_idxes], data_set[test_idxes]
         train_loader = DataLoader(dataset=train_set, batch_size=BATCH_SIZE, shuffle=True)
         val_loader = DataLoader(dataset=val_idxes, batch_size=BATCH_SIZE, shuffle=False)
