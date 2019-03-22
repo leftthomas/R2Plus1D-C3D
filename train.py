@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import torch
 import torchnet as tnt
-from torch.nn import NLLLoss
 from torch.optim import Adam
 from torch_geometric.data import DataLoader
 from torch_geometric.datasets import TUDataset
@@ -13,7 +12,7 @@ from torchnet.logger import VisdomPlotLogger
 from tqdm import tqdm
 
 from model import Model
-from utils import Indegree
+from utils import Indegree, MarginLoss
 
 torch.manual_seed(0)
 torch.backends.cudnn.deterministic = True
@@ -23,14 +22,15 @@ np.random.seed(0)
 
 def processor(sample):
     data, training = sample
+    labels = torch.eye(NUM_CLASSES).index_select(dim=0, index=data.y)
 
     if torch.cuda.is_available():
-        data = data.to('cuda')
+        data, labels = data.to('cuda'), labels.to('cuda')
 
     model.train(training)
 
     classes = model(data)
-    loss = loss_criterion(classes, data.y)
+    loss = loss_criterion(classes, labels)
     return loss, classes
 
 
@@ -95,7 +95,7 @@ if __name__ == '__main__':
     over_results = {'train_accuracy': [], 'test_accuracy': []}
 
     model = Model(NUM_FEATURES, NUM_CLASSES, NUM_ITERATIONS)
-    loss_criterion = NLLLoss()
+    loss_criterion = MarginLoss()
     if torch.cuda.is_available():
         model = model.to('cuda')
         loss_criterion = loss_criterion.to('cuda')
