@@ -14,7 +14,7 @@ class Model(nn.Module):
         self.gcn1 = GCNConv(num_features, 32)
         self.gcn2 = GCNConv(32, 32)
         self.gcn3 = GCNConv(32, 32)
-        self.classifier = CapsuleLinear(out_capsules=num_classes, in_length=96, out_length=16, in_capsules=None,
+        self.classifier = CapsuleLinear(out_capsules=num_classes, in_length=96, out_length=32, in_capsules=None,
                                         share_weight=True, routing_type='k_means', num_iterations=num_iterations)
 
     def forward(self, data):
@@ -26,7 +26,7 @@ class Model(nn.Module):
         x_3 = torch.tanh(self.gcn3(x_2, edge_index))
         x = torch.cat([x_1, x_2, x_3], dim=-1)
         x = global_sort_pool(x, batch, k=None)
-        x = x * position_encoding(x)
+        x = x + position_encoding(x)
 
         out = self.classifier(x)
         classes = out.norm(dim=-1)
