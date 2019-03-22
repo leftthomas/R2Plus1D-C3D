@@ -26,7 +26,7 @@ class Model(nn.Module):
         x_3 = torch.tanh(self.gcn3(x_2, edge_index))
         x = torch.cat([x_1, x_2, x_3], dim=-1)
         x = global_sort_pool(x, batch, k=None)
-        x = x + position_encoding(x)
+        x = x * position_encoding(x)
 
         out = self.classifier(x)
         classes = out.norm(dim=-1)
