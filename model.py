@@ -11,9 +11,9 @@ class Model(nn.Module):
     def __init__(self, num_features, num_classes, num_iterations=3):
         super(Model, self).__init__()
 
-        self.gcn1 = SGConv(num_features, 32, K=3)
-        self.gcn2 = SGConv(32, 32, K=3)
-        self.gcn3 = SGConv(32, 32, K=3)
+        self.gcn1 = SGConv(num_features, 32, K=3, cached=True)
+        self.gcn2 = SGConv(32, 32, K=3, cached=True)
+        self.gcn3 = SGConv(32, 32, K=3, cached=True)
         self.classifier = CapsuleLinear(out_capsules=num_classes, in_length=96, out_length=32, in_capsules=50,
                                         share_weight=False, num_iterations=num_iterations)
 
