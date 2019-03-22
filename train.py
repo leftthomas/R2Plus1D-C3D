@@ -141,7 +141,7 @@ if __name__ == '__main__':
 
         train_set, val_set, test_set = data_set[train_idxes], data_set[val_idxes], data_set[test_idxes]
         train_loader = DataLoader(dataset=train_set, batch_size=BATCH_SIZE, shuffle=True)
-        val_loader = DataLoader(dataset=val_idxes, batch_size=BATCH_SIZE, shuffle=False)
+        val_loader = DataLoader(dataset=val_set, batch_size=BATCH_SIZE, shuffle=False)
         test_loader = DataLoader(dataset=test_set, batch_size=BATCH_SIZE, shuffle=False)
 
         fold_results = {'train_loss': [], 'val_loss': [], 'test_loss': [], 'train_accuracy': [], 'val_accuracy': [],
