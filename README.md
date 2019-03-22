@@ -35,7 +35,7 @@ The code will download and extract them into `data` directory automatically. The
 ```
 python -m visdom.server -logging_level WARNING & python train.py --data_type PTC_MR --num_epochs 200
 optional arguments:
---data_type                   dataset type [default value is 'DD'](choices:['DD', 'PTC_MR', 'NCI1', 'NCI109', 'PROTEINS', 'IMDB-BINARY', 'IMDB-MULTI', 'MUTAG', 'ENZYMES', 'COLLAB'])
+--data_type                   dataset type [default value is 'MUTAG'](choices:['MUTAG', 'PTC_MR', 'NCI1', 'NCI109', 'PROTEINS', 'DD', 'ENZYMES', 'COLLAB', 'IMDB-BINARY', 'IMDB-MULTI'])
 --num_iterations              routing iterations number [default value is 3]
 --batch_size                  train batch size [default value is 20]
 --num_epochs                  train epochs number [default value is 100]
