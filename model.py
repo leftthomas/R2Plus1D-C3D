@@ -4,11 +4,9 @@ from torch import nn
 from torch_geometric.nn import GCNConv
 from torch_geometric.utils import remove_self_loops
 
-from utils import global_sort_pool, position_encoding
-
 
 class Model(nn.Module):
-    def __init__(self, num_features, num_classes, num_iterations=3):
+    def __init__(self, num_iterations=3):
         super(Model, self).__init__()
 
         self.gcn1 = GCNConv(num_features, 32)
