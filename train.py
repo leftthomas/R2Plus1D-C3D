@@ -63,7 +63,7 @@ def train(model, optimizer, train_loader, test_loader):
 
 
 def plot():
-    data = np.loadtxt('result.csv', delimiter=',')
+    data = np.loadtxt('results/result.csv', delimiter=',')
     plt.figure()
     plt.plot(range(1, len(data[:, 0]) + 1), data[:, 0], color='blue', label='train')
     plt.plot(range(1, len(data[:, 1]) + 1), data[:, 1], color='red', label='test')
@@ -71,6 +71,7 @@ def plot():
     plt.xlabel('Epoch', fontsize=14)
     plt.ylabel('Accuracy (%)', fontsize=14)
     plt.title('Training and Test Accuracy', fontsize=20)
+    plt.savefig('results/result.png')
 
 
 if __name__ == '__main__':

@@ -39,10 +39,10 @@ def load_data():
     import os
     if os.path.isfile('data/data_har.npz') == True:
         data = np.load('data/data_har.npz')
-        X_train = data['X_train']
-        Y_train = data['Y_train']
-        X_test = data['X_test']
-        Y_test = data['Y_test']
+        X_train = data['X_train'].astype(np.float32)
+        Y_train = data['Y_train'].astype(np.float32)
+        X_test = data['X_test'].astype(np.float32)
+        Y_test = data['Y_test'].astype(np.float32)
     else:
         # This for processing the dataset from scratch
         # After downloading the dataset, put it to somewhere that str_folder can find
@@ -94,7 +94,7 @@ class data_loader(Dataset):
 
 def load(batch_size=64):
     x_train, y_train, x_test, y_test = load_data()
-    x_train, x_test = x_train.reshape((-1, 9, 1, 128)), x_test.reshape((-1, 9, 1, 128))
+    x_train, x_test = x_train.reshape((-1, 1, 128, 9)), x_test.reshape((-1, 1, 128, 9))
     transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize(mean=(0, 0, 0, 0, 0, 0, 0, 0, 0), std=(1, 1, 1, 1, 1, 1, 1, 1, 1))
