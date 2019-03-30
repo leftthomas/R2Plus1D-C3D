@@ -85,9 +85,8 @@ def on_end_epoch(state):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Train Model')
-    parser.add_argument('--data_type', default='MUTAG', type=str,
-                        choices=['MUTAG', 'PTC_MR', 'NCI1', 'NCI109', 'PROTEINS', 'DD', 'ENZYMES', 'COLLAB',
-                                 'IMDB-BINARY', 'IMDB-MULTI'], help='dataset type')
+    parser.add_argument('--data_type', default='AudioMNIST', type=str, choices=['AudioMNIST', 'UrbanSound8K'],
+                        help='dataset type')
     parser.add_argument('--num_iterations', default=3, type=int, help='routing iterations number')
     parser.add_argument('--batch_size', default=20, type=int, help='train batch size')
     parser.add_argument('--num_epochs', default=100, type=int, help='train epochs number')

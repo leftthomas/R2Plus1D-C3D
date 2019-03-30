@@ -1,91 +1,39 @@
+import os
+
 import numpy as np
 import torch
 import torch.nn.functional as F
 from torch import nn
-from torch_geometric.utils import to_dense_batch, degree
+from torch.utils import data
 
 
-def global_sort_pool(x, batch, k=None):
-    r"""where node features are first sorted individually and then sorted in
-    descending order based on their last features. The first :math:`k` nodes
-    form the output of the layer, if k equals None, than don't select nodes.
-
-    Args:
-        x (Tensor): Node feature matrix
-            :math:`\mathbf{X} \in \mathbb{R}^{N \times F}`.
-        batch (LongTensor): Batch vector :math:`\mathbf{b} \in {\{ 0, \ldots,
-            B-1\}}^N`, which assigns each node to a specific example.
-        k (int): The number of nodes to hold for each graph.
-
-    :rtype: :class:`Tensor`
+class AudioDataset(data.Dataset):
     """
-    x, _ = x.sort(dim=-1)
-
-    fill_value = x.min().item() - 1
-    batch_x, num_nodes = to_dense_batch(x, batch, fill_value)
-    B, N, D = batch_x.size()
-
-    _, perm = batch_x[:, :, -1].sort(dim=-1, descending=True)
-    arange = torch.arange(B, dtype=torch.long, device=perm.device) * N
-    perm = perm + arange.view(-1, 1)
-
-    batch_x = batch_x.view(B * N, D)
-    batch_x = batch_x[perm]
-    batch_x = batch_x.view(B, N, D)
-
-    if k is not None and N >= k:
-        batch_x = batch_x[:, :k].contiguous()
-    elif k is not None:
-        expand_batch_x = batch_x.new_full((B, k - N, D), fill_value)
-        batch_x = torch.cat([batch_x, expand_batch_x], dim=1)
-
-    batch_x[batch_x == fill_value] = 0
-
-    return batch_x
-
-
-def position_encoding(data):
-    batch_size, number_node, feature_dim = data.size()
-    position_enc = np.array([[pos / np.power(10000, 2 * (i // 2) / feature_dim) for i in
-                              range(feature_dim)] for pos in range(number_node)])
-
-    position_enc[:, 0::2] = np.sin(position_enc[:, 0::2])  # apply sin on dim 2i
-    position_enc[:, 1::2] = np.cos(position_enc[:, 1::2])  # apply cos on dim 2i+1
-    return torch.as_tensor(position_enc, dtype=data.dtype, device=data.device).expand(data.size())
-
-
-class Indegree(object):
-    r"""Adds the globally normalized node degree to the node features.
-
-    Args:
-        cat (bool, optional): If set to :obj:`False`, all existing node
-            features will be replaced. (default: :obj:`True`)
+    Audio sample reader.
     """
 
-    def __init__(self, norm=True, max_value=None, cat=True):
-        self.norm = norm
-        self.max = max_value
-        self.cat = cat
+    def __init__(self, data_type):
 
-    def __call__(self, data):
-        col, x = data.edge_index[1], data.x
-        deg = degree(col, data.num_nodes)
+        data_path = 'data/' + data_type
+        if not os.path.exists(data_path):
+            raise FileNotFoundError('The {} data folder does not exist!'.format(data_type))
 
-        if self.norm:
-            deg = deg / (deg.max() if self.max is None else self.max)
+        self.data_type = data_type
+        self.file_names = [os.path.join(data_path, filename) for filename in os.listdir(data_path)]
 
-        deg = deg.view(-1, 1)
-
-        if x is not None and self.cat:
-            x = x.view(-1, 1) if x.dim() == 1 else x
-            data.x = torch.cat([x, deg.to(x.dtype)], dim=-1)
+    def __getitem__(self, idx):
+        pair = np.load(self.file_names[idx])
+        pair = emphasis(pair[np.newaxis, :, :], emph_coeff=0.95).reshape(2, -1)
+        noisy = pair[1].reshape(1, -1)
+        if self.data_type == 'train':
+            clean = pair[0].reshape(1, -1)
+            return torch.from_numpy(pair).type(torch.FloatTensor), torch.from_numpy(clean).type(
+                torch.FloatTensor), torch.from_numpy(noisy).type(torch.FloatTensor)
         else:
-            data.x = deg
+            return os.path.basename(self.file_names[idx]), torch.from_numpy(noisy).type(torch.FloatTensor)
 
-        return data
-
-    def __repr__(self):
-        return '{}(norm={}, max_value={})'.format(self.__class__.__name__, self.norm, self.max)
+    def __len__(self):
+        return len(self.file_names)
 
 
 class MarginLoss(nn.Module):
