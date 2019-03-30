@@ -1,6 +1,5 @@
-# CapsGCNN
-A PyTorch implementation of Capsule Graph Convolutional Neural Network based on the paper 
-[Capsule Graph Convolutional Neural Network For Graph Classification]().
+# CCN
+A PyTorch implementation of Convolutional Capsule Network based on the paper [Convolutional Capsule Network for Activity Recoginition]().
 
 ## Requirements
 - [Anaconda](https://www.anaconda.com/download/)
@@ -12,19 +11,21 @@ conda install pytorch torchvision -c pytorch
 ```
 pip install git+https://github.com/pytorch/tnt.git@master
 ```
-- librosa
-```
-pip install librosa
-```
 - capsule-layer
 ```
 pip install git+https://github.com/leftthomas/CapsuleLayer.git@master
 ```
 
 ## Datasets
-The datasets are collected from [graph kernel datasets](https://ls11-www.cs.tu-dortmund.de/staff/morris/graphkerneldatasets).
-The code will download and extract them into `data` directory automatically. The `10fold_idx` files are collected from 
-[pytorch_DGCNN](https://github.com/muhanzhang/pytorch_DGCNN).
+There are many public datasets for human activity recognition. You can refer to this survey article [Deep learning for sensor-based activity recognition: a survey](https://arxiv.org/abs/1707.03502) to find more.
+
+In this demo, we will use UCI HAR dataset as an example. This dataset can be found in [here](https://archive.ics.uci.edu/ml/machine-learning-databases/00240/).
+
+Of course, this dataset needs further preprocessing before being put into the network. I've also provided a preprocessing version of the dataset as a `.npz` file so you can focus on the network (download [HERE](https://pan.baidu.com/s/1Nx7UcPqmXVQgNVZv4Ec1yg)). It is also highly recommended you download the dataset so that you can experience all the process on your own.
+
+| #subject | #activity | Frequency |
+| --- | --- | --- |
+| 30 | 6 | 50 Hz |
 
 ## Usage
 ### Train Model
@@ -36,7 +37,18 @@ optional arguments:
 --batch_size                  train batch size [default value is 20]
 --num_epochs                  train epochs number [default value is 100]
 ```
-Visdom now can be accessed by going to `127.0.0.1:8097/env/$data_type` in your browser, `$data_type` means the dataset type which you are training.
+Visdom now can be accessed by going to `127.0.0.1:8097/env/$data_type` in your browser, `$data_type` means the dataset 
+type which you are training.
+
+### About the inputs
+That dataset contains 9 channels of the inputs: (acc_body, acc_total and acc_gyro) on x-y-z. So the input channel is 9.
+
+Dataset providers have clipped the dataset using sliding window, so every 128 in `.txt` can be considered as an input. 
+In real life, you need to first clipped the input using sliding window.
+
+So in the end, we reformatted the inputs from 9 inputs files to 1 file, the shape of that file is `[n_sample,128,9]`, 
+that is, every windows has 9 channels with each channel has length 128. When feeding it to Tensorflow, it has to be 
+reshaped to `[n_sample,9,1,128]` as we expect there is 128 X 1 signals for every channel.
 
 ## Benchmarks
 Default PyTorch Adam optimizer hyper-parameters were used without learning rate scheduling. 
