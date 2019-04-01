@@ -49,8 +49,8 @@ def on_start_epoch(state):
 
 
 def on_end_epoch(state):
-    train_loss_logger.log(state['epoch'], meter_loss.value()[0])
-    train_accuracy_logger.log(state['epoch'], meter_accuracy.value()[0])
+    loss_logger.log(state['epoch'], meter_loss.value()[0], name='train')
+    accuracy_logger.log(state['epoch'], meter_accuracy.value()[0], name='train')
     train_confusion_logger.log(meter_confusion.value())
     results['train_loss'].append(meter_loss.value()[0])
     results['train_accuracy'].append(meter_accuracy.value()[0])
@@ -62,8 +62,8 @@ def on_end_epoch(state):
     with torch.no_grad():
         engine.test(processor, test_loader)
 
-    test_loss_logger.log(state['epoch'], meter_loss.value()[0])
-    test_accuracy_logger.log(state['epoch'], meter_accuracy.value()[0])
+    loss_logger.log(state['epoch'], meter_loss.value()[0], name='test')
+    accuracy_logger.log(state['epoch'], meter_accuracy.value()[0], name='test')
     test_confusion_logger.log(meter_confusion.value())
     results['test_loss'].append(meter_loss.value()[0])
     results['test_accuracy'].append(meter_accuracy.value()[0])
@@ -105,11 +105,9 @@ if __name__ == '__main__':
     meter_accuracy = tnt.meter.ClassErrorMeter(accuracy=True)
     meter_confusion = tnt.meter.ConfusionMeter(NUM_CLASS, normalized=True)
 
-    train_loss_logger = VisdomPlotLogger('line', opts={'title': 'Train Loss'})
-    train_accuracy_logger = VisdomPlotLogger('line', opts={'title': 'Train Accuracy'})
+    loss_logger = VisdomPlotLogger('line', opts={'title': 'Loss'})
+    accuracy_logger = VisdomPlotLogger('line', opts={'title': 'Accuracy'})
     train_confusion_logger = VisdomLogger('heatmap', opts={'title': 'Train Confusion Matrix'})
-    test_loss_logger = VisdomPlotLogger('line', opts={'title': 'Test Loss'})
-    test_accuracy_logger = VisdomPlotLogger('line', opts={'title': 'Test Accuracy'})
     test_confusion_logger = VisdomLogger('heatmap', opts={'title': 'Test Confusion Matrix'})
 
     engine.hooks['on_sample'] = on_sample
