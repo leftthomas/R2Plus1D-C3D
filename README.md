@@ -22,7 +22,7 @@ TODO
 ## Usage
 ### Train Model
 ```
-python -m visdom.server -logging_level WARNING & python train.py --num_epochs 200
+visdom -logging_level WARNING & python train.py --num_epochs 200
 optional arguments:
 --batch_size                  train batch size [default value is 64]
 --num_epochs                  train epochs number [default value is 80]
