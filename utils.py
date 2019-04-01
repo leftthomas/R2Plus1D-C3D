@@ -17,17 +17,16 @@ class VideoDataset(Dataset):
             dataset (str): Name of dataset. Defaults to 'ucf101'.
             split (str): Determines which folder of the directory the dataset will read from. Defaults to 'train'.
             clip_len (int): Determines how many frames are there in each clip. Defaults to 16.
-            crop_size (int): Determines what size to crop of video. Defaults to 112.
     """
 
-    def __init__(self, dataset='ucf101', split='train', clip_len=16, crop_size=112):
+    def __init__(self, dataset='ucf101', split='train', clip_len=16):
         self.original_dir = os.path.join('data', dataset)
         self.preprocessed_dir = os.path.join('data', 'preprocessed_' + dataset)
         self.split = split
         self.clip_len = clip_len
         self.resize_height = 128
         self.resize_width = 171
-        self.crop_size = crop_size
+        self.crop_size = 112
 
         if not self.check_integrity():
             raise RuntimeError('Dataset not found or corrupted. You need to download it from official website.')
@@ -103,13 +102,13 @@ class VideoDataset(Dataset):
         frame_width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
         frame_height = int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-        # Make sure the preprocessed video has at least 16 frames
+        # Make sure the preprocessed video has at least clip_len frames
         extract_frequency = 4
-        if frame_count // extract_frequency <= 16:
+        if frame_count // extract_frequency <= self.clip_len:
             extract_frequency -= 1
-            if frame_count // extract_frequency <= 16:
+            if frame_count // extract_frequency <= self.clip_len:
                 extract_frequency -= 1
-                if frame_count // extract_frequency <= 16:
+                if frame_count // extract_frequency <= self.clip_len:
                     extract_frequency -= 1
 
         count = 0
@@ -166,12 +165,12 @@ class VideoDataset(Dataset):
         return buffer
 
 
-def load_data(dataset='ucf101', batch_size=20, clip_len=16, crop_size=112):
-    train_data = VideoDataset(dataset=dataset, split='train', clip_len=clip_len, crop_size=crop_size)
+def load_data(dataset='ucf101', batch_size=20, clip_len=16):
+    train_data = VideoDataset(dataset=dataset, split='train', clip_len=clip_len)
     train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True, num_workers=4)
-    val_data = VideoDataset(dataset=dataset, split='val', clip_len=clip_len, crop_size=crop_size)
+    val_data = VideoDataset(dataset=dataset, split='val', clip_len=clip_len)
     val_loader = DataLoader(val_data, batch_size=batch_size, shuffle=False, num_workers=4)
-    test_data = VideoDataset(dataset=dataset, split='test', clip_len=clip_len, crop_size=crop_size)
+    test_data = VideoDataset(dataset=dataset, split='test', clip_len=clip_len)
     test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=False, num_workers=4)
     return train_loader, val_loader, test_loader
 

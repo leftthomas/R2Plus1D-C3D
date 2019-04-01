@@ -17,14 +17,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Test Activity Recognition')
     parser.add_argument('--data_type', default='ucf101', type=str, choices=['ucf101', 'hmdb51'], help='dataset type')
     parser.add_argument('--clip_len', default=16, type=int, help='number of frames in each video')
-    parser.add_argument('--crop_size', default=112, type=int, help='crop size of video')
     parser.add_argument('--video_name', type=str, help='test video name')
     parser.add_argument('--model_name', default='ucf101_100.pth', type=str, help='model epoch name')
     opt = parser.parse_args()
 
     DATA_TYPE = opt.data_type
     CLIP_LEN = opt.clip_len
-    CROP_SIZE = opt.crop_size
     VIDEO_NAME = opt.video_name
     MODEL_NAME = opt.model_name
 
@@ -34,12 +32,7 @@ if __name__ == '__main__':
 
     DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-    if DATA_TYPE == 'ucf101':
-        NUM_CLASS = 101
-    else:
-        NUM_CLASS = 51
-
-    model = Network(NUM_CLASS)
+    model = Network(len(class_names))
     checkpoint = torch.load('epochs/{}'.format(MODEL_NAME), map_location=lambda storage, loc: storage)
     model = model.load_state_dict(checkpoint).to(DEVICE).eval()
 
@@ -55,7 +48,7 @@ if __name__ == '__main__':
         tmp_ = center_crop(cv2.resize(frame, (171, 128)))
         tmp = tmp_ - np.array([[[90.0, 98.0, 102.0]]])
         clip.append(tmp)
-        if len(clip) == 16:
+        if len(clip) == CLIP_LEN:
             inputs = np.array(clip).astype(np.float32)
             inputs = np.expand_dims(inputs, axis=0)
             inputs = np.transpose(inputs, (0, 4, 1, 2, 3))

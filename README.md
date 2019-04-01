@@ -21,7 +21,10 @@ pip install git+https://github.com/leftthomas/CapsuleLayer.git@master
 ```
 
 ## Datasets
-TODO
+The datasets are coming from [UCF101](http://crcv.ucf.edu/data/UCF101.php)
+and [HMDB51](http://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/).
+Download these datasets and then extract them into `data` directory. 
+Rename `UCF-101` directory as `ucf101`, `hmdb-51` directory as `hmdb51`.
 
 ## Usage
 ### Train Model
@@ -30,11 +33,21 @@ visdom -logging_level WARNING & python train.py --num_epochs 200
 optional arguments:
 --data_type                   dataset type [default value is 'ucf101'](choices=['ucf101', 'hmdb51'])
 --clip_len                    number of frames in each video [default value is 16]
---crop_size                   crop size of video [default value is 112]
 --batch_size                  training batch size [default value is 20]
 --num_epochs                  training epochs number [default value is 100]
 ```
 Visdom now can be accessed by going to `127.0.0.1:8097` in your browser.
+
+### Inference Video
+```
+python inference.py --video_name data/ucf101/ApplyLipstick/v_ApplyLipstick_g04_c02.avi
+optional arguments:
+--data_type                   dataset type [default value is 'ucf101'](choices=['ucf101', 'hmdb51'])
+--clip_len                    number of frames in each video [default value is 16]
+--video_name                  test video name
+--model_name                  model epoch name [default value is 'ucf101_100.pth']
+```
+The inferences will show in a pop up window.
 
 ## Results
 The train/val/test loss、accuracy and confusion matrix are showed on visdom.
