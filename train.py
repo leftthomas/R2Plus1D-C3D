@@ -76,7 +76,7 @@ def plot():
 
 if __name__ == '__main__':
     torch.manual_seed(10)
-    train_loader, test_loader = utils.load(batch_size=BATCH_SIZE)
+    train_loader, test_loader = utils.load_data(batch_size=BATCH_SIZE)
     model = Network().to(DEVICE)
     optimizer = optim.SGD(params=model.parameters(), lr=LEARNING_RATE, momentum=0.9)
     train(model, optimizer, train_loader, test_loader)
