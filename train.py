@@ -100,7 +100,7 @@ if __name__ == '__main__':
     parser.add_argument('--clip_len', default=16, type=int, help='number of frames in each video')
     parser.add_argument('--crop_size', default=112, type=int, help='crop size of video')
     parser.add_argument('--batch_size', default=20, type=int, help='training batch size')
-    parser.add_argument('--num_epochs', default=80, type=int, help='train epoch number')
+    parser.add_argument('--num_epochs', default=100, type=int, help='training epoch number')
 
     opt = parser.parse_args()
     DATA_TYPE = opt.data_type

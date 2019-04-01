@@ -28,13 +28,16 @@ TODO
 ```
 visdom -logging_level WARNING & python train.py --num_epochs 200
 optional arguments:
---batch_size                  train batch size [default value is 64]
---num_epochs                  train epochs number [default value is 80]
+--data_type                   dataset type [default value is 'ucf101'](choices=['ucf101', 'hmdb51'])
+--clip_len                    number of frames in each video [default value is 16]
+--crop_size                   crop size of video [default value is 112]
+--batch_size                  training batch size [default value is 20]
+--num_epochs                  training epochs number [default value is 100]
 ```
 Visdom now can be accessed by going to `127.0.0.1:8097` in your browser.
 
 ## Results
-The train loss、accuracy, test loss、accuracy are showed on visdom.
+The train/val/test loss、accuracy and confusion matrix are showed on visdom.
 ![result](results/mutag.png)
 ![result](results/ptc.png)
 

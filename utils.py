@@ -50,6 +50,11 @@ class VideoDataset(Dataset):
         # Convert the list of label names into an array of label indices
         self.label_array = np.array([self.label2index[label] for label in labels], dtype=int)
 
+        if not os.path.exists('data/{}_labels.txt'.format(dataset)):
+            with open('data/{}_labels.txt'.format(dataset), 'w') as f:
+                for index, label in enumerate(sorted(self.label2index)):
+                    f.writelines(str(index + 1) + ' ' + label + '\n')
+
     def __len__(self):
         return len(self.file_names)
 
