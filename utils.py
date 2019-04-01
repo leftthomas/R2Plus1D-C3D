@@ -161,12 +161,12 @@ class VideoDataset(Dataset):
         return buffer
 
 
-def load_data(batch_size=64):
-    train_data = VideoDataset(dataset='ucf101', split='train', clip_len=8)
+def load_data(dataset='ucf101', batch_size=20, clip_len=16, crop_size=112):
+    train_data = VideoDataset(dataset=dataset, split='train', clip_len=clip_len, crop_size=crop_size)
     train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True, num_workers=4)
-    val_data = VideoDataset(dataset='ucf101', split='val', clip_len=8)
+    val_data = VideoDataset(dataset=dataset, split='val', clip_len=clip_len, crop_size=crop_size)
     val_loader = DataLoader(val_data, batch_size=batch_size, shuffle=False, num_workers=4)
-    test_data = VideoDataset(dataset='ucf101', split='test', clip_len=8)
+    test_data = VideoDataset(dataset=dataset, split='test', clip_len=clip_len, crop_size=crop_size)
     test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=False, num_workers=4)
     return train_loader, val_loader, test_loader
 
