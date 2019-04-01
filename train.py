@@ -95,7 +95,7 @@ if __name__ == '__main__':
     results = {'train_loss': [], 'train_accuracy': [], 'test_loss': [], 'test_accuracy': []}
 
     train_loader, test_loader = utils.load_data(batch_size=BATCH_SIZE)
-    model = Network().to(DEVICE)
+    model = Network(NUM_CLASS).to(DEVICE)
     loss_criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(params=model.parameters(), lr=0.01, momentum=0.9)
     print("# parameters:", sum(param.numel() for param in model.parameters()))

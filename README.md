@@ -7,6 +7,10 @@ A PyTorch implementation of Convolutional Capsule Network based on the paper [Co
 ```
 conda install pytorch torchvision -c pytorch
 ```
+- opencv
+```
+conda install opencv
+```
 - PyTorchNet
 ```
 pip install git+https://github.com/pytorch/tnt.git@master
