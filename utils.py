@@ -27,9 +27,9 @@ class VideoData(Dataset):
 def load_data(batch_size=64):
     data = np.load('data/data_har.npz')
     x_train = data['X_train'].astype(np.float32).reshape((-1, 1, 128, 9))
-    y_train = onehot_to_label(data['Y_train'].astype(np.float32))
+    y_train = onehot_to_label(data['Y_train'].astype(np.long))
     x_test = data['X_test'].astype(np.float32).reshape((-1, 1, 128, 9))
-    y_test = onehot_to_label(data['Y_test'].astype(np.float32))
+    y_test = onehot_to_label(data['Y_test'].astype(np.long))
     transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize(mean=(0, 0, 0, 0, 0, 0, 0, 0, 0), std=(1, 1, 1, 1, 1, 1, 1, 1, 1))

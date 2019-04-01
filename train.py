@@ -1,85 +1,120 @@
-import matplotlib.pyplot as plt
-import numpy as np
+import argparse
+
+import pandas as pd
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import tqdm
+import torchnet as tnt
+from torchnet.engine import Engine
+from torchnet.logger import VisdomPlotLogger, VisdomLogger
+from tqdm import tqdm
 
 import utils
 from model import Network
 
-BATCH_SIZE = 64
-N_EPOCH = 80
-LEARNING_RATE = 0.01
-DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-result = []
+torch.manual_seed(10)
 
 
-def train(model, optimizer, train_loader, test_loader):
-    n_batch = len(train_loader.dataset) // BATCH_SIZE
-    criterion = nn.CrossEntropyLoss()
+def processor(sample):
+    data, labels, training = sample
 
-    for e in range(N_EPOCH):
-        model.train()
-        correct, total_loss = 0, 0
-        total = 0
-        for index, (sample, target) in enumerate(train_loader):
-            sample, target = sample.to(DEVICE).float(), target.to(DEVICE).long()
-            sample = sample.view(-1, 9, 1, 128)
-            output = model(sample)
-            loss = criterion(output, target)
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            total_loss += loss.item()
-            _, predicted = torch.max(output.data, 1)
-            total += target.size(0)
-            correct += (predicted == target).sum()
+    data, labels = data.to(DEVICE), labels.to(DEVICE)
 
-            if index % 20 == 0:
-                tqdm.tqdm.write('Epoch: [{}/{}], Batch: [{}/{}], loss:{:.4f}'.format(e + 1, N_EPOCH, index + 1, n_batch,
-                                                                                     loss.item()))
-        acc_train = float(correct) * 100.0 / (BATCH_SIZE * n_batch)
-        tqdm.tqdm.write(
-            'Epoch: [{}/{}], loss: {:.4f}, train acc: {:.2f}%'.format(e + 1, N_EPOCH, total_loss * 1.0 / n_batch,
-                                                                      acc_train))
+    model.train(training)
 
-        # Testing
-        model.train(False)
-        with torch.no_grad():
-            correct, total = 0, 0
-            for sample, target in test_loader:
-                sample, target = sample.to(DEVICE).float(), target.to(DEVICE).long()
-                sample = sample.view(-1, 9, 1, 128)
-                output = model(sample)
-                _, predicted = torch.max(output.data, 1)
-                total += target.size(0)
-                correct += (predicted == target).sum()
-        acc_test = float(correct) * 100 / total
-        tqdm.tqdm.write('Epoch: [{}/{}], test acc: {:.2f}%'.format(e + 1, N_EPOCH, float(correct) * 100 / total))
-        result.append([acc_train, acc_test])
-        result_np = np.array(result, dtype=float)
-        np.savetxt('result.csv', result_np, fmt='%.2f', delimiter=',')
+    classes = model(data)
+    loss = loss_criterion(classes, labels)
+    return loss, classes
 
 
-def plot():
-    data = np.loadtxt('results/result.csv', delimiter=',')
-    plt.figure()
-    plt.plot(range(1, len(data[:, 0]) + 1), data[:, 0], color='blue', label='train')
-    plt.plot(range(1, len(data[:, 1]) + 1), data[:, 1], color='red', label='test')
-    plt.legend()
-    plt.xlabel('Epoch', fontsize=14)
-    plt.ylabel('Accuracy (%)', fontsize=14)
-    plt.title('Training and Test Accuracy', fontsize=20)
-    plt.savefig('results/result.png')
+def on_sample(state):
+    state['sample'].append(state['train'])
+
+
+def reset_meters():
+    meter_accuracy.reset()
+    meter_loss.reset()
+    meter_confusion.reset()
+
+
+def on_forward(state):
+    meter_accuracy.add(state['output'].detach().cpu(), state['sample'][1])
+    meter_confusion.add(state['output'].detach().cpu(), state['sample'][1])
+    meter_loss.add(state['loss'].item())
+
+
+def on_start_epoch(state):
+    reset_meters()
+    state['iterator'] = tqdm(state['iterator'])
+
+
+def on_end_epoch(state):
+    train_loss_logger.log(state['epoch'], meter_loss.value()[0])
+    train_accuracy_logger.log(state['epoch'], meter_accuracy.value()[0])
+    train_confusion_logger.log(meter_confusion.value())
+    results['train_loss'].append(meter_loss.value()[0])
+    results['train_accuracy'].append(meter_accuracy.value()[0])
+    print('[Epoch %d] Training Loss: %.4f Accuracy: %.2f%%' % (
+        state['epoch'], meter_loss.value()[0], meter_accuracy.value()[0]))
+
+    reset_meters()
+
+    with torch.no_grad():
+        engine.test(processor, test_loader)
+
+    test_loss_logger.log(state['epoch'], meter_loss.value()[0])
+    test_accuracy_logger.log(state['epoch'], meter_accuracy.value()[0])
+    test_confusion_logger.log(meter_confusion.value())
+    results['test_loss'].append(meter_loss.value()[0])
+    results['test_accuracy'].append(meter_accuracy.value()[0])
+    print('[Epoch %d] Testing Loss: %.4f Accuracy: %.2f%%' % (
+        state['epoch'], meter_loss.value()[0], meter_accuracy.value()[0]))
+
+    # save model
+    torch.save(model.state_dict(), 'epochs/%d.pth' % (state['epoch']))
+    # save statistics at every 10 epochs
+    if state['epoch'] % 10 == 0:
+        data_frame = pd.DataFrame(
+            data={'train_loss': results['train_loss'], 'train_accuracy': results['train_accuracy'],
+                  'test_loss': results['test_loss'], 'test_accuracy': results['test_accuracy']},
+            index=range(1, state['epoch'] + 1))
+        data_frame.to_csv('statistics/results.csv', index_label='epoch')
 
 
 if __name__ == '__main__':
-    torch.manual_seed(10)
+    parser = argparse.ArgumentParser(description='Train Activity Recognition Model')
+    parser.add_argument('--batch_size', default=64, type=int, help='training batch size')
+    parser.add_argument('--num_epochs', default=80, type=int, help='train epoch number')
+
+    opt = parser.parse_args()
+
+    BATCH_SIZE = opt.batch_size
+    NUM_EPOCH = opt.num_epochs
+    NUM_CLASS = 6
+    DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    results = {'train_loss': [], 'train_accuracy': [], 'test_loss': [], 'test_accuracy': []}
+
     train_loader, test_loader = utils.load_data(batch_size=BATCH_SIZE)
     model = Network().to(DEVICE)
-    optimizer = optim.SGD(params=model.parameters(), lr=LEARNING_RATE, momentum=0.9)
-    train(model, optimizer, train_loader, test_loader)
-    result = np.array(result, dtype=float)
-    np.savetxt('result.csv', result, fmt='%.2f', delimiter=',')
-    plot()
+    loss_criterion = nn.CrossEntropyLoss()
+    optimizer = optim.SGD(params=model.parameters(), lr=0.01, momentum=0.9)
+    print("# parameters:", sum(param.numel() for param in model.parameters()))
+
+    engine = Engine()
+    meter_loss = tnt.meter.AverageValueMeter()
+    meter_accuracy = tnt.meter.ClassErrorMeter(accuracy=True)
+    meter_confusion = tnt.meter.ConfusionMeter(NUM_CLASS, normalized=True)
+
+    train_loss_logger = VisdomPlotLogger('line', opts={'title': 'Train Loss'})
+    train_accuracy_logger = VisdomPlotLogger('line', opts={'title': 'Train Accuracy'})
+    train_confusion_logger = VisdomLogger('heatmap', opts={'title': 'Train Confusion Matrix'})
+    test_loss_logger = VisdomPlotLogger('line', opts={'title': 'Test Loss'})
+    test_accuracy_logger = VisdomPlotLogger('line', opts={'title': 'Test Accuracy'})
+    test_confusion_logger = VisdomLogger('heatmap', opts={'title': 'Test Confusion Matrix'})
+
+    engine.hooks['on_sample'] = on_sample
+    engine.hooks['on_forward'] = on_forward
+    engine.hooks['on_start_epoch'] = on_start_epoch
+    engine.hooks['on_end_epoch'] = on_end_epoch
+
+    engine.train(processor, train_loader, maxepoch=NUM_EPOCH, optimizer=optimizer)
