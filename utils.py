@@ -118,6 +118,8 @@ class VideoDataset(Dataset):
             if count % extract_frequency == 0:
                 if (frame_height != self.resize_height) or (frame_width != self.resize_width):
                     frame = cv2.resize(frame, (self.resize_width, self.resize_height))
+                if not os.path.exists(save_name.split('.')[0]):
+                    os.mkdir(save_name.split('.')[0])
                 cv2.imwrite(filename=os.path.join(save_name.split('.')[0], '0000{}.jpg'.format(str(i))), img=frame)
                 i += 1
             count += 1
