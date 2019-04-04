@@ -141,7 +141,7 @@ with open('data/something-something-v2-validation.json', 'r') as load_f:
     videos = json.load(load_f)
     for video in videos:
         val_video_files.append(video['template'].replace('[', '').replace(']', '') + '/' + video['id'] + '.webm')
-with open('something-something-v2-test.json', 'r') as load_f:
+with open('data/something-something-v2-test.json', 'r') as load_f:
     videos = json.load(load_f)
     for video in videos:
         test_video_files.append(video['id'] + '.webm')
