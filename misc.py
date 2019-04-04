@@ -163,7 +163,11 @@ for video in val_video_files:
 if not os.path.exists('data/ss174/test'):
     os.mkdir('data/ss174/test')
 for video in test_video_files:
-    shutil.move('data/20bn-something-something-v2/{}'.format(video), 'data/ss174/test/{}'.format(video))
+    # add fake label for ss174 test split
+    if not os.path.exists('data/ss174/test/Moving something up'):
+        os.mkdir('data/ss174/test/Moving something up')
+    shutil.move('data/20bn-something-something-v2/{}'.format(video),
+                'data/ss174/test/Moving something up/{}'.format(video))
 
 # remove these files to make the data dir more clear
 os.remove('data/UCF101.rar')
