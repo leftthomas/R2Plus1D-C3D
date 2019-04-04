@@ -5,6 +5,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
+import utils
 from model import Network
 
 
@@ -15,7 +16,8 @@ def center_crop(image):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Test Activity Recognition')
-    parser.add_argument('--data_type', default='ucf101', type=str, choices=['ucf101', 'hmdb51'], help='dataset type')
+    parser.add_argument('--data_type', default='ucf101', type=str, choices=['ucf101', 'hmdb51', 'ss174'],
+                        help='dataset type')
     parser.add_argument('--clip_len', default=16, type=int, help='number of frames in each video')
     parser.add_argument('--video_name', type=str, help='test video name')
     parser.add_argument('--model_name', default='ucf101_100.pth', type=str, help='model epoch name')
@@ -26,9 +28,7 @@ if __name__ == '__main__':
     VIDEO_NAME = opt.video_name
     MODEL_NAME = opt.model_name
 
-    with open('data/{}_labels.txt'.format(DATA_TYPE), 'r') as f:
-        class_names = f.readlines()
-        f.close()
+    class_names = utils.get_labels(DATA_TYPE)
 
     DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 

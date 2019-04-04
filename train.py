@@ -69,6 +69,12 @@ def on_end_epoch(state):
     print('[Epoch %d] Valing Loss: %.4f Accuracy: %.2f%%' % (
         state['epoch'], meter_loss.value()[0], meter_accuracy.value()[0]))
 
+    # save best model
+    global best_accuracy
+    if meter_accuracy.value()[0] > best_accuracy:
+        torch.save(model.state_dict(), 'epochs/{}.pth'.format(DATA_TYPE))
+        best_accuracy = meter_accuracy.value()[0]
+
     reset_meters()
 
     with torch.no_grad():
@@ -82,8 +88,6 @@ def on_end_epoch(state):
     print('[Epoch %d] Testing Loss: %.4f Accuracy: %.2f%%' % (
         state['epoch'], meter_loss.value()[0], meter_accuracy.value()[0]))
 
-    # save model
-    torch.save(model.state_dict(), 'epochs/{}_{}.pth'.format(DATA_TYPE, str(state['epoch'])))
     # save statistics at every 10 epochs
     if state['epoch'] % 10 == 0:
         data_frame = pd.DataFrame(
@@ -96,7 +100,8 @@ def on_end_epoch(state):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train Activity Recognition Model')
-    parser.add_argument('--data_type', default='ucf101', type=str, choices=['ucf101', 'hmdb51'], help='dataset type')
+    parser.add_argument('--data_type', default='ucf101', type=str, choices=['ucf101', 'hmdb51', 'ss174'],
+                        help='dataset type')
     parser.add_argument('--clip_len', default=16, type=int, help='number of frames in each video')
     parser.add_argument('--batch_size', default=20, type=int, help='training batch size')
     parser.add_argument('--num_epochs', default=100, type=int, help='training epoch number')
@@ -110,6 +115,8 @@ if __name__ == '__main__':
     DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     results = {'train_loss': [], 'train_accuracy': [], 'val_loss': [], 'val_accuracy': [], 'test_loss': [],
                'test_accuracy': []}
+    # record best val accuracy
+    best_accuracy = 0
 
     train_loader, val_loader, test_loader = utils.load_data(DATA_TYPE, BATCH_SIZE, CLIP_LEN)
     NUM_CLASS = len(train_loader.dataset.label2index)
