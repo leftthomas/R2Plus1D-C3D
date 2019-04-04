@@ -29,8 +29,13 @@ The datasets are coming from [UCF101](http://crcv.ucf.edu/data/UCF101.php)
 、[HMDB51](http://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/) 
 and [20BN-something-something](https://20bn.com/datasets/something-something).
 Download these datasets and `train/val/test` split files into `data` directory.
+For `20BN-something-something` dataset, after downloading all parts, extract using:
+```
+cat 20bn-something-something-v2-?? | tar zx
 
-Run `misc.py` to preprocess these datasets.
+```
+
+Then Run `misc.py` to preprocess these datasets.
 
 ## Usage
 ### Train Model
