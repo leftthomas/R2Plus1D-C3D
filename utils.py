@@ -45,14 +45,9 @@ class VideoDataset(Dataset):
         print('Number of {} videos: {:d}'.format(split, len(self.file_names)))
 
         # Prepare a mapping between the label names (strings) and indices (ints)
-        self.label2index = {label: index for index, label in enumerate(sorted(set(labels)))}
+        self.label2index = {label: index for index, label in enumerate(get_labels(dataset))}
         # Convert the list of label names into an array of label indices
         self.label_array = np.array([self.label2index[label] for label in labels], dtype=int)
-
-        if not os.path.exists('data/{}_labels.txt'.format(dataset)):
-            with open('data/{}_labels.txt'.format(dataset), 'w') as f:
-                for index, label in enumerate(sorted(self.label2index)):
-                    f.writelines(str(index + 1) + ' ' + label + '\n')
 
     def __len__(self):
         return len(self.file_names)
@@ -173,6 +168,15 @@ def load_data(dataset='ucf101', batch_size=20, clip_len=16):
     test_data = VideoDataset(dataset=dataset, split='test', clip_len=clip_len)
     test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=False, num_workers=4)
     return train_loader, val_loader, test_loader
+
+
+def get_labels(dataset='ucf101'):
+    labels = []
+    with open('data/{}_labels.txt'.format(dataset), 'r') as load_f:
+        raw_labels = load_f.readlines()
+    for label in raw_labels:
+        labels.append(label.replace('\n', ''))
+    return sorted(labels)
 
 
 class MarginLoss(nn.Module):

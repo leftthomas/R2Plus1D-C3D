@@ -19,8 +19,8 @@ ucf101_splits = zipfile.ZipFile('data/UCF101TrainTestSplits-RecognitionTask.zip'
 ucf101_splits.extractall('data/temp/ucf101')
 ucf101_splits.close()
 
-if not os.path.exists('data/ucf101/labels.txt'):
-    with open('data/ucf101/labels.txt', 'w') as f:
+if not os.path.exists('data/ucf101_labels.txt'):
+    with open('data/ucf101_labels.txt', 'w') as f:
         for line in open('data/temp/ucf101/ucfTrainTestlist/classInd.txt', 'r'):
             f.write(line.split(' ')[1])
 
@@ -73,8 +73,8 @@ for file in os.listdir('data/temp/hmdb51/testTrainMulti_7030_splits'):
     labels.append(file.split('_test_split')[0])
 labels = set(labels)
 
-if not os.path.exists('data/hmdb51/labels.txt'):
-    with open('data/hmdb51/labels.txt', 'w') as f:
+if not os.path.exists('data/hmdb51_labels.txt'):
+    with open('data/hmdb51_labels.txt', 'w') as f:
         for label in labels:
             f.write(label + '\n')
 
@@ -83,11 +83,11 @@ for file in os.listdir('data/temp/hmdb51/testTrainMulti_7030_splits'):
     if file.endswith('test_split1.txt'):
         for line in open('data/temp/hmdb51/testTrainMulti_7030_splits/{}'.format(file), 'r'):
             if line.split(' ')[1].replace('\n', '') == '1':
-                train_video_files.append(file.split('_')[0] + '/' + line.split(' ')[0])
+                train_video_files.append(file.split('_test_split')[0] + '/' + line.split(' ')[0])
             if line.split(' ')[1].replace('\n', '') == '2':
-                test_video_files.append(file.split('_')[0] + '/' + line.split(' ')[0])
+                test_video_files.append(file.split('_test_split')[0] + '/' + line.split(' ')[0])
             if line.split(' ')[1].replace('\n', '') == '0':
-                val_video_files.append(file.split('_')[0] + '/' + line.split(' ')[0])
+                val_video_files.append(file.split('_test_split')[0] + '/' + line.split(' ')[0])
 
 hmdb51_videos = rarfile.RarFile('data/hmdb51_org.rar')
 hmdb51_videos.extractall('data/temp/hmdb51')
@@ -125,8 +125,8 @@ if not os.path.exists('data/ss174'):
 if not os.path.exists('data/temp/ss174'):
     os.mkdir('data/temp/ss174')
 
-if not os.path.exists('data/ss174/labels.txt'):
-    with open('data/ss174/labels.txt', 'w') as f:
+if not os.path.exists('data/ss174_labels.txt'):
+    with open('data/ss174_labels.txt', 'w') as f:
         with open('data/something-something-v2-labels.json', 'r') as load_f:
             labels = json.load(load_f)
         for label in labels.keys():
