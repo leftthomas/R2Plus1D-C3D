@@ -46,10 +46,10 @@ if __name__ == '__main__':
         if not retaining and frame is None:
             continue
         tmp_ = center_crop(cv2.resize(frame, (171, 128)))
-        tmp = tmp_ - np.array([[[90.0, 98.0, 102.0]]])
+        tmp = tmp_.astype(np.float32) / 255.0
         clip.append(tmp)
         if len(clip) == CLIP_LEN:
-            inputs = np.array(clip).astype(np.float32)
+            inputs = np.array(clip)
             inputs = np.expand_dims(inputs, axis=0)
             inputs = np.transpose(inputs, (0, 4, 1, 2, 3))
             inputs = torch.from_numpy(inputs).to(DEVICE)
