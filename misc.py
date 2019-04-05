@@ -170,6 +170,8 @@ for video in test_video_files:
                 'data/ss174/test/Moving something up/{}'.format(video))
 
 # remove these files to make the data dir more clear
+shutil.rmtree('data/20bn-something-something-v2')
+shutil.rmtree('data/temp')
 os.remove('data/UCF101.rar')
 os.remove('data/UCF101TrainTestSplits-RecognitionTask.zip')
 os.remove('data/hmdb51_org.rar')
@@ -197,5 +199,3 @@ os.remove('data/20bn-something-something-v2-16')
 os.remove('data/20bn-something-something-v2-17')
 os.remove('data/20bn-something-something-v2-18')
 os.remove('data/20bn-something-something-v2-19')
-shutil.rmtree('data/20bn-something-something-v2')
-shutil.rmtree('data/temp')

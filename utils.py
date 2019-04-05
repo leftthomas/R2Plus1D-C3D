@@ -44,21 +44,20 @@ class VideoDataset(Dataset):
 
         print('Number of {} videos: {:d}'.format(split, len(self.file_names)))
 
-        # Prepare a mapping between the label names (strings) and indices (ints)
+        # prepare a mapping between the label names (strings) and indices (ints)
         self.label2index = {label: index for index, label in enumerate(get_labels(dataset))}
-        # Convert the list of label names into an array of label indices
+        # convert the list of label names into an array of label indices
         self.label_array = np.array([self.label2index[label] for label in labels], dtype=int)
 
     def __len__(self):
         return len(self.file_names)
 
     def __getitem__(self, index):
-        # Load and preprocess.
+        # load and preprocess.
         buffer = self.load_frames(self.file_names[index])
         buffer = self.crop(buffer, self.clip_len, self.crop_size)
         label = np.array(self.label_array[index])
 
-        buffer = self.normalize(buffer)
         buffer = self.to_tensor(buffer)
         return torch.from_numpy(buffer), torch.from_numpy(label)
 
@@ -90,14 +89,14 @@ class VideoDataset(Dataset):
         print('Preprocessing finished.')
 
     def process_video(self, video_name, save_name):
-        # Initialize a VideoCapture object to read video data into a numpy array
+        # initialize a VideoCapture object to read video data into a numpy array
         capture = cv2.VideoCapture(video_name)
 
         frame_count = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
         frame_width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
         frame_height = int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-        # Make sure the preprocessed video has at least clip_len frames
+        # make sure the preprocessed video has at least clip_len frames
         extract_frequency = 4
         if frame_count // extract_frequency <= self.clip_len:
             extract_frequency -= 1
@@ -124,36 +123,33 @@ class VideoDataset(Dataset):
                 i += 1
             count += 1
 
-        # Release the VideoCapture once it is no longer needed
+        # release the VideoCapture once it is no longer needed
         capture.release()
 
-    def normalize(self, buffer):
-        for i, frame in enumerate(buffer):
-            frame -= np.array([[[90.0, 98.0, 102.0]]])
-            buffer[i] = frame
-
-        return buffer
-
     def to_tensor(self, buffer):
+        buffer = buffer.astype(np.float32)
+        for i, frame in enumerate(buffer):
+            frame = frame / 255.0
+            buffer[i] = frame
         return buffer.transpose((3, 0, 1, 2))
 
     def load_frames(self, file_dir):
         frames = sorted([os.path.join(file_dir, img) for img in os.listdir(file_dir)])
         frame_count = len(frames)
-        buffer = np.empty((frame_count, self.resize_height, self.resize_width, 3), np.dtype('float32'))
+        buffer = np.empty((frame_count, self.resize_height, self.resize_width, 3), dtype=np.uint8)
         for i, frame_name in enumerate(frames):
-            frame = np.array(cv2.imread(frame_name)).astype(np.float64)
+            frame = np.array(cv2.imread(frame_name))
             buffer[i] = frame
 
         return buffer
 
     def crop(self, buffer, clip_len, crop_size):
-        # Randomly select time index for temporal jitter
+        # randomly select time index for temporal jitter
         time_index = np.random.randint(buffer.shape[0] - clip_len)
-        # Randomly select start indices in order to crop the video
+        # randomly select start indices in order to crop the video
         height_index = np.random.randint(buffer.shape[1] - crop_size)
         width_index = np.random.randint(buffer.shape[2] - crop_size)
-        # Crop and jitter the video using indexing. The spatial crop is performed on
+        # crop and jitter the video using indexing. The spatial crop is performed on
         # the entire array, so each frame is cropped in the same location. The temporal
         # jitter takes place via the selection of consecutive frames
         buffer = buffer[time_index:time_index + clip_len, height_index:height_index + crop_size,
