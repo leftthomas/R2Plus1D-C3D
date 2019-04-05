@@ -56,7 +56,6 @@ def on_end_epoch(state):
         state['epoch'], meter_loss.value()[0], meter_accuracy.value()[0]))
 
     reset_meters()
-    scheduler.step()
 
     with torch.no_grad():
         engine.test(processor, val_loader)
@@ -75,6 +74,7 @@ def on_end_epoch(state):
         torch.save(model.state_dict(), 'epochs/{}.pth'.format(DATA_TYPE))
         best_accuracy = meter_accuracy.value()[0]
 
+    scheduler.step(metrics=meter_loss.value()[0])
     reset_meters()
 
     with torch.no_grad():
@@ -122,8 +122,8 @@ if __name__ == '__main__':
     NUM_CLASS = len(train_loader.dataset.label2index)
     model = Network(NUM_CLASS).to(DEVICE)
     loss_criterion = nn.CrossEntropyLoss().to(DEVICE)
-    optimizer = optim.SGD(params=model.parameters(), lr=1e-3, momentum=0.9, weight_decay=5e-4)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
+    optimizer = optim.Adam(params=model.parameters(), weight_decay=5e-4)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer)
     print("# parameters:", sum(param.numel() for param in model.parameters()))
 
     engine = Engine()
