@@ -78,7 +78,7 @@ def on_end_epoch(state):
         torch.save(model.state_dict(), 'epochs/{}.pth'.format(DATA_TYPE))
         best_accuracy = meter_accuracy.value()[0]
 
-    # scheduler.step()
+    scheduler.step()
     reset_meters()
 
     with torch.no_grad():
@@ -132,7 +132,7 @@ if __name__ == '__main__':
     model = C3D(NUM_CLASS).to(DEVICE)
     loss_criterion = nn.CrossEntropyLoss().to(DEVICE)
     optimizer = optim.SGD(params=model.parameters(), lr=1e-3, momentum=0.9, weight_decay=5e-4)
-    # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
     print("# parameters:", sum(param.numel() for param in model.parameters()))
 
     engine = Engine()
