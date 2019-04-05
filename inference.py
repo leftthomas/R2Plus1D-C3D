@@ -10,7 +10,7 @@ from network.c3d import C3D
 
 
 def center_crop(image):
-    image = image[8:120, 30:142, :]
+    image = image[4:116, 24:136, :]
     return np.array(image).astype(np.uint8)
 
 
@@ -45,7 +45,7 @@ if __name__ == '__main__':
         retaining, frame = cap.read()
         if not retaining and frame is None:
             continue
-        tmp_ = center_crop(cv2.resize(frame, (171, 128)))
+        tmp_ = center_crop(cv2.resize(frame, (160, 120)))
         tmp = tmp_.astype(np.float32) / 255.0
         clip.append(tmp)
         if len(clip) == CLIP_LEN:

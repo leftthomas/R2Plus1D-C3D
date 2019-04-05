@@ -69,7 +69,7 @@ hmdb51_splits.extractall('data/temp/hmdb51')
 hmdb51_splits.close()
 
 labels = []
-for file in os.listdir('data/temp/hmdb51/testTrainMulti_7030_splits'):
+for file in sorted(os.listdir('data/temp/hmdb51/testTrainMulti_7030_splits')):
     labels.append(file.split('_test_split')[0])
 labels = set(labels)
 
@@ -79,7 +79,7 @@ if not os.path.exists('data/hmdb51_labels.txt'):
             f.write(label + '\n')
 
 train_video_files, val_video_files, test_video_files = [], [], []
-for file in os.listdir('data/temp/hmdb51/testTrainMulti_7030_splits'):
+for file in sorted(os.listdir('data/temp/hmdb51/testTrainMulti_7030_splits')):
     if file.endswith('test_split1.txt'):
         for line in open('data/temp/hmdb51/testTrainMulti_7030_splits/{}'.format(file), 'r'):
             if line.split(' ')[1].replace('\n', '') == '1':
@@ -92,7 +92,7 @@ for file in os.listdir('data/temp/hmdb51/testTrainMulti_7030_splits'):
 hmdb51_videos = rarfile.RarFile('data/hmdb51_org.rar')
 hmdb51_videos.extractall('data/temp/hmdb51')
 hmdb51_videos.close()
-for file in os.listdir('data/temp/hmdb51/'):
+for file in sorted(os.listdir('data/temp/hmdb51/')):
     if file.endswith('.rar'):
         rar_file = rarfile.RarFile('data/temp/hmdb51/{}'.format(file))
         rar_file.extractall('data/temp/hmdb51')

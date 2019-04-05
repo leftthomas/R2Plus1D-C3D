@@ -24,8 +24,8 @@ class VideoDataset(Dataset):
         self.preprocessed_dir = os.path.join('data', 'preprocessed_' + dataset)
         self.split = split
         self.clip_len = clip_len
-        self.resize_height = 128
-        self.resize_width = 171
+        self.resize_height = 120
+        self.resize_width = 160
         self.crop_size = 112
 
         if not self.check_integrity():
@@ -37,8 +37,8 @@ class VideoDataset(Dataset):
             self.preprocess()
 
         self.file_names, labels = [], []
-        for label in os.listdir(os.path.join(self.preprocessed_dir, self.split)):
-            for file_name in os.listdir(os.path.join(self.preprocessed_dir, self.split, label)):
+        for label in sorted(os.listdir(os.path.join(self.preprocessed_dir, self.split))):
+            for file_name in sorted(os.listdir(os.path.join(self.preprocessed_dir, self.split, label))):
                 self.file_names.append(os.path.join(self.preprocessed_dir, self.split, label, file_name))
                 labels.append(label)
 
@@ -81,10 +81,10 @@ class VideoDataset(Dataset):
             os.mkdir(self.preprocessed_dir)
         os.mkdir(os.path.join(self.preprocessed_dir, self.split))
 
-        for file in os.listdir(os.path.join(self.original_dir, self.split)):
+        for file in sorted(os.listdir(os.path.join(self.original_dir, self.split))):
             os.mkdir(os.path.join(self.preprocessed_dir, self.split, file))
 
-            for video in os.listdir(os.path.join(self.original_dir, self.split, file)):
+            for video in sorted(os.listdir(os.path.join(self.original_dir, self.split, file))):
                 video_name = os.path.join(self.original_dir, self.split, file, video)
                 save_name = os.path.join(self.preprocessed_dir, self.split, file, video)
                 self.process_video(video_name, save_name)
@@ -94,18 +94,15 @@ class VideoDataset(Dataset):
     def process_video(self, video_name, save_name):
         # initialize a VideoCapture object to read video data into a numpy array
         capture = cv2.VideoCapture(video_name)
-
         frame_count = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
-        frame_width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
-        frame_height = int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-        # make sure the preprocessed video has at least clip_len frames
+        # make sure the preprocessed video has at least 16 frames
         extract_frequency = 4
-        if frame_count // extract_frequency <= self.clip_len:
+        if frame_count // extract_frequency <= 16:
             extract_frequency -= 1
-            if frame_count // extract_frequency <= self.clip_len:
+            if frame_count // extract_frequency <= 16:
                 extract_frequency -= 1
-                if frame_count // extract_frequency <= self.clip_len:
+                if frame_count // extract_frequency <= 16:
                     extract_frequency -= 1
 
         count = 0
@@ -118,8 +115,7 @@ class VideoDataset(Dataset):
                 continue
 
             if count % extract_frequency == 0:
-                if (frame_height != self.resize_height) or (frame_width != self.resize_width):
-                    frame = cv2.resize(frame, (self.resize_width, self.resize_height))
+                frame = cv2.resize(frame, (self.resize_width, self.resize_height))
                 if not os.path.exists(save_name.split('.')[0]):
                     os.mkdir(save_name.split('.')[0])
                 cv2.imwrite(filename=os.path.join(save_name.split('.')[0], '0000{}.jpg'.format(str(i))), img=frame)
