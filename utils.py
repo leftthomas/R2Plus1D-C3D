@@ -57,7 +57,7 @@ class VideoDataset(Dataset):
         buffer = self.load_frames(self.file_names[index])
         buffer = self.crop(buffer, self.clip_len, self.crop_size)
         label = np.array(self.label_array[index])
-
+        buffer = self.normalize(buffer)
         buffer = self.to_tensor(buffer)
         return torch.from_numpy(buffer), torch.from_numpy(label)
 
@@ -126,11 +126,16 @@ class VideoDataset(Dataset):
         # release the VideoCapture once it is no longer needed
         capture.release()
 
-    def to_tensor(self, buffer):
+    def normalize(self, buffer):
         buffer = buffer.astype(np.float32)
         for i, frame in enumerate(buffer):
             frame = frame / 255.0
+            frame -= np.array([[[90.0 / 255.0, 98.0 / 255.0, 102.0 / 255.0]]])
             buffer[i] = frame
+
+        return buffer
+
+    def to_tensor(self, buffer):
         return buffer.transpose((3, 0, 1, 2))
 
     def load_frames(self, file_dir):
