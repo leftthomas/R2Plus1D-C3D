@@ -57,7 +57,9 @@ optional arguments:
 The inferences will show in a pop up window.
 
 ## Results
-The train/val/test loss、accuracy and confusion matrix are showed on visdom.
+The train/val/test loss、accuracy and confusion matrix are showed on visdom. 
+Pay attention, `something-something` dataset has not provide the real labels of test split, so the test accuracy is no
+meaning here. We used a fake label for test data, just to make code uniformity.
 ![result](results/ucf101.png)
 ![result](results/hmdb51.png)
 ![result](results/ss174.png)
