@@ -57,6 +57,9 @@ class VideoDataset(Dataset):
         buffer = self.load_frames(self.file_names[index])
         buffer = self.crop(buffer, self.clip_len, self.crop_size)
         label = np.array(self.label_array[index])
+        if self.split == 'train':
+            # perform data augmentation (random horizontal flip)
+            buffer = self.random_flip(buffer)
         buffer = self.normalize(buffer)
         buffer = self.to_tensor(buffer)
         return torch.from_numpy(buffer), torch.from_numpy(label)
@@ -125,6 +128,14 @@ class VideoDataset(Dataset):
 
         # release the VideoCapture once it is no longer needed
         capture.release()
+
+    def random_flip(self, buffer):
+        if np.random.random() < 0.5:
+            for i, frame in enumerate(buffer):
+                frame = cv2.flip(buffer[i], flipCode=1)
+                buffer[i] = frame
+
+        return buffer
 
     def normalize(self, buffer):
         buffer = buffer.astype(np.float32)
