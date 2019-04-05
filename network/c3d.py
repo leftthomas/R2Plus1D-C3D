@@ -1,9 +1,9 @@
 import torch.nn as nn
 
 
-class Network(nn.Module):
+class C3D(nn.Module):
     def __init__(self, num_classes):
-        super(Network, self).__init__()
+        super(C3D, self).__init__()
 
         self.conv1 = nn.Conv3d(3, 64, kernel_size=(3, 3, 3), padding=(1, 1, 1))
         self.pool1 = nn.MaxPool3d(kernel_size=(1, 2, 2), stride=(1, 2, 2))

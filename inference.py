@@ -6,7 +6,7 @@ import torch
 import torch.nn.functional as F
 
 import utils
-from model import Network
+from network.c3d import C3D
 
 
 def center_crop(image):
@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
     DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-    model = Network(len(class_names))
+    model = C3D(len(class_names))
     checkpoint = torch.load('epochs/{}'.format(MODEL_NAME), map_location=lambda storage, loc: storage)
     model = model.load_state_dict(checkpoint).to(DEVICE).eval()
 
