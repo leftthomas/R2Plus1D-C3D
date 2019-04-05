@@ -1,5 +1,4 @@
 import torch.nn as nn
-import torch.nn.functional as F
 
 
 class C3D(nn.Module):
@@ -62,7 +61,7 @@ class C3D(nn.Module):
 
         logits = self.fc8(x)
 
-        return F.softmax(logits, dim=-1)
+        return logits
 
     def __init_weight(self):
         for m in self.modules():
