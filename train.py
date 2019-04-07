@@ -2,7 +2,6 @@ import argparse
 
 import pandas as pd
 import torch
-import torch.nn as nn
 import torch.optim as optim
 import torchnet as tnt
 from torchnet.engine import Engine
@@ -15,6 +14,7 @@ from model import Model
 
 def processor(sample):
     data, labels, training = sample
+    labels = torch.eye(NUM_CLASS).index_select(dim=0, index=labels)
 
     data, labels = data.to(DEVICE), labels.to(DEVICE)
 
@@ -128,7 +128,7 @@ if __name__ == '__main__':
     train_loader, val_loader, test_loader = utils.load_data(DATA_TYPE, BATCH_SIZE, CLIP_LEN)
     NUM_CLASS = len(train_loader.dataset.label2index)
     model = Model(NUM_CLASS).to(DEVICE)
-    loss_criterion = nn.CrossEntropyLoss().to(DEVICE)
+    loss_criterion = utils.MarginLoss().to(DEVICE)
     optimizer = optim.Adam(params=model.parameters())
     print("# parameters:", sum(param.numel() for param in model.parameters()))
 

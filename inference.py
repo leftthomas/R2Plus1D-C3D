@@ -3,7 +3,6 @@ import argparse
 import cv2
 import numpy as np
 import torch
-import torch.nn.functional as F
 
 import utils
 from model import Model
@@ -53,9 +52,8 @@ if __name__ == '__main__':
             inputs = np.transpose(inputs, (0, 4, 1, 2, 3))
             inputs = torch.from_numpy(inputs).to(DEVICE)
             with torch.no_grad():
-                outputs = model.forward(inputs)
+                prob = model.forward(inputs)
 
-            prob = F.softmax(dim=-1)(outputs)
             label = torch.max(prob, -1)[1].detach().cpu().numpy()[0]
 
             cv2.putText(frame, class_names[label].split(' ')[-1].strip(), (20, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6,
