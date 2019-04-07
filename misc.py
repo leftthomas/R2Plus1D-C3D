@@ -118,9 +118,5 @@ for video in test_video_files:
         os.mkdir('data/hmdb51/test/{}'.format(video.split('/')[0]))
     shutil.move('data/temp/hmdb51/{}'.format(video), 'data/hmdb51/test/{}'.format(video))
 
-# remove these files to make the data dir more clear
+# remove the temp dir to make the data dir more clear
 shutil.rmtree('data/temp')
-os.remove('data/UCF101.rar')
-os.remove('data/UCF101TrainTestSplits-RecognitionTask.zip')
-os.remove('data/hmdb51_org.rar')
-os.remove('data/test_train_splits.rar')
