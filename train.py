@@ -129,7 +129,7 @@ if __name__ == '__main__':
     NUM_CLASS = len(train_loader.dataset.label2index)
     model = Model(NUM_CLASS).to(DEVICE)
     loss_criterion = nn.CrossEntropyLoss().to(DEVICE)
-    optimizer = optim.SGD(params=model.parameters(), lr=1e-3, momentum=0.9, weight_decay=5e-4)
+    optimizer = optim.Adam(params=model.parameters())
     print("# parameters:", sum(param.numel() for param in model.parameters()))
 
     engine = Engine()
