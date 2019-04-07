@@ -39,7 +39,6 @@ class Model(nn.Module):
 
         self.relu = nn.ReLU()
 
-        self.__init_weight()
 
     def forward(self, x):
 
@@ -70,11 +69,3 @@ class Model(nn.Module):
         logits = self.fc8(x)
 
         return logits
-
-    def __init_weight(self):
-        for m in self.modules():
-            if isinstance(m, nn.Conv3d):
-                nn.init.kaiming_normal_(m.weight)
-            elif isinstance(m, nn.BatchNorm3d):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
