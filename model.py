@@ -39,7 +39,6 @@ class Model(nn.Module):
 
         self.relu = nn.ReLU()
 
-
     def forward(self, x):
 
         x = self.relu(self.bn1(self.conv1(x)))
