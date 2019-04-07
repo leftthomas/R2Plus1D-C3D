@@ -6,7 +6,7 @@ import torch
 import torch.nn.functional as F
 
 import utils
-from network.c3d import C3D
+from model import Model
 
 
 def center_crop(image):
@@ -16,8 +16,7 @@ def center_crop(image):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Test Activity Recognition')
-    parser.add_argument('--data_type', default='ucf101', type=str, choices=['ucf101', 'hmdb51', 'ss174'],
-                        help='dataset type')
+    parser.add_argument('--data_type', default='ucf101', type=str, choices=['ucf101', 'hmdb51'], help='dataset type')
     parser.add_argument('--clip_len', default=16, type=int, help='number of frames in each video')
     parser.add_argument('--video_name', type=str, help='test video name')
     parser.add_argument('--model_name', default='ucf101_100.pth', type=str, help='model epoch name')
@@ -32,7 +31,7 @@ if __name__ == '__main__':
 
     DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-    model = C3D(len(class_names))
+    model = Model(len(class_names))
     checkpoint = torch.load('epochs/{}'.format(MODEL_NAME), map_location=lambda storage, loc: storage)
     model = model.load_state_dict(checkpoint).to(DEVICE).eval()
 

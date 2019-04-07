@@ -1,4 +1,3 @@
-import json
 import os
 import shutil
 import zipfile
@@ -30,7 +29,7 @@ for line in open('data/temp/ucf101/ucfTrainTestlist/trainlist01.txt', 'r'):
     train_video_labels.append(line.split(' ')[1].replace('\n', ''))
 for line in open('data/temp/ucf101/ucfTrainTestlist/testlist01.txt', 'r'):
     test_video_files.append(line.replace('\n', ''))
-train_video_files, val_video_files, _, _ = train_test_split(train_video_files, train_video_labels, test_size=0.2,
+train_video_files, val_video_files, _, _ = train_test_split(train_video_files, train_video_labels, test_size=0.05,
                                                             random_state=42)
 
 ucf101_videos = rarfile.RarFile('data/UCF101.rar')
@@ -119,83 +118,9 @@ for video in test_video_files:
         os.mkdir('data/hmdb51/test/{}'.format(video.split('/')[0]))
     shutil.move('data/temp/hmdb51/{}'.format(video), 'data/hmdb51/test/{}'.format(video))
 
-# preprocess ss174 files
-if not os.path.exists('data/ss174'):
-    os.mkdir('data/ss174')
-if not os.path.exists('data/temp/ss174'):
-    os.mkdir('data/temp/ss174')
-
-if not os.path.exists('data/ss174_labels.txt'):
-    with open('data/ss174_labels.txt', 'w') as f:
-        with open('data/something-something-v2-labels.json', 'r') as load_f:
-            labels = json.load(load_f)
-        for label in labels.keys():
-            f.write(label + '\n')
-
-train_video_files, val_video_files, test_video_files = [], [], []
-with open('data/something-something-v2-train.json', 'r') as load_f:
-    videos = json.load(load_f)
-    for video in videos:
-        train_video_files.append(video['template'].replace('[', '').replace(']', '') + '/' + video['id'] + '.webm')
-with open('data/something-something-v2-validation.json', 'r') as load_f:
-    videos = json.load(load_f)
-    for video in videos:
-        val_video_files.append(video['template'].replace('[', '').replace(']', '') + '/' + video['id'] + '.webm')
-with open('data/something-something-v2-test.json', 'r') as load_f:
-    videos = json.load(load_f)
-    for video in videos:
-        test_video_files.append(video['id'] + '.webm')
-
-if not os.path.exists('data/ss174/train'):
-    os.mkdir('data/ss174/train')
-for video in train_video_files:
-    if not os.path.exists('data/ss174/train/{}'.format(video.split('/')[0])):
-        os.mkdir('data/ss174/train/{}'.format(video.split('/')[0]))
-    shutil.move('data/20bn-something-something-v2/{}'.format(video.split('/')[1]), 'data/ss174/train/{}'.format(video))
-
-if not os.path.exists('data/ss174/val'):
-    os.mkdir('data/ss174/val')
-for video in val_video_files:
-    if not os.path.exists('data/ss174/val/{}'.format(video.split('/')[0])):
-        os.mkdir('data/ss174/val/{}'.format(video.split('/')[0]))
-    shutil.move('data/20bn-something-something-v2/{}'.format(video.split('/')[1]), 'data/ss174/val/{}'.format(video))
-
-if not os.path.exists('data/ss174/test'):
-    os.mkdir('data/ss174/test')
-for video in test_video_files:
-    # add fake label for ss174 test split
-    if not os.path.exists('data/ss174/test/Moving something up'):
-        os.mkdir('data/ss174/test/Moving something up')
-    shutil.move('data/20bn-something-something-v2/{}'.format(video),
-                'data/ss174/test/Moving something up/{}'.format(video))
-
 # remove these files to make the data dir more clear
-shutil.rmtree('data/20bn-something-something-v2')
 shutil.rmtree('data/temp')
 os.remove('data/UCF101.rar')
 os.remove('data/UCF101TrainTestSplits-RecognitionTask.zip')
 os.remove('data/hmdb51_org.rar')
 os.remove('data/test_train_splits.rar')
-os.remove('data/something-something-v2-labels.json')
-os.remove('data/something-something-v2-train.json')
-os.remove('data/something-something-v2-validation.json')
-os.remove('data/something-something-v2-test.json')
-os.remove('data/20bn-something-something-v2-00')
-os.remove('data/20bn-something-something-v2-01')
-os.remove('data/20bn-something-something-v2-02')
-os.remove('data/20bn-something-something-v2-03')
-os.remove('data/20bn-something-something-v2-04')
-os.remove('data/20bn-something-something-v2-05')
-os.remove('data/20bn-something-something-v2-06')
-os.remove('data/20bn-something-something-v2-07')
-os.remove('data/20bn-something-something-v2-08')
-os.remove('data/20bn-something-something-v2-09')
-os.remove('data/20bn-something-something-v2-11')
-os.remove('data/20bn-something-something-v2-12')
-os.remove('data/20bn-something-something-v2-13')
-os.remove('data/20bn-something-something-v2-14')
-os.remove('data/20bn-something-something-v2-15')
-os.remove('data/20bn-something-something-v2-16')
-os.remove('data/20bn-something-something-v2-17')
-os.remove('data/20bn-something-something-v2-18')
-os.remove('data/20bn-something-something-v2-19')

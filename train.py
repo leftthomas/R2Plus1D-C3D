@@ -10,7 +10,7 @@ from torchnet.logger import VisdomPlotLogger, VisdomLogger
 from tqdm import tqdm
 
 import utils
-from network.r3d import R3DClassifier
+from model import Model
 
 
 def processor(sample):
@@ -108,8 +108,7 @@ def on_end_epoch(state):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train Activity Recognition Model')
-    parser.add_argument('--data_type', default='ucf101', type=str, choices=['ucf101', 'hmdb51', 'ss174'],
-                        help='dataset type')
+    parser.add_argument('--data_type', default='ucf101', type=str, choices=['ucf101', 'hmdb51'], help='dataset type')
     parser.add_argument('--clip_len', default=16, type=int, help='number of frames in each video')
     parser.add_argument('--batch_size', default=20, type=int, help='training batch size')
     parser.add_argument('--num_epochs', default=100, type=int, help='training epoch number')
@@ -129,7 +128,7 @@ if __name__ == '__main__':
 
     train_loader, val_loader, test_loader = utils.load_data(DATA_TYPE, BATCH_SIZE, CLIP_LEN)
     NUM_CLASS = len(train_loader.dataset.label2index)
-    model = R3DClassifier(NUM_CLASS, (2, 2, 2, 2)).to(DEVICE)
+    model = Model(NUM_CLASS).to(DEVICE)
     loss_criterion = nn.CrossEntropyLoss().to(DEVICE)
     optimizer = optim.SGD(params=model.parameters(), lr=1e-3, momentum=0.9, weight_decay=5e-4)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
