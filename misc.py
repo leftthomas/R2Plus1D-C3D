@@ -70,7 +70,7 @@ hmdb51_splits.close()
 labels = []
 for file in sorted(os.listdir('data/temp/hmdb51/testTrainMulti_7030_splits')):
     labels.append(file.split('_test_split')[0])
-labels = set(labels)
+labels = set(sorted(labels))
 
 if not os.path.exists('data/hmdb51_labels.txt'):
     with open('data/hmdb51_labels.txt', 'w') as f:
