@@ -130,7 +130,7 @@ if __name__ == '__main__':
     model = Model(NUM_CLASS).to(DEVICE)
     loss_criterion = nn.CrossEntropyLoss().to(DEVICE)
     optimizer = optim.SGD(params=model.parameters(), lr=1e-3, momentum=0.9, weight_decay=5e-4)
-    print("# parameters:", sum(param.numel() for param in model.parameters()))
+    print("Number of parameters:", sum(param.numel() for param in model.parameters()))
 
     engine = Engine()
     meter_loss = tnt.meter.AverageValueMeter()
