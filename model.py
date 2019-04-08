@@ -215,6 +215,6 @@ class Model(nn.Module):
         x_b = self.dropout(x_b)
         logits_b = self.fc8b(x_b)
 
-        logits = F.softmax(logits_a * logits_b, dim=-1)
+        logits = (F.softmax(logits_a, dim=-1) + F.softmax(logits_b, dim=-1)) / 2
 
         return logits
