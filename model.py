@@ -125,46 +125,62 @@ class Model(nn.Module):
         super(Model, self).__init__()
 
         # SpatioTemporal Stream
-        self.conv1a = SpatioTemporalConv(3, 96, kernel_size=(7, 7, 7), stride=2, padding=(3, 3, 3))
-        self.bn1a = nn.BatchNorm3d(num_features=96)
-        self.pool1a = nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2))
+        self.conv1a = SpatioTemporalConv(3, 64, kernel_size=(3, 3, 3), padding=(1, 1, 1))
+        self.bn1a = nn.BatchNorm3d(num_features=64)
+        self.pool1a = nn.MaxPool3d(kernel_size=(1, 2, 2), stride=(1, 2, 2))
 
-        self.conv2a = SpatioTemporalConv(96, 256, kernel_size=(5, 5, 5), stride=2, padding=(2, 2, 2))
-        self.bn2a = nn.BatchNorm3d(num_features=256)
+        self.conv2a = SpatioTemporalConv(64, 128, kernel_size=(3, 3, 3), padding=(1, 1, 1))
+        self.bn2a = nn.BatchNorm3d(num_features=128)
         self.pool2a = nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2))
 
-        self.conv3a = SpatioTemporalConv(256, 512, kernel_size=(3, 3, 3), stride=1, padding=(1, 1, 1))
-        self.bn3a = nn.BatchNorm3d(num_features=512)
+        self.conv3a = SpatioTemporalConv(128, 256, kernel_size=(3, 3, 3), padding=(1, 1, 1))
+        self.bn3a = nn.BatchNorm3d(num_features=256)
+        self.conv3aa = SpatioTemporalConv(256, 256, kernel_size=(3, 3, 3), padding=(1, 1, 1))
+        self.bn3aa = nn.BatchNorm3d(num_features=256)
+        self.pool3a = nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2))
 
-        self.conv4a = SpatioTemporalConv(512, 512, kernel_size=(3, 3, 3), stride=1, padding=(1, 1, 1))
+        self.conv4a = SpatioTemporalConv(256, 512, kernel_size=(3, 3, 3), padding=(1, 1, 1))
         self.bn4a = nn.BatchNorm3d(num_features=512)
+        self.conv4aa = SpatioTemporalConv(512, 512, kernel_size=(3, 3, 3), padding=(1, 1, 1))
+        self.bn4aa = nn.BatchNorm3d(num_features=512)
+        self.pool4a = nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2))
 
-        self.conv5a = SpatioTemporalConv(512, 512, kernel_size=(3, 3, 3), stride=1, padding=(1, 1, 1))
+        self.conv5a = SpatioTemporalConv(512, 512, kernel_size=(3, 3, 3), padding=(1, 1, 1))
         self.bn5a = nn.BatchNorm3d(num_features=512)
-        self.pool5a = nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2), padding=(1, 1, 1))
+        self.conv5aa = SpatioTemporalConv(512, 512, kernel_size=(3, 3, 3), padding=(1, 1, 1))
+        self.bn5aa = nn.BatchNorm3d(num_features=512)
+        self.pool5a = nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2), padding=(0, 1, 1))
 
         self.fc6a = nn.Linear(8192, 4096)
         self.fc7a = nn.Linear(4096, 2048)
         self.fc8a = nn.Linear(2048, num_classes)
 
         # TemporalSpatio Stream
-        self.conv1b = TemporalSpatioConv(3, 96, kernel_size=(7, 7, 7), stride=2, padding=(3, 3, 3))
-        self.bn1b = nn.BatchNorm3d(num_features=96)
-        self.pool1b = nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2))
+        self.conv1b = TemporalSpatioConv(3, 64, kernel_size=(3, 3, 3), padding=(1, 1, 1))
+        self.bn1b = nn.BatchNorm3d(num_features=64)
+        self.pool1b = nn.MaxPool3d(kernel_size=(1, 2, 2), stride=(1, 2, 2))
 
-        self.conv2b = TemporalSpatioConv(96, 256, kernel_size=(5, 5, 5), stride=2, padding=(2, 2, 2))
-        self.bn2b = nn.BatchNorm3d(num_features=256)
+        self.conv2b = TemporalSpatioConv(64, 128, kernel_size=(3, 3, 3), padding=(1, 1, 1))
+        self.bn2b = nn.BatchNorm3d(num_features=128)
         self.pool2b = nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2))
 
-        self.conv3b = TemporalSpatioConv(256, 512, kernel_size=(3, 3, 3), stride=1, padding=(1, 1, 1))
-        self.bn3b = nn.BatchNorm3d(num_features=512)
+        self.conv3b = TemporalSpatioConv(128, 256, kernel_size=(3, 3, 3), padding=(1, 1, 1))
+        self.bn3b = nn.BatchNorm3d(num_features=256)
+        self.conv3bb = TemporalSpatioConv(256, 256, kernel_size=(3, 3, 3), padding=(1, 1, 1))
+        self.bn3bb = nn.BatchNorm3d(num_features=256)
+        self.pool3b = nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2))
 
-        self.conv4b = TemporalSpatioConv(512, 512, kernel_size=(3, 3, 3), stride=1, padding=(1, 1, 1))
+        self.conv4b = TemporalSpatioConv(256, 512, kernel_size=(3, 3, 3), padding=(1, 1, 1))
         self.bn4b = nn.BatchNorm3d(num_features=512)
+        self.conv4bb = TemporalSpatioConv(512, 512, kernel_size=(3, 3, 3), padding=(1, 1, 1))
+        self.bn4bb = nn.BatchNorm3d(num_features=512)
+        self.pool4b = nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2))
 
-        self.conv5b = TemporalSpatioConv(512, 512, kernel_size=(3, 3, 3), stride=1, padding=(1, 1, 1))
+        self.conv5b = TemporalSpatioConv(512, 512, kernel_size=(3, 3, 3), padding=(1, 1, 1))
         self.bn5b = nn.BatchNorm3d(num_features=512)
-        self.pool5b = nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2), padding=(1, 1, 1))
+        self.conv5bb = TemporalSpatioConv(512, 512, kernel_size=(3, 3, 3), padding=(1, 1, 1))
+        self.bn5bb = nn.BatchNorm3d(num_features=512)
+        self.pool5b = nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2), padding=(0, 1, 1))
 
         self.fc6b = nn.Linear(8192, 4096)
         self.fc7b = nn.Linear(4096, 2048)
@@ -183,9 +199,15 @@ class Model(nn.Module):
         x_a = self.pool2a(x_a)
 
         x_a = self.relu(self.bn3a(self.conv3a(x_a)))
+        x_a = self.relu(self.bn3aa(self.conv3aa(x_a)))
+        x_a = self.pool3a(x_a)
+
         x_a = self.relu(self.bn4a(self.conv4a(x_a)))
+        x_a = self.relu(self.bn4aa(self.conv4aa(x_a)))
+        x_a = self.pool4a(x_a)
 
         x_a = self.relu(self.bn5a(self.conv5a(x_a)))
+        x_a = self.relu(self.bn5aa(self.conv5aa(x_a)))
         x_a = self.pool5a(x_a)
 
         x_a = x_a.view(-1, 8192)
@@ -203,9 +225,15 @@ class Model(nn.Module):
         x_b = self.pool2b(x_b)
 
         x_b = self.relu(self.bn3b(self.conv3b(x_b)))
+        x_b = self.relu(self.bn3bb(self.conv3bb(x_b)))
+        x_b = self.pool3b(x_b)
+
         x_b = self.relu(self.bn4b(self.conv4b(x_b)))
+        x_b = self.relu(self.bn4bb(self.conv4bb(x_b)))
+        x_b = self.pool4b(x_b)
 
         x_b = self.relu(self.bn5b(self.conv5b(x_b)))
+        x_b = self.relu(self.bn5bb(self.conv5bb(x_b)))
         x_b = self.pool5b(x_b)
 
         x_b = x_b.view(-1, 8192)
