@@ -135,7 +135,6 @@ class VideoDataset(Dataset):
         buffer = buffer.astype(np.float32)
         for i, frame in enumerate(buffer):
             frame = frame / 255.0
-            frame -= np.array([[[90.0 / 255.0, 98.0 / 255.0, 102.0 / 255.0]]])
             buffer[i] = frame
 
         return buffer
