@@ -1,4 +1,3 @@
-import torch
 import torch.nn as nn
 
 
@@ -68,4 +67,4 @@ class Model(nn.Module):
 
         logits = self.fc8(x)
 
-        return torch.sigmoid(logits)
+        return logits
