@@ -127,7 +127,7 @@ if __name__ == '__main__':
 
     train_loader, val_loader, test_loader = utils.load_data(DATA_TYPE, BATCH_SIZE, CLIP_LEN)
     NUM_CLASS = len(train_loader.dataset.label2index)
-    model = Model(NUM_CLASS, (2, 2, 2, 2)).to(DEVICE)
+    model = Model(NUM_CLASS).to(DEVICE)
     loss_criterion = nn.CrossEntropyLoss().to(DEVICE)
     optimizer = optim.SGD(params=model.parameters(), lr=1e-3, momentum=0.9, weight_decay=5e-4)
     print("Number of parameters:", sum(param.numel() for param in model.parameters()))
