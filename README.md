@@ -15,6 +15,10 @@ conda install opencv
 ```
 pip install rarfile
 ```
+- joblib
+```
+pip install joblib
+```
 - PyTorchNet
 ```
 pip install git+https://github.com/pytorch/tnt.git@master
