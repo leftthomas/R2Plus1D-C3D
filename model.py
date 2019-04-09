@@ -1,7 +1,6 @@
 import math
 
 import torch.nn as nn
-import torch.nn.functional as F
 from torch.nn.modules.utils import _triple
 
 
@@ -152,8 +151,8 @@ class Model(nn.Module):
         self.pool5a = nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2), padding=(0, 1, 1))
 
         self.fc6a = nn.Linear(8192, 4096)
-        self.fc7a = nn.Linear(4096, 2048)
-        self.fc8a = nn.Linear(2048, num_classes)
+        self.fc7a = nn.Linear(4096, 4096)
+        self.fc8a = nn.Linear(4096, num_classes)
 
         # TemporalSpatio Stream
         self.conv1b = TemporalSpatioConv(3, 64, kernel_size=(3, 3, 3), padding=(1, 1, 1))
@@ -183,8 +182,8 @@ class Model(nn.Module):
         self.pool5b = nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2), padding=(0, 1, 1))
 
         self.fc6b = nn.Linear(8192, 4096)
-        self.fc7b = nn.Linear(4096, 2048)
-        self.fc8b = nn.Linear(2048, num_classes)
+        self.fc7b = nn.Linear(4096, 4096)
+        self.fc8b = nn.Linear(4096, num_classes)
 
         # common modules
         self.dropout = nn.Dropout(p=0.5)
@@ -243,6 +242,6 @@ class Model(nn.Module):
         x_b = self.dropout(x_b)
         logits_b = self.fc8b(x_b)
 
-        logits = (F.softmax(logits_a, dim=-1) + F.softmax(logits_b, dim=-1)) / 2
+        logits = (logits_a + logits_b) / 2
 
         return logits
