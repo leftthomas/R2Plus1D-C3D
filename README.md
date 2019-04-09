@@ -29,17 +29,21 @@ pip install git+https://github.com/leftthomas/CapsuleLayer.git@master
 ```
 
 ## Datasets
-The datasets are coming from [UCF101](http://crcv.ucf.edu/data/UCF101.php) and 
-[HMDB51](http://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/).
-Download these datasets and `train/val/test` split files into `data` directory.
+The datasets are coming from [UCF101](http://crcv.ucf.edu/data/UCF101.php)、 
+[HMDB51](http://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/)
+and [KINETICS600](https://deepmind.com/research/open-source/open-source-datasets/kinetics/).
+Download `UCF101` and `HMDB51` datasets with `train/val/test` split files into `data` directory.
 We use the `split1` to split files. Run `misc.py` to preprocess these datasets.
+
+For `KINETICS600` dataset, first download `train/val/test` split files into `data` directory, and 
+then run `download.py` to download and preprocess this dataset.
 
 ## Usage
 ### Train Model
 ```
 visdom -logging_level WARNING & python train.py --num_epochs 200
 optional arguments:
---data_type                   dataset type [default value is 'ucf101'](choices=['ucf101', 'hmdb51'])
+--data_type                   dataset type [default value is 'ucf101'](choices=['ucf101', 'hmdb51', 'kinetics600'])
 --clip_len                    number of frames in each video [default value is 16]
 --batch_size                  training batch size [default value is 20]
 --num_epochs                  training epochs number [default value is 100]
@@ -63,4 +67,6 @@ The train/val/test loss、accuracy and confusion matrix are showed on visdom.
 ![result](results/ucf101.png)
 ### HMDB51
 ![result](results/hmdb51.png)
+### KINETICS600
+![result](results/kinetics600.png)
 

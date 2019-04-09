@@ -16,7 +16,8 @@ def center_crop(image):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Test Activity Recognition')
-    parser.add_argument('--data_type', default='ucf101', type=str, choices=['ucf101', 'hmdb51'], help='dataset type')
+    parser.add_argument('--data_type', default='ucf101', type=str, choices=['ucf101', 'hmdb51', 'kinetics600'],
+                        help='dataset type')
     parser.add_argument('--clip_len', default=16, type=int, help='number of frames in each video')
     parser.add_argument('--video_name', type=str, help='test video name')
     parser.add_argument('--model_name', default='ucf101_100.pth', type=str, help='model epoch name')
