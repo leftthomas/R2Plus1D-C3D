@@ -109,13 +109,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train Activity Recognition Model')
     parser.add_argument('--data_type', default='ucf101', type=str, choices=['ucf101', 'hmdb51', 'kinetics600'],
                         help='dataset type')
-    parser.add_argument('--clip_len', default=16, type=int, help='number of frames in each video')
-    parser.add_argument('--batch_size', default=20, type=int, help='training batch size')
+    parser.add_argument('--batch_size', default=15, type=int, help='training batch size')
     parser.add_argument('--num_epochs', default=100, type=int, help='training epoch number')
 
     opt = parser.parse_args()
     DATA_TYPE = opt.data_type
-    CLIP_LEN = opt.clip_len
     BATCH_SIZE = opt.batch_size
     NUM_EPOCH = opt.num_epochs
 
@@ -126,7 +124,7 @@ if __name__ == '__main__':
     # record best val accuracy
     best_accuracy = 0
 
-    train_loader, val_loader, test_loader = utils.load_data(DATA_TYPE, BATCH_SIZE, CLIP_LEN)
+    train_loader, val_loader, test_loader = utils.load_data(DATA_TYPE, BATCH_SIZE)
     NUM_CLASS = len(train_loader.dataset.label2index)
     model = Model(NUM_CLASS).to(DEVICE)
     loss_criterion = nn.CrossEntropyLoss().to(DEVICE)

@@ -14,14 +14,13 @@ class VideoDataset(Dataset):
         Args:
             dataset (str): Name of dataset. Defaults to 'ucf101'.
             split (str): Determines which folder of the directory the dataset will read from. Defaults to 'train'.
-            clip_len (int): Determines how many frames are there in each clip. Defaults to 16.
     """
 
-    def __init__(self, dataset='ucf101', split='train', clip_len=16):
+    def __init__(self, dataset='ucf101', split='train'):
         self.original_dir = os.path.join('data', dataset)
         self.preprocessed_dir = os.path.join('data', 'preprocessed_' + dataset)
         self.split = split
-        self.clip_len = clip_len
+        self.clip_len = 16
         self.resize_height = 120
         self.resize_width = 160
         self.crop_size = 112
@@ -153,26 +152,32 @@ class VideoDataset(Dataset):
         return buffer
 
     def crop(self, buffer, clip_len, crop_size):
-        # randomly select time index for temporal jitter
-        time_index = np.random.randint(buffer.shape[0] - clip_len)
-        # randomly select start indices in order to crop the video
-        height_index = np.random.randint(buffer.shape[1] - crop_size)
-        width_index = np.random.randint(buffer.shape[2] - crop_size)
-        # crop and jitter the video using indexing. The spatial crop is performed on
-        # the entire array, so each frame is cropped in the same location. The temporal
-        # jitter takes place via the selection of consecutive frames
+        if self.split == 'train':
+            # randomly select time index for temporal jitter
+            time_index = np.random.randint(buffer.shape[0] - clip_len)
+            # randomly select start indices in order to crop the video
+            height_index = np.random.randint(buffer.shape[1] - crop_size)
+            width_index = np.random.randint(buffer.shape[2] - crop_size)
+            # crop and jitter the video using indexing. The spatial crop is performed on
+            # the entire array, so each frame is cropped in the same location. The temporal
+            # jitter takes place via the selection of consecutive frames
+        else:
+            # for val and test, select the middle and center frames
+            time_index = int((buffer.shape[0] - clip_len) / 2)
+            height_index = int((buffer.shape[1] - crop_size) / 2)
+            width_index = int((buffer.shape[2] - crop_size) / 2)
         buffer = buffer[time_index:time_index + clip_len, height_index:height_index + crop_size,
                  width_index:width_index + crop_size, :]
 
         return buffer
 
 
-def load_data(dataset='ucf101', batch_size=20, clip_len=16):
-    train_data = VideoDataset(dataset=dataset, split='train', clip_len=clip_len)
+def load_data(dataset='ucf101', batch_size=15):
+    train_data = VideoDataset(dataset=dataset, split='train')
     train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True, num_workers=4)
-    val_data = VideoDataset(dataset=dataset, split='val', clip_len=clip_len)
+    val_data = VideoDataset(dataset=dataset, split='val')
     val_loader = DataLoader(val_data, batch_size=batch_size, shuffle=False, num_workers=4)
-    test_data = VideoDataset(dataset=dataset, split='test', clip_len=clip_len)
+    test_data = VideoDataset(dataset=dataset, split='test')
     test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=False, num_workers=4)
     return train_loader, val_loader, test_loader
 
@@ -184,4 +189,3 @@ def get_labels(dataset='ucf101'):
     for label in raw_labels:
         labels.append(label.replace('\n', ''))
     return sorted(labels)
-
