@@ -63,42 +63,6 @@ def construct_video_filename(row, label_to_dir, trim_format='%06d'):
     return output_filename
 
 
-def download_clip_wrapper(row, label_to_dir, trim_format):
-    output_filename = construct_video_filename(row, label_to_dir, trim_format)
-    clip_id = os.path.basename(output_filename).split('.mp4')[0]
-    if os.path.exists(output_filename):
-        status = tuple([clip_id, True, 'Exists'])
-        return status
-
-    downloaded, log = download_clip(row['video-id'], output_filename, row['start-time'], row['end-time'])
-    status = tuple([clip_id, downloaded, log])
-    return status
-
-
-def download_kinetics(input_csv, split, output_dir='data/kinetics600', trim_format='%06d', num_jobs=24):
-    # read and parse Kinetics.
-    dataset = parse_kinetics_annotations(input_csv)
-
-    # create folders where videos will be saved later.
-    label_to_dir = create_video_folders(dataset, output_dir, split)
-
-    # download all clips.
-    status_lst = Parallel(n_jobs=num_jobs)(
-        delayed(download_clip_wrapper)(row, label_to_dir, trim_format) for i, row in dataset.iterrows())
-
-    # save download report.
-    with open('kinetics600_download_report.json', 'w') as fobj:
-        fobj.write(json.dumps(status_lst))
-
-
-download_kinetics('data/temp/kinetics600/kinetics_train.csv', split='train')
-download_kinetics('data/temp/kinetics600/kinetics_val.csv', split='val')
-download_kinetics('data/temp/kinetics600/kinetics_600_test.csv', split='test')
-
-# clean tmp dir.
-shutil.rmtree('data/temp')
-
-
 def download_clip(video_identifier, output_filename, start_time, end_time, num_attempts=5,
                   url_base='https://www.youtube.com/watch?v='):
     """Download a video from youtube if exists and is not blocked.
@@ -156,3 +120,39 @@ def download_clip(video_identifier, output_filename, start_time, end_time, num_a
     # check if the video was successfully saved.
     status = os.path.exists(output_filename)
     return status, 'Downloaded'
+
+
+def download_clip_wrapper(row, label_to_dir, trim_format):
+    output_filename = construct_video_filename(row, label_to_dir, trim_format)
+    clip_id = os.path.basename(output_filename).split('.mp4')[0]
+    if os.path.exists(output_filename):
+        status = tuple([clip_id, True, 'Exists'])
+        return status
+
+    downloaded, log = download_clip(row['video-id'], output_filename, row['start-time'], row['end-time'])
+    status = tuple([clip_id, downloaded, log])
+    return status
+
+
+def download_kinetics(input_csv, split, output_dir='data/kinetics600', trim_format='%06d', num_jobs=24):
+    # read and parse Kinetics.
+    dataset = parse_kinetics_annotations(input_csv)
+
+    # create folders where videos will be saved later.
+    label_to_dir = create_video_folders(dataset, output_dir, split)
+
+    # download all clips.
+    status_lst = Parallel(n_jobs=num_jobs)(
+        delayed(download_clip_wrapper)(row, label_to_dir, trim_format) for i, row in dataset.iterrows())
+
+    # save download report.
+    with open('kinetics600_download_report.json', 'w') as fobj:
+        fobj.write(json.dumps(status_lst))
+
+
+download_kinetics('data/temp/kinetics600/kinetics_train.csv', split='train')
+download_kinetics('data/temp/kinetics600/kinetics_val.csv', split='val')
+download_kinetics('data/temp/kinetics600/kinetics_600_test.csv', split='test')
+
+# clean tmp dir.
+shutil.rmtree('data/temp')
