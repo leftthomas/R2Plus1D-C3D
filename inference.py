@@ -10,7 +10,9 @@ from model import Model
 
 
 def center_crop(image):
-    image = image[4:116, 24:136, :]
+    height_index = int((image.shape[0] - 112) / 2)
+    width_index = int((image.shape[1] - 112) / 2)
+    image = image[height_index:height_index + 112, width_index:width_index + 112, :]
     return np.array(image).astype(np.uint8)
 
 
@@ -43,7 +45,8 @@ if __name__ == '__main__':
         retaining, frame = cap.read()
         if not retaining and frame is None:
             continue
-        tmp_ = center_crop(cv2.resize(frame, (160, 120)))
+        resize_width = int(frame.shape[1] / frame.shape[0] * 120)
+        tmp_ = center_crop(cv2.resize(frame, (resize_width, 120)))
         tmp = tmp_.astype(np.float32) / 255.0
         clip.append(tmp)
         if len(clip) == 16:

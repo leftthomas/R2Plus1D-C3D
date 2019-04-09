@@ -22,7 +22,6 @@ class VideoDataset(Dataset):
         self.split = split
         self.clip_len = 16
         self.resize_height = 120
-        self.resize_width = 160
         self.crop_size = 112
 
         if not self.check_integrity():
@@ -92,6 +91,8 @@ class VideoDataset(Dataset):
         # initialize a VideoCapture object to read video data into a numpy array
         capture = cv2.VideoCapture(video_name)
         frame_count = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
+        frame_height = int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        frame_width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
 
         # make sure the preprocessed video has at least 16 frames
         extract_frequency = 4
@@ -112,7 +113,8 @@ class VideoDataset(Dataset):
                 continue
 
             if count % extract_frequency == 0:
-                frame = cv2.resize(frame, (self.resize_width, self.resize_height))
+                resize_width = int(frame_width / frame_height * self.resize_height)
+                frame = cv2.resize(frame, (resize_width, self.resize_height))
                 if not os.path.exists(save_name.split('.')[0]):
                     os.mkdir(save_name.split('.')[0])
                 cv2.imwrite(filename=os.path.join(save_name.split('.')[0], '0000{}.jpg'.format(str(i))), img=frame)
@@ -143,13 +145,12 @@ class VideoDataset(Dataset):
 
     def load_frames(self, file_dir):
         frames = sorted([os.path.join(file_dir, img) for img in os.listdir(file_dir)])
-        frame_count = len(frames)
-        buffer = np.empty((frame_count, self.resize_height, self.resize_width, 3), dtype=np.uint8)
+        buffer = []
         for i, frame_name in enumerate(frames):
             frame = np.array(cv2.imread(frame_name))
-            buffer[i] = frame
+            buffer.append(frame)
 
-        return buffer
+        return np.array(buffer).astype(np.uint8)
 
     def crop(self, buffer, clip_len, crop_size):
         if self.split == 'train':
