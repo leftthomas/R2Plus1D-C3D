@@ -45,7 +45,8 @@ then run `download.py` to download and preprocess this dataset.
 visdom -logging_level WARNING & python train.py --num_epochs 200
 optional arguments:
 --data_type                   dataset type [default value is 'ucf101'](choices=['ucf101', 'hmdb51', 'kinetics600'])
---batch_size                  training batch size [default value is 15]
+--batch_size                  training batch size [default value is 30]
+--gpu_ids                     selected gpu [default value is '0,1,2']
 --num_epochs                  training epochs number [default value is 100]
 ```
 Visdom now can be accessed by going to `127.0.0.1:8097` in your browser.

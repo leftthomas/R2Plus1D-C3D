@@ -16,7 +16,7 @@ from model import Model
 def processor(sample):
     data, labels, training = sample
 
-    data, labels = data.to(DEVICE), labels.to(DEVICE)
+    data, labels = data.cuda(), labels.cuda()
 
     model.train(training)
 
@@ -109,15 +109,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train Activity Recognition Model')
     parser.add_argument('--data_type', default='ucf101', type=str, choices=['ucf101', 'hmdb51', 'kinetics600'],
                         help='dataset type')
-    parser.add_argument('--batch_size', default=15, type=int, help='training batch size')
+    parser.add_argument('--gpu_ids', default='0,1,2', type=str, help='selected gpu')
+    parser.add_argument('--batch_size', default=30, type=int, help='training batch size')
     parser.add_argument('--num_epochs', default=100, type=int, help='training epoch number')
 
     opt = parser.parse_args()
     DATA_TYPE = opt.data_type
+    GPU_IDS = opt.gpu_ids
     BATCH_SIZE = opt.batch_size
     NUM_EPOCH = opt.num_epochs
-
-    DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    device_ids = [int(gpu) for gpu in GPU_IDS.split(',')]
     results = {'train_loss': [], 'train_top1_accuracy': [], 'train_top5_accuracy': [], 'val_loss': [],
                'val_top1_accuracy': [], 'val_top5_accuracy': [], 'test_loss': [], 'test_top1_accuracy': [],
                'test_top5_accuracy': []}
@@ -126,8 +127,15 @@ if __name__ == '__main__':
 
     train_loader, val_loader, test_loader = utils.load_data(DATA_TYPE, BATCH_SIZE)
     NUM_CLASS = len(train_loader.dataset.label2index)
-    model = Model(NUM_CLASS).to(DEVICE)
-    loss_criterion = nn.CrossEntropyLoss().to(DEVICE)
+    model = Model(NUM_CLASS)
+    if len(device_ids) > 1:
+        if torch.cuda.device_count() >= len(device_ids):
+            model = nn.DataParallel(model, device_ids=device_ids)
+        else:
+            raise ValueError("the machine don't have {} gpus".format(str(len(device_ids))))
+    else:
+        model = model.cuda(device_ids[0])
+    loss_criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(params=model.parameters(), lr=1e-3, momentum=0.9, weight_decay=5e-4)
     print("Number of parameters:", sum(param.numel() for param in model.parameters()))
 
