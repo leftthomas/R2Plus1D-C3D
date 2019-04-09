@@ -16,7 +16,7 @@ from model import Model
 def processor(sample):
     data, labels, training = sample
 
-    data, labels = data.cuda(), labels.cuda()
+    data, labels = data.cuda(device_ids[0]), labels.cuda(device_ids[0])
 
     model.train(training)
 
@@ -127,14 +127,12 @@ if __name__ == '__main__':
 
     train_loader, val_loader, test_loader = utils.load_data(DATA_TYPE, BATCH_SIZE)
     NUM_CLASS = len(train_loader.dataset.label2index)
-    model = Model(NUM_CLASS)
+    model = Model(NUM_CLASS).cuda(device_ids[0])
     if len(device_ids) > 1:
         if torch.cuda.device_count() >= len(device_ids):
-            model = nn.DataParallel(model.cuda(), device_ids=device_ids)
+            model = nn.DataParallel(model, device_ids=device_ids)
         else:
             raise ValueError("the machine don't have {} gpus".format(str(len(device_ids))))
-    else:
-        model = model.cuda(device_ids[0])
     loss_criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(params=model.parameters(), lr=1e-3, momentum=0.9, weight_decay=5e-4)
     print("Number of parameters:", sum(param.numel() for param in model.parameters()))
