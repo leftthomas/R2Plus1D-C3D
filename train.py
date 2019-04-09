@@ -130,7 +130,7 @@ if __name__ == '__main__':
     model = Model(NUM_CLASS)
     if len(device_ids) > 1:
         if torch.cuda.device_count() >= len(device_ids):
-            model = nn.DataParallel(model, device_ids=device_ids)
+            model = nn.DataParallel(model.cuda(), device_ids=device_ids)
         else:
             raise ValueError("the machine don't have {} gpus".format(str(len(device_ids))))
     else:
