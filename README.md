@@ -54,7 +54,7 @@ Visdom now can be accessed by going to `127.0.0.1:8097` in your browser.
 ```
 python inference.py --video_name data/ucf101/ApplyLipstick/v_ApplyLipstick_g04_c02.avi
 optional arguments:
---data_type                   dataset type [default value is 'ucf101'](choices=['ucf101', 'hmdb51'])
+--data_type                   dataset type [default value is 'ucf101'](choices=['ucf101', 'hmdb51', 'kinetics600'])
 --clip_len                    number of frames in each video [default value is 16]
 --video_name                  test video name
 --model_name                  model epoch name [default value is 'ucf101_100.pth']
