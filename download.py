@@ -91,9 +91,9 @@ def download_kinetics(input_csv, split, output_dir='data/kinetics600', trim_form
         fobj.write(json.dumps(status_lst))
 
 
-download_kinetics('data/temp/kinetics600/kinetics_600_train (1)/kinetics_train.csv', split='train')
-download_kinetics('data/temp/kinetics600/kinetics_600_val (1)/kinetics_val.csv', split='val')
-download_kinetics('data/temp/kinetics600/kinetics_600_test (2)/kinetics_600_test.csv', split='test')
+download_kinetics('data/temp/kinetics600/kinetics_train.csv', split='train')
+download_kinetics('data/temp/kinetics600/kinetics_val.csv', split='val')
+download_kinetics('data/temp/kinetics600/kinetics_600_test.csv', split='test')
 
 # clean tmp dir.
 shutil.rmtree('data/temp')
