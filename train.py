@@ -132,18 +132,18 @@ if __name__ == '__main__':
     train_loader, val_loader, test_loader = utils.load_data(DATA_TYPE, BATCH_SIZE)
     NUM_CLASS = len(train_loader.dataset.label2index)
     model = Model(NUM_CLASS)
-    if PRE_TRAIN is None:
-        model = model.cuda(device_ids[0])
-    else:
+
+    if PRE_TRAIN is not None:
         checkpoint = torch.load('epochs/{}'.format(PRE_TRAIN), map_location=lambda storage, loc: storage)
         # load same dataset pre-trained model
         if DATA_TYPE in PRE_TRAIN:
-            model = model.load_state_dict(checkpoint).cuda(device_ids[0])
+            model = model.load_state_dict(checkpoint)
         # load weights from other dataset pre-trained model, then fine tuning
         # warm starting model using parameters from a different model
         else:
-            model = model.load_state_dict(checkpoint, strict=False).cuda(device_ids[0])
+            model = model.load_state_dict(checkpoint, strict=False)
 
+    model = model.cuda(device_ids[0])
     if len(device_ids) > 1:
         if torch.cuda.device_count() >= len(device_ids):
             model = nn.DataParallel(model, device_ids=device_ids)
