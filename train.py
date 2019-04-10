@@ -96,16 +96,15 @@ def on_end_epoch(state):
     print('[Epoch %d] Testing Loss: %.4f Top1 Accuracy: %.2f%% Top5 Accuracy: %.2f%%' % (
         state['epoch'], meter_loss.value()[0], meter_accuracy.value()[0], meter_accuracy.value()[1]))
 
-    # save statistics at every 10 epochs
-    if state['epoch'] % 10 == 0:
-        data_frame = pd.DataFrame(
-            data={'train_loss': results['train_loss'], 'train_top1_accuracy': results['train_top1_accuracy'],
-                  'train_top5_accuracy': results['train_top5_accuracy'], 'val_loss': results['val_loss'],
-                  'val_top1_accuracy': results['val_top1_accuracy'], 'val_top5_accuracy': results['val_top5_accuracy'],
-                  'test_loss': results['test_loss'], 'test_top1_accuracy': results['test_top1_accuracy'],
-                  'test_top5_accuracy': results['test_top5_accuracy']},
-            index=range(1, state['epoch'] + 1))
-        data_frame.to_csv('statistics/{}_results.csv'.format(DATA_TYPE), index_label='epoch')
+    # save statistics at each epoch
+    data_frame = pd.DataFrame(
+        data={'train_loss': results['train_loss'], 'train_top1_accuracy': results['train_top1_accuracy'],
+              'train_top5_accuracy': results['train_top5_accuracy'], 'val_loss': results['val_loss'],
+              'val_top1_accuracy': results['val_top1_accuracy'], 'val_top5_accuracy': results['val_top5_accuracy'],
+              'test_loss': results['test_loss'], 'test_top1_accuracy': results['test_top1_accuracy'],
+              'test_top5_accuracy': results['test_top5_accuracy']},
+        index=range(1, state['epoch'] + 1))
+    data_frame.to_csv('statistics/{}_results.csv'.format(DATA_TYPE), index_label='epoch')
 
 
 if __name__ == '__main__':
