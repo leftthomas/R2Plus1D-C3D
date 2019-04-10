@@ -42,12 +42,13 @@ then run `download.py` to download and preprocess this dataset.
 ## Usage
 ### Train Model
 ```
-visdom -logging_level WARNING & python train.py --num_epochs 200
+visdom -logging_level WARNING & python train.py --num_epochs 20 --pre_train kinetics600.pth
 optional arguments:
 --data_type                   dataset type [default value is 'ucf101'](choices=['ucf101', 'hmdb51', 'kinetics600'])
 --batch_size                  training batch size [default value is 30]
 --gpu_ids                     selected gpu [default value is '0,1,2']
 --num_epochs                  training epochs number [default value is 100]
+--pre_train                   used pre-trained model epoch name [default value is None]
 ```
 Visdom now can be accessed by going to `127.0.0.1:8097` in your browser.
 
@@ -57,7 +58,7 @@ python inference.py --video_name data/ucf101/ApplyLipstick/v_ApplyLipstick_g04_c
 optional arguments:
 --data_type                   dataset type [default value is 'ucf101'](choices=['ucf101', 'hmdb51', 'kinetics600'])
 --video_name                  test video name
---model_name                  model epoch name [default value is 'ucf101_100.pth']
+--model_name                  model epoch name [default value is 'ucf101.pth']
 ```
 The inferences will show in a pop up window.
 

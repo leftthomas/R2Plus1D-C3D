@@ -6,6 +6,8 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 
+MIN_FRAME, MIN_WIDTH, MIN_HEIGHT = 1000, 1000, 1000
+
 
 class VideoDataset(Dataset):
     r"""A Dataset for a folder of videos. Expects the directory structure to be
@@ -20,6 +22,10 @@ class VideoDataset(Dataset):
     def __init__(self, dataset='ucf101', split='train'):
         self.original_dir = os.path.join('data', dataset)
         self.preprocessed_dir = os.path.join('data', 'preprocessed_' + dataset)
+        # min shape: (frame, height, width)
+        # ucf101 min shape: (19, 240, 176)
+        # hmdb51 min shape: (19, 240, 176)
+        # kinetics600 min shape: (19, 240, 176)
         self.split = split
         self.clip_len = 16
         self.resize_height = 120
@@ -87,6 +93,7 @@ class VideoDataset(Dataset):
                 self.process_video(video_name, save_name)
 
         print('Preprocessing finished.')
+        print('min frame:{}; min height:{}; min width:{}'.format(str(MIN_FRAME), str(MIN_HEIGHT), str(MIN_WIDTH)))
 
     def process_video(self, video_name, save_name):
         # initialize a VideoCapture object to read video data into a numpy array
@@ -94,6 +101,16 @@ class VideoDataset(Dataset):
         frame_count = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
         frame_height = int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
         frame_width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
+
+        global MIN_FRAME
+        if frame_count < MIN_FRAME:
+            MIN_FRAME = frame_count
+        global MIN_HEIGHT
+        if frame_height < MIN_HEIGHT:
+            MIN_HEIGHT = frame_height
+        global MIN_WIDTH
+        if frame_width < MIN_WIDTH:
+            MIN_WIDTH = frame_width
 
         # make sure the preprocessed video has at least 16 frames
         extract_frequency = 4

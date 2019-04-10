@@ -115,12 +115,14 @@ if __name__ == '__main__':
     parser.add_argument('--gpu_ids', default='0,1,2', type=str, help='selected gpu')
     parser.add_argument('--batch_size', default=30, type=int, help='training batch size')
     parser.add_argument('--num_epochs', default=100, type=int, help='training epoch number')
+    parser.add_argument('--pre_train', default=None, type=str, help='used pre-trained model epoch name')
 
     opt = parser.parse_args()
     DATA_TYPE = opt.data_type
     GPU_IDS = opt.gpu_ids
     BATCH_SIZE = opt.batch_size
     NUM_EPOCH = opt.num_epochs
+    PRE_TRAIN = opt.pre_train
     device_ids = [int(gpu) for gpu in GPU_IDS.split(',')]
     results = {'train_loss': [], 'train_top1_accuracy': [], 'train_top5_accuracy': [], 'val_loss': [],
                'val_top1_accuracy': [], 'val_top5_accuracy': [], 'test_loss': [], 'test_top1_accuracy': [],
@@ -130,7 +132,19 @@ if __name__ == '__main__':
 
     train_loader, val_loader, test_loader = utils.load_data(DATA_TYPE, BATCH_SIZE)
     NUM_CLASS = len(train_loader.dataset.label2index)
-    model = Model(NUM_CLASS).cuda(device_ids[0])
+    model = Model(NUM_CLASS)
+    if PRE_TRAIN is None:
+        model = model.cuda(device_ids[0])
+    else:
+        checkpoint = torch.load('epochs/{}'.format(PRE_TRAIN), map_location=lambda storage, loc: storage)
+        # load same dataset pre-trained model
+        if DATA_TYPE in PRE_TRAIN:
+            model = model.load_state_dict(checkpoint).cuda(device_ids[0])
+        # load weights from other dataset pre-trained model, then fine tuning
+        # warm starting model using parameters from a different model
+        else:
+            model = model.load_state_dict(checkpoint, strict=False).cuda(device_ids[0])
+
     if len(device_ids) > 1:
         if torch.cuda.device_count() >= len(device_ids):
             model = nn.DataParallel(model, device_ids=device_ids)

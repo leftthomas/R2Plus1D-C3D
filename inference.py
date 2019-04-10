@@ -22,7 +22,7 @@ if __name__ == '__main__':
     parser.add_argument('--data_type', default='ucf101', type=str, choices=['ucf101', 'hmdb51', 'kinetics600'],
                         help='dataset type')
     parser.add_argument('--video_name', type=str, help='test video name')
-    parser.add_argument('--model_name', default='ucf101_100.pth', type=str, help='model epoch name')
+    parser.add_argument('--model_name', default='ucf101.pth', type=str, help='model epoch name')
     opt = parser.parse_args()
 
     DATA_TYPE = opt.data_type
