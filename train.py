@@ -144,6 +144,11 @@ if __name__ == '__main__':
         # load weights from other dataset pre-trained model, then fine tuning
         # warm starting model using parameters from a different model
         else:
+            # don't load the parameters of last layer
+            checkpoint.pop('fc8a.weight')
+            checkpoint.pop('fc8a.bias')
+            checkpoint.pop('fc8b.weight')
+            checkpoint.pop('fc8b.bias')
             model.load_state_dict(checkpoint, strict=False)
 
     model = model.to(device_ids[0])
