@@ -9,11 +9,13 @@ import torch.nn.functional as F
 import utils
 from model import Model
 
+clip_len, resize_height, crop_size = 16, 128, 112
+
 
 def center_crop(image):
-    height_index = math.floor((image.shape[0] - 112) / 2)
-    width_index = math.floor((image.shape[1] - 112) / 2)
-    image = image[height_index:height_index + 112, width_index:width_index + 112, :]
+    height_index = math.floor((image.shape[0] - crop_size) / 2)
+    width_index = math.floor((image.shape[1] - crop_size) / 2)
+    image = image[height_index:height_index + crop_size, width_index:width_index + crop_size, :]
     return np.array(image).astype(np.uint8)
 
 
@@ -46,11 +48,15 @@ if __name__ == '__main__':
         retaining, frame = cap.read()
         if not retaining and frame is None:
             continue
-        resize_width = math.floor(frame.shape[1] / frame.shape[0] * 120)
-        tmp_ = center_crop(cv2.resize(frame, (resize_width, 120)))
+        resize_width = math.floor(frame.shape[1] / frame.shape[0] * resize_height)
+        # make sure it can be cropped correctly
+        if resize_width < crop_size:
+            resize_width = resize_height
+            resize_height = math.floor(frame.shape[0] / frame.shape[1] * resize_width)
+        tmp_ = center_crop(cv2.resize(frame, (resize_width, resize_height)))
         tmp = tmp_.astype(np.float32) / 255.0
         clip.append(tmp)
-        if len(clip) == 16:
+        if len(clip) == clip_len:
             inputs = np.array(clip)
             inputs = np.expand_dims(inputs, axis=0)
             inputs = np.transpose(inputs, (0, 4, 1, 2, 3))
