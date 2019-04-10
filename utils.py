@@ -1,3 +1,4 @@
+import math
 import os
 
 import cv2
@@ -113,7 +114,7 @@ class VideoDataset(Dataset):
                 continue
 
             if count % extract_frequency == 0:
-                resize_width = int(frame_width / frame_height * self.resize_height)
+                resize_width = math.floor(frame_width / frame_height * self.resize_height)
                 frame = cv2.resize(frame, (resize_width, self.resize_height))
                 if not os.path.exists(save_name.split('.')[0]):
                     os.mkdir(save_name.split('.')[0])
@@ -164,9 +165,9 @@ class VideoDataset(Dataset):
             # jitter takes place via the selection of consecutive frames
         else:
             # for val and test, select the middle and center frames
-            time_index = int((buffer.shape[0] - clip_len) / 2)
-            height_index = int((buffer.shape[1] - crop_size) / 2)
-            width_index = int((buffer.shape[2] - crop_size) / 2)
+            time_index = math.floor((buffer.shape[0] - clip_len) / 2)
+            height_index = math.floor((buffer.shape[1] - crop_size) / 2)
+            width_index = math.floor((buffer.shape[2] - crop_size) / 2)
         buffer = buffer[time_index:time_index + clip_len, height_index:height_index + crop_size,
                  width_index:width_index + crop_size, :]
 
