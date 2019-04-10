@@ -58,7 +58,6 @@ def on_end_epoch(state):
         state['epoch'], meter_loss.value()[0], meter_accuracy.value()[0], meter_accuracy.value()[1]))
 
     reset_meters()
-    scheduler.step()
 
     # val
     with torch.no_grad():
@@ -83,6 +82,7 @@ def on_end_epoch(state):
             torch.save(model.state_dict(), 'epochs/{}.pth'.format(DATA_TYPE))
         best_accuracy = meter_accuracy.value()[0]
 
+    scheduler.step(meter_loss.value()[0])
     reset_meters()
 
     # test
@@ -159,7 +159,7 @@ if __name__ == '__main__':
             raise ValueError("the machine don't have {} gpus".format(str(len(device_ids))))
     loss_criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(params=model.parameters(), lr=1e-5, weight_decay=5e-4)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, verbose=True)
     print("Number of parameters:", sum(param.numel() for param in model.parameters()))
 
     engine = Engine()
