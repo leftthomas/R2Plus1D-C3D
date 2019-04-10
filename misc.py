@@ -3,7 +3,6 @@ import shutil
 import zipfile
 
 import rarfile
-from sklearn.model_selection import train_test_split
 
 if not os.path.exists('data/temp'):
     os.mkdir('data/temp')
@@ -23,14 +22,27 @@ if not os.path.exists('data/ucf101_labels.txt'):
         for line in open('data/temp/ucf101/ucfTrainTestlist/classInd.txt', 'r'):
             f.write(line.split(' ')[1])
 
-train_video_files, val_video_files, test_video_files, train_video_labels = [], [], [], []
+train_video_files, val_video_files, test_video_files = [], [], []
+val_label, val_group = None, None
 for line in open('data/temp/ucf101/ucfTrainTestlist/trainlist01.txt', 'r'):
-    train_video_files.append(line.split(' ')[0])
-    train_video_labels.append(line.split(' ')[1].replace('\n', ''))
+    # make sure the train split and val split clips for each class at different group
+    current_group, current_label = line.split(' ')[0].split('/')[1].split('_')[-2], int(
+        line.split(' ')[1].replace('\n', ''))
+    if val_label is None and val_group is None:
+        val_label, val_group = current_label, current_group
+        val_video_files.append(line.split(' ')[0])
+    else:
+        if current_label == val_label:
+            if current_group == val_group:
+                val_video_files.append(line.split(' ')[0])
+            else:
+                train_video_files.append(line.split(' ')[0])
+        else:
+            val_label, val_group = current_label, current_group
+            val_video_files.append(line.split(' ')[0])
+
 for line in open('data/temp/ucf101/ucfTrainTestlist/testlist01.txt', 'r'):
     test_video_files.append(line.replace('\n', ''))
-train_video_files, val_video_files, _, _ = train_test_split(train_video_files, train_video_labels, test_size=0.05,
-                                                            random_state=42)
 
 ucf101_videos = rarfile.RarFile('data/UCF101.rar')
 ucf101_videos.extractall('data/temp/ucf101')
@@ -74,8 +86,8 @@ labels = sorted(set(labels))
 
 if not os.path.exists('data/hmdb51_labels.txt'):
     with open('data/hmdb51_labels.txt', 'w') as f:
-        for label in labels:
-            f.write(label + '\n')
+        for current_label in labels:
+            f.write(current_label + '\n')
 
 train_video_files, val_video_files, test_video_files = [], [], []
 for file in sorted(os.listdir('data/temp/hmdb51/testTrainMulti_7030_splits')):
