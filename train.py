@@ -58,7 +58,9 @@ def on_end_epoch(state):
         state['epoch'], meter_loss.value()[0], meter_accuracy.value()[0], meter_accuracy.value()[1]))
 
     reset_meters()
+    scheduler.step()
 
+    # val
     with torch.no_grad():
         engine.test(processor, val_loader)
 
@@ -80,6 +82,7 @@ def on_end_epoch(state):
 
     reset_meters()
 
+    # test
     with torch.no_grad():
         engine.test(processor, test_loader)
 
@@ -134,7 +137,8 @@ if __name__ == '__main__':
         else:
             raise ValueError("the machine don't have {} gpus".format(str(len(device_ids))))
     loss_criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(params=model.parameters(), lr=1e-3, momentum=0.9, weight_decay=5e-4)
+    optimizer = optim.Adam(params=model.parameters(), lr=1e-5, weight_decay=5e-4)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
     print("Number of parameters:", sum(param.numel() for param in model.parameters()))
 
     engine = Engine()
