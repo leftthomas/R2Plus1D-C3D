@@ -16,7 +16,7 @@ from model import Model
 def processor(sample):
     data, labels, training = sample
 
-    data, labels = data.cuda(device_ids[0]), labels.cuda(device_ids[0])
+    data, labels = data.to(device_ids[0]), labels.to(device_ids[0])
 
     model.train(training)
 
@@ -77,7 +77,10 @@ def on_end_epoch(state):
     # save best model
     global best_accuracy
     if meter_accuracy.value()[0] > best_accuracy:
-        torch.save(model.state_dict(), 'epochs/{}.pth'.format(DATA_TYPE))
+        if len(device_ids) > 1:
+            torch.save(model.module.state_dict(), 'epochs/{}.pth'.format(DATA_TYPE))
+        else:
+            torch.save(model.state_dict(), 'epochs/{}.pth'.format(DATA_TYPE))
         best_accuracy = meter_accuracy.value()[0]
 
     reset_meters()
@@ -137,13 +140,13 @@ if __name__ == '__main__':
         checkpoint = torch.load('epochs/{}'.format(PRE_TRAIN), map_location=lambda storage, loc: storage)
         # load same dataset pre-trained model
         if DATA_TYPE in PRE_TRAIN:
-            model = model.load_state_dict(checkpoint)
+            model.load_state_dict(checkpoint)
         # load weights from other dataset pre-trained model, then fine tuning
         # warm starting model using parameters from a different model
         else:
-            model = model.load_state_dict(checkpoint, strict=False)
+            model.load_state_dict(checkpoint, strict=False)
 
-    model = model.cuda(device_ids[0])
+    model = model.to(device_ids[0])
     if len(device_ids) > 1:
         if torch.cuda.device_count() >= len(device_ids):
             model = nn.DataParallel(model, device_ids=device_ids)
