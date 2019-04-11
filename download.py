@@ -1,4 +1,3 @@
-import json
 import os
 import shutil
 import subprocess
@@ -6,8 +5,7 @@ import zipfile
 from collections import OrderedDict
 
 import pandas as pd
-from joblib import Parallel
-from joblib import delayed
+from tqdm import tqdm
 
 if not os.path.exists('data/temp'):
     os.mkdir('data/temp')
@@ -63,8 +61,7 @@ def construct_video_filename(row, label_to_dir, trim_format='%06d'):
     return output_filename
 
 
-def download_clip(video_identifier, output_filename, start_time, end_time, num_attempts=5,
-                  url_base='https://www.youtube.com/watch?v='):
+def download_clip(video_identifier, output_filename, start_time, end_time, url_base='https://www.youtube.com/watch?v='):
     """Download a video from youtube if exists and is not blocked.
     arguments:
     ---------
@@ -78,7 +75,6 @@ def download_clip(video_identifier, output_filename, start_time, end_time, num_a
     end_time: float
         Indicates the ending time in seconds of the trimmed video.
     """
-    status = False
     # construct command line for getting the direct video link.
     command = ['youtube-dl',
                '--quiet', '--no-warnings',
@@ -86,19 +82,11 @@ def download_clip(video_identifier, output_filename, start_time, end_time, num_a
                '--get-url',
                '"%s"' % (url_base + video_identifier)]
     command = ' '.join(command)
-    direct_download_url = None
-    attempts = 0
-    while True:
-        try:
-            direct_download_url = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
-            direct_download_url = direct_download_url.strip().decode('utf-8')
-        except subprocess.CalledProcessError as err:
-            attempts += 1
-            if attempts == num_attempts:
-                return status, err.output
-            else:
-                continue
-        break
+    try:
+        direct_download_url = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
+        direct_download_url = direct_download_url.strip().decode('utf-8')
+    except subprocess.CalledProcessError as err:
+        raise ConnectionError(err)
 
     # construct command to trim the videos (ffmpeg required).
     command = ['ffmpeg',
@@ -112,29 +100,25 @@ def download_clip(video_identifier, output_filename, start_time, end_time, num_a
                '"%s"' % output_filename]
     command = ' '.join(command)
     try:
-        output = subprocess.check_output(command, shell=True,
-                                         stderr=subprocess.STDOUT)
+        output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as err:
-        return status, err.output
+        raise ProcessLookupError(err)
 
     # check if the video was successfully saved.
     status = os.path.exists(output_filename)
-    return status, 'Downloaded'
+    if not status:
+        return output_filename + 'have not been saved'
+    else:
+        return output_filename + 'have been saved'
 
 
 def download_clip_wrapper(row, label_to_dir, trim_format):
     output_filename = construct_video_filename(row, label_to_dir, trim_format)
-    clip_id = os.path.basename(output_filename).split('.mp4')[0]
-    if os.path.exists(output_filename):
-        status = tuple([clip_id, True, 'Exists'])
-        return status
-
-    downloaded, log = download_clip(row['video-id'], output_filename, row['start-time'], row['end-time'])
-    status = tuple([clip_id, downloaded, log])
+    status = download_clip(row['video-id'], output_filename, row['start-time'], row['end-time'])
     return status
 
 
-def download_kinetics(input_csv, split, output_dir='data/kinetics600', trim_format='%06d', num_jobs=24):
+def download_kinetics(input_csv, split, output_dir='data/kinetics600', trim_format='%06d'):
     # read and parse Kinetics.
     dataset = parse_kinetics_annotations(input_csv)
 
@@ -142,12 +126,10 @@ def download_kinetics(input_csv, split, output_dir='data/kinetics600', trim_form
     label_to_dir = create_video_folders(dataset, output_dir, split)
 
     # download all clips.
-    status_lst = Parallel(n_jobs=num_jobs)(
-        delayed(download_clip_wrapper)(row, label_to_dir, trim_format) for i, row in dataset.iterrows())
-
-    # save download report.
-    with open('kinetics600_download_report.json', 'w') as fobj:
-        fobj.write(json.dumps(status_lst))
+    progress_bar = tqdm(dataset.iterrows(), desc='Download Kinetics600 {} dataset'.format(split))
+    for i, j, row in progress_bar:
+        status = download_clip_wrapper(row, label_to_dir, trim_format)
+        progress_bar.set_description(status)
 
 
 download_kinetics('data/temp/kinetics600/kinetics_train.csv', split='train')

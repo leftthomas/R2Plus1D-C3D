@@ -16,10 +16,6 @@ conda install opencv
 ```
 pip install rarfile
 ```
-- joblib
-```
-pip install joblib
-```
 - youtube-dl
 ```
 sudo curl -L https://yt-dl.org/downloads/latest/youtube-dl -o /usr/local/bin/youtube-dl
