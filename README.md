@@ -29,11 +29,8 @@ pip install git+https://github.com/leftthomas/CapsuleLayer.git@master
 The datasets are coming from [UCF101](http://crcv.ucf.edu/data/UCF101.php)、 
 [HMDB51](http://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/)
 and [KINETICS600](https://www.dropbox.com/s/wcs01mlqdgtq4gn/compress.tar.gz?dl=0).
-Download `UCF101` and `HMDB51` datasets with `train/val/test` split files into `data` directory.
+Download these datasets with `train/val/test` split files into `data` directory.
 We use the `split1` to split files. Run `misc.py` to preprocess these datasets.
-
-For `KINETICS600` dataset, first download `train/val/test` split files into `data` directory, and 
-then run `download.py` to download and preprocess this dataset.
 
 ## Usage
 ### Train Model
