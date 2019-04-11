@@ -107,9 +107,9 @@ def download_clip(video_identifier, output_filename, start_time, end_time, url_b
     # check if the video was successfully saved.
     status = os.path.exists(output_filename)
     if not status:
-        return output_filename + 'have not been saved'
+        return 'youtube video {} have not been saved'.format(video_identifier)
     else:
-        return output_filename + 'have been saved'
+        return 'youtube video {} have been saved to {}'.format(video_identifier, output_filename)
 
 
 def download_clip_wrapper(row, label_to_dir, trim_format):
