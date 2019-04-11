@@ -82,11 +82,18 @@ def download_clip(video_identifier, output_filename, start_time, end_time, url_b
                '--get-url',
                '"%s"' % (url_base + video_identifier)]
     command = ' '.join(command)
-    try:
-        direct_download_url = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
-        direct_download_url = direct_download_url.strip().decode('utf-8')
-    except subprocess.CalledProcessError as err:
-        raise ConnectionError(err)
+    attempts = 0
+    while True:
+        try:
+            direct_download_url = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
+            direct_download_url = direct_download_url.strip().decode('utf-8')
+        except subprocess.CalledProcessError as err:
+            attempts += 1
+            if attempts == 5:
+                return err.output
+            else:
+                continue
+        break
 
     # construct command to trim the videos (ffmpeg required).
     command = ['ffmpeg',
@@ -102,14 +109,9 @@ def download_clip(video_identifier, output_filename, start_time, end_time, url_b
     try:
         output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as err:
-        raise ProcessLookupError(err)
+        return err.output
 
-    # check if the video was successfully saved.
-    status = os.path.exists(output_filename)
-    if not status:
-        return 'youtube video {} have not been saved'.format(video_identifier)
-    else:
-        return 'youtube video {} have been saved to {}'.format(video_identifier, output_filename)
+    return 'youtube video {} have been saved to {}'.format(video_identifier, output_filename)
 
 
 def download_clip_wrapper(row, label_to_dir, trim_format):
