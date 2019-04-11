@@ -20,6 +20,11 @@ pip install rarfile
 ```
 pip install joblib
 ```
+- youtube-dl
+```
+sudo curl -L https://yt-dl.org/downloads/latest/youtube-dl -o /usr/local/bin/youtube-dl
+sudo chmod a+rx /usr/local/bin/youtube-dl
+```
 - PyTorchNet
 ```
 pip install git+https://github.com/pytorch/tnt.git@master
