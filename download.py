@@ -86,7 +86,7 @@ def download_clip(video_identifier, output_filename, start_time, end_time, url_b
         direct_download_url = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
         direct_download_url = direct_download_url.strip().decode('utf-8')
     except subprocess.CalledProcessError as err:
-        return err.output + 'a'
+        return err.output
 
     # construct command to trim the videos (ffmpeg required).
     command = ['ffmpeg',
@@ -102,7 +102,7 @@ def download_clip(video_identifier, output_filename, start_time, end_time, url_b
     try:
         output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as err:
-        return err.output + 'b'
+        return err.output
 
     return 'youtube video {} have been saved to {}'.format(video_identifier, output_filename)
 
