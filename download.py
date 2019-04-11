@@ -126,8 +126,8 @@ def download_kinetics(input_csv, split, output_dir='data/kinetics600', trim_form
     label_to_dir = create_video_folders(dataset, output_dir, split)
 
     # download all clips.
-    progress_bar = tqdm(dataset.iterrows(), desc='Download Kinetics600 {} dataset'.format(split))
-    for i, j, row in progress_bar:
+    progress_bar = tqdm(dataset.iterrows(), desc='download Kinetics600 {} dataset'.format(split))
+    for i, row in progress_bar:
         status = download_clip_wrapper(row, label_to_dir, trim_format)
         progress_bar.set_description(status)
 
