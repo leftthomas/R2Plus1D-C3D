@@ -115,13 +115,13 @@ def download_clip_wrapper(row, label_to_dir, trim_format, index):
     output_filename = construct_video_filename(row, label_to_dir, trim_format)
     clip_id = os.path.basename(output_filename).split('.mp4')[0]
     if os.path.exists(output_filename):
-        print('{}     {}     {}     '.format(index, clip_id, 'Exists'))
+        print('Index:%-40s Clip-ID:%-40s Status:%-100s' % (index, clip_id, 'Exists'))
     else:
         downloaded, log = download_clip(row['video-id'], output_filename, row['start-time'], row['end-time'])
         if downloaded:
-            print('{}     {}     {}     '.format(index, clip_id, 'Downloaded'))
+            print('Index:%-40s Clip-ID:%-40s Status:%-100s' % (index, clip_id, 'Downloaded'))
         else:
-            print('{}     {}     {}     '.format(index, clip_id, log.strip().decode('utf-8')))
+            print('Index:%-40s Clip-ID:%-40s Status:%-100s' % (index, clip_id, log.strip().decode('utf-8')))
 
 
 def download_kinetics(input_csv, split, output_dir='data/kinetics600', trim_format='%06d'):
