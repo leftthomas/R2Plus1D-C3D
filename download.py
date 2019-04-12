@@ -97,7 +97,6 @@ def download_clip(video_identifier, output_filename, start_time, end_time, url_b
                '-loglevel', 'panic',
                '"%s"' % output_filename]
     command = ' '.join(command)
-    print(command)
     try:
         output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as err:
