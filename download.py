@@ -114,11 +114,12 @@ def download_clip(video_identifier, output_filename, start_time, end_time, url_b
 
 def download_clip_wrapper(row, label_to_dir, trim_format):
     output_filename = construct_video_filename(row, label_to_dir, trim_format)
+    clip_id = os.path.basename(output_filename).split('.mp4')[0]
     if os.path.exists(output_filename):
-        status = tuple([row['video-id'], True, 'Exists'])
+        status = tuple([clip_id, True, 'Exists'])
         return status
     downloaded, log = download_clip(row['video-id'], output_filename, row['start-time'], row['end-time'])
-    status = tuple([row['video-id'], downloaded, log])
+    status = tuple([clip_id, downloaded, log])
     return status
 
 
