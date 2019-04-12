@@ -61,7 +61,7 @@ def construct_video_filename(row, label_to_dir, trim_format='%06d'):
     return output_filename
 
 
-def download_clip(video_identifier, output_filename, start_time, end_time, url_base='https://www.youtube.com/watch?v='):
+def download_clip(video_identifier, output_filename, start_time, end_time, url_base='http://www.youtube.com/watch?v='):
     """Download a video from youtube if exists and is not blocked.
     arguments:
     ---------
@@ -87,21 +87,23 @@ def download_clip(video_identifier, output_filename, start_time, end_time, url_b
         direct_download_url = direct_download_url.strip().decode('utf-8')
     except subprocess.CalledProcessError as err:
         return err.output
-
     # construct command to trim the videos (ffmpeg required).
     command = ['ffmpeg',
                '-ss', str(start_time),
                '-t', str(end_time - start_time),
                '-i', "'%s'" % direct_download_url,
-               '-c:v', 'libx264', '-preset', 'ultrafast',
+               '-c:v', 'libx264',
+               '-pre', 'ultrafast',
                '-c:a', 'aac',
                '-threads', '1',
                '-loglevel', 'panic',
                '"%s"' % output_filename]
     command = ' '.join(command)
+    print(command)
     try:
         output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as err:
+        print(err.returncode)
         return err.output
 
     return 'youtube video {} have been saved to {}'.format(video_identifier, output_filename)
