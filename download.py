@@ -135,7 +135,7 @@ def download_kinetics(input_csv, split, output_dir='data/kinetics600', trim_form
         row, label_to_dir, trim_format) for i, row in dataset.iterrows())
 
     # save download report
-    with open('download_report.json', 'w') as fobj:
+    with open('data/download_report.json', 'w') as fobj:
         fobj.write(json.dumps(status_lst))
 
 
