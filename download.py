@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import subprocess
@@ -5,7 +6,8 @@ import zipfile
 from collections import OrderedDict
 
 import pandas as pd
-from tqdm import tqdm
+from joblib import Parallel
+from joblib import delayed
 
 if not os.path.exists('data/temp'):
     os.mkdir('data/temp')
@@ -75,19 +77,21 @@ def download_clip(video_identifier, output_filename, start_time, end_time, url_b
     end_time: float
         Indicates the ending time in seconds of the trimmed video.
     """
-    # construct command line for getting the direct video link.
+    # construct command line for getting the direct video link
     command = ['youtube-dl',
                '--quiet', '--no-warnings',
                '-f', '18',  # 640x360 h264 encoded video
                '--get-url',
                '"%s"' % (url_base + video_identifier)]
     command = ' '.join(command)
+
+    status = False
     try:
         direct_download_url = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
         direct_download_url = direct_download_url.strip().decode('utf-8')
     except subprocess.CalledProcessError as err:
-        return err.output
-    # construct command to trim the videos (ffmpeg required, it should be compiled with openssl).
+        return status, err.output
+    # construct command to trim the videos (ffmpeg required, it should be compiled with openssl)
     command = ['/usr/local/bin/ffmpeg',
                '-ss', str(start_time),
                '-t', str(end_time - start_time),
@@ -97,35 +101,41 @@ def download_clip(video_identifier, output_filename, start_time, end_time, url_b
                '-loglevel', 'panic',
                '"%s"' % output_filename]
     command = ' '.join(command)
+
     try:
         output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as err:
-        return err.output
+        return status, err.output
 
-    return 'It is saved to {}'.format(output_filename)
+    # check if the video was successfully saved
+    status = os.path.exists(output_filename)
+    return status, 'Downloaded'
 
 
 def download_clip_wrapper(row, label_to_dir, trim_format):
     output_filename = construct_video_filename(row, label_to_dir, trim_format)
     if os.path.exists(output_filename):
-        return 'It has already been saved to {}'.format(output_filename)
-    status = download_clip(row['video-id'], output_filename, row['start-time'], row['end-time'])
+        status = tuple([row['video-id'], True, 'Exists'])
+        return status
+    downloaded, log = download_clip(row['video-id'], output_filename, row['start-time'], row['end-time'])
+    status = tuple([row['video-id'], downloaded, log])
     return status
 
 
 def download_kinetics(input_csv, split, output_dir='data/kinetics600', trim_format='%06d'):
-    # read and parse Kinetics.
+    # read and parse Kinetics
     dataset = parse_kinetics_annotations(input_csv)
 
-    # create folders where videos will be saved later.
+    # create folders where videos will be saved later
     label_to_dir = create_video_folders(dataset, output_dir, split)
 
-    # download all clips.
-    progress_bar = tqdm(dataset.iterrows(), desc='Download Kinetics600 {} dataset'.format(split), total=len(dataset))
-    for i, row in progress_bar:
-        progress_bar.set_description('processing youtube video {}'.format(row['video-id']))
-        status = download_clip_wrapper(row, label_to_dir, trim_format)
-        progress_bar.set_description(status)
+    # download all clips
+    status_lst = Parallel(n_jobs=24)(delayed(download_clip_wrapper)(
+        row, label_to_dir, trim_format) for i, row in dataset.iterrows())
+
+    # save download report
+    with open('download_report.json', 'w') as fobj:
+        fobj.write(json.dumps(status_lst))
 
 
 download_kinetics('data/temp/kinetics600/kinetics_train.csv', split='train')

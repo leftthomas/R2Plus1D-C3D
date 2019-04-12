@@ -32,6 +32,10 @@ rm -rf ../ffmpeg-4.1.3/ ../ffmpeg-4.1.3.tar.bz2 ../build/
 ```
 pip install youtube-dl
 ```
+- joblib
+```
+pip install joblib
+```
 - PyTorchNet
 ```
 pip install git+https://github.com/pytorch/tnt.git@master
