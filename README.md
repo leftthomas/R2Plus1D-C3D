@@ -22,9 +22,10 @@ sudo apt install build-essential openssl libssl-dev autoconf automake cmake git-
 wget https://ffmpeg.org/releases/ffmpeg-4.1.3.tar.bz2
 tar -jxvf ffmpeg-4.1.3.tar.bz2
 cd ffmpeg-4.1.3/
-./configure --prefix="/usr/local/ffmpeg" --enable-static --enable-shared --enable-gpl --enable-zlib --enable-pic --enable-libass --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265 --enable-nonfree --enable-openssl
-sudo make -j4
-sudo make install
+./configure --prefix="../build" --enable-static --enable-gpl --enable-libass --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265 --enable-nonfree --enable-openssl
+make -j4
+make install
+sudo cp ../build/bin/ffmpeg /usr/local/bin/ 
 ```
 - youtube-dl
 ```

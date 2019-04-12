@@ -87,8 +87,8 @@ def download_clip(video_identifier, output_filename, start_time, end_time, url_b
         direct_download_url = direct_download_url.strip().decode('utf-8')
     except subprocess.CalledProcessError as err:
         return err.output
-    # construct command to trim the videos (ffmpeg required).
-    command = ['ffmpeg',
+    # construct command to trim the videos (ffmpeg required, it should be complied with openssl).
+    command = ['/usr/local/bin/ffmpeg',
                '-ss', str(start_time),
                '-t', str(end_time - start_time),
                '-i', "'%s'" % direct_download_url,
