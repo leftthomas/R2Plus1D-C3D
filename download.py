@@ -85,11 +85,18 @@ def download_clip(video_identifier, output_filename, start_time, end_time, url_b
     command = ' '.join(command)
 
     status = False
-    try:
-        direct_download_url = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
-        direct_download_url = direct_download_url.strip().decode('utf-8')
-    except subprocess.CalledProcessError as err:
-        return status, err.output
+    attempts = 0
+    while True:
+        try:
+            direct_download_url = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
+            direct_download_url = direct_download_url.strip().decode('utf-8')
+        except subprocess.CalledProcessError as err:
+            attempts += 1
+            if attempts == 5:
+                return status, err.output
+            else:
+                continue
+        break
     # construct command to trim the videos (ffmpeg required, it should be compiled with openssl)
     command = ['/usr/local/bin/ffmpeg',
                '-ss', str(start_time),
