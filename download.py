@@ -121,7 +121,7 @@ def download_clip_wrapper(row, label_to_dir, trim_format, index):
         if downloaded:
             print('{}     {}     {}     '.format(index, clip_id, 'Downloaded'))
         else:
-            print('{}     {}     {}     '.format(index, clip_id, str(log.decode('utf-8'))))
+            print('{}     {}     {}     '.format(index, clip_id, log.strip().decode('utf-8')))
 
 
 def download_kinetics(input_csv, split, output_dir='data/kinetics600', trim_format='%06d'):
