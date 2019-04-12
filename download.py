@@ -102,7 +102,7 @@ def download_clip(video_identifier, output_filename, start_time, end_time, url_b
     except subprocess.CalledProcessError as err:
         return err.output
 
-    return 'youtube video {} have been saved to {}'.format(video_identifier, output_filename)
+    return 'It has been saved to {}'.format(output_filename)
 
 
 def download_clip_wrapper(row, label_to_dir, trim_format):
@@ -123,6 +123,7 @@ def download_kinetics(input_csv, split, output_dir='data/kinetics600', trim_form
     # download all clips.
     progress_bar = tqdm(dataset.iterrows(), desc='Download Kinetics600 {} dataset'.format(split), total=len(dataset))
     for i, row in progress_bar:
+        progress_bar.set_description('Searching youtube video {}'.format(row['video-id']))
         status = download_clip_wrapper(row, label_to_dir, trim_format)
         progress_bar.set_description(status)
 
