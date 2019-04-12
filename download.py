@@ -128,7 +128,7 @@ def download_clip_wrapper(row, label_to_dir, trim_format, index):
         if downloaded:
             print('Index:%-15s Clip-ID:%-30s Status:%-50s' % (index, clip_id, 'Downloaded'))
         else:
-            print('Index:%-15s Clip-ID:%-30s Status:%-50s' % (index, clip_id, log.strip().decode('utf-8')))
+            print('Index:%-15s Clip-ID:%-30s Status:%-50s' % (index, clip_id, log))
 
 
 def download_kinetics(input_csv, split, output_dir='data/kinetics600', trim_format='%06d'):
