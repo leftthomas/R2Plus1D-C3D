@@ -1,4 +1,3 @@
-import json
 import os
 import shutil
 import subprocess
@@ -112,15 +111,17 @@ def download_clip(video_identifier, output_filename, start_time, end_time, url_b
     return status, 'Downloaded'
 
 
-def download_clip_wrapper(row, label_to_dir, trim_format):
+def download_clip_wrapper(row, label_to_dir, trim_format, index):
     output_filename = construct_video_filename(row, label_to_dir, trim_format)
     clip_id = os.path.basename(output_filename).split('.mp4')[0]
     if os.path.exists(output_filename):
-        status = tuple([clip_id, True, 'Exists'])
-        return status
-    downloaded, log = download_clip(row['video-id'], output_filename, row['start-time'], row['end-time'])
-    status = tuple([clip_id, downloaded, log])
-    return status
+        print('{}     {}     {}     '.format(index, clip_id, 'Exists'))
+    else:
+        downloaded, log = download_clip(row['video-id'], output_filename, row['start-time'], row['end-time'])
+        if downloaded:
+            print('{}     {}     {}     '.format(index, clip_id, 'Downloaded'))
+        else:
+            print('{}     {}     {}     '.format(index, clip_id, str(log.decode('utf-8'))))
 
 
 def download_kinetics(input_csv, split, output_dir='data/kinetics600', trim_format='%06d'):
@@ -129,18 +130,19 @@ def download_kinetics(input_csv, split, output_dir='data/kinetics600', trim_form
 
     # create folders where videos will be saved later
     label_to_dir = create_video_folders(dataset, output_dir, split)
+    num_data = len(dataset)
 
     # download all clips
-    status_lst = Parallel(n_jobs=24)(delayed(download_clip_wrapper)(
-        row, label_to_dir, trim_format) for i, row in dataset.iterrows())
-
-    # save download report
-    with open('data/download_report.json', 'w') as fobj:
-        fobj.write(json.dumps(status_lst))
+    Parallel(n_jobs=24)(
+        delayed(download_clip_wrapper)(row, label_to_dir, trim_format, '{}/{}'.format(str(i), str(num_data))) for i, row
+        in dataset.iterrows())
 
 
+print('Download train part of kinetics600 dataset')
 download_kinetics('data/temp/kinetics600/kinetics_train.csv', split='train')
+print('Download val part of kinetics600 dataset')
 download_kinetics('data/temp/kinetics600/kinetics_val.csv', split='val')
+print('Download test part of kinetics600 dataset')
 download_kinetics('data/temp/kinetics600/kinetics_600_test.csv', split='test')
 
 # clean tmp dir.
