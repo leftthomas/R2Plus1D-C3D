@@ -26,6 +26,7 @@ cd ffmpeg-4.1.3/
 make -j4
 make install
 sudo cp ../build/bin/ffmpeg /usr/local/bin/ 
+rm -rf ../ffmpeg-4.1.3/ ../ffmpeg-4.1.3.tar.bz2 ../build/
 ```
 - youtube-dl
 ```
