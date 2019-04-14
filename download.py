@@ -113,9 +113,7 @@ def download_clip(video_identifier, output_filename, start_time, end_time, url_b
     except subprocess.CalledProcessError as err:
         return status, err.output
 
-    # check if the video was successfully saved
-    status = os.path.exists(output_filename)
-    return status, 'Downloaded'
+    return True, 'Downloaded'
 
 
 def download_clip_wrapper(row, label_to_dir, trim_format, index):
