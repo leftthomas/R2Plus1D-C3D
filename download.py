@@ -1,5 +1,4 @@
 import os
-import shutil
 import subprocess
 import zipfile
 from collections import OrderedDict
@@ -139,16 +138,17 @@ def download_kinetics(input_csv, split, output_dir='data/kinetics600', trim_form
 
     # download all clips
     Parallel(n_jobs=24)(
-        delayed(download_clip_wrapper)(row, label_to_dir, trim_format, '{}/{}'.format(str(i), str(num_data))) for i, row
+        delayed(download_clip_wrapper)(row, label_to_dir, trim_format, '{}/{}'.format(str(i + 1), str(num_data))) for
+        i, row
         in dataset.iterrows())
 
 
-print('Download test part of kinetics600 dataset')
-download_kinetics('data/temp/kinetics600/kinetics_600_test.csv', split='test')
-print('Download val part of kinetics600 dataset')
-download_kinetics('data/temp/kinetics600/kinetics_val.csv', split='val')
+# print('Download test part of kinetics600 dataset')
+# download_kinetics('data/temp/kinetics600/kinetics_600_test.csv', split='test')
+# print('Download val part of kinetics600 dataset')
+# download_kinetics('data/temp/kinetics600/kinetics_val.csv', split='val')
 print('Download train part of kinetics600 dataset')
 download_kinetics('data/temp/kinetics600/kinetics_train.csv', split='train')
 
 # clean tmp dir.
-shutil.rmtree('data/temp')
+# shutil.rmtree('data/temp')
