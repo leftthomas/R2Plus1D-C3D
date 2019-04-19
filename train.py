@@ -115,7 +115,7 @@ if __name__ == '__main__':
     parser.add_argument('--data_type', default='ucf101', type=str, choices=['ucf101', 'hmdb51', 'kinetics600'],
                         help='dataset type')
     parser.add_argument('--gpu_ids', default='0,1,2', type=str, help='selected gpu')
-    parser.add_argument('--batch_size', default=30, type=int, help='training batch size')
+    parser.add_argument('--batch_size', default=36, type=int, help='training batch size')
     parser.add_argument('--num_epochs', default=100, type=int, help='training epoch number')
     parser.add_argument('--pre_train', default=None, type=str, help='used pre-trained model epoch name')
 
@@ -158,7 +158,7 @@ if __name__ == '__main__':
         else:
             raise ValueError("the machine don't have {} gpus".format(str(len(device_ids))))
     loss_criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(params=model.parameters(), lr=1e-4, weight_decay=1e-5)
+    optimizer = optim.Adam(params=model.parameters(), lr=1e-4, weight_decay=5e-4)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.2, patience=5, verbose=True)
     print("Number of parameters:", sum(param.numel() for param in model.parameters()))
 

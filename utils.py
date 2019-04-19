@@ -180,7 +180,7 @@ class VideoDataset(Dataset):
         return buffer
 
 
-def load_data(dataset='ucf101', batch_size=30):
+def load_data(dataset='ucf101', batch_size=36):
     train_data = VideoDataset(dataset=dataset, split='train')
     train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True, num_workers=4)
     val_data = VideoDataset(dataset=dataset, split='val')
