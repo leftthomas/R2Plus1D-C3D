@@ -112,20 +112,20 @@ def download_clip(video_identifier, output_filename, start_time, end_time, url_b
     except subprocess.CalledProcessError as err:
         return status, err.output
 
-    return True, 'Downloaded'
+    return True, 'Status: Downloaded'
 
 
 def download_clip_wrapper(row, label_to_dir, trim_format, index):
     output_filename = construct_video_filename(row, label_to_dir, trim_format)
     clip_id = os.path.basename(output_filename).split('.mp4')[0]
     if os.path.exists(output_filename):
-        print('Index:%-15s Clip-ID:%-30s Status:%-50s' % (index, clip_id, 'Exists'))
+        print('Index: %-16s Clip-ID: %-31s %-50s' % (index, clip_id, 'Status: Exists'))
     else:
         downloaded, log = download_clip(row['video-id'], output_filename, row['start-time'], row['end-time'])
         if downloaded:
-            print('Index:%-15s Clip-ID:%-30s Status:%-50s' % (index, clip_id, 'Downloaded'))
+            print('Index: %-16s Clip-ID: %-31s %-50s' % (index, clip_id, 'Status: Downloaded'))
         else:
-            print('Index:%-15s Clip-ID:%-30s Status:%-50s' % (index, clip_id, log.strip().decode('utf-8')))
+            print('Index: %-16s Clip-ID: %-31s %-50s' % (index, clip_id, log.strip().decode('utf-8')))
 
 
 def download_kinetics(input_csv, split, output_dir='data/kinetics600', trim_format='%06d'):
