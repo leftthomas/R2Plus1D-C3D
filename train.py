@@ -158,7 +158,7 @@ if __name__ == '__main__':
         else:
             raise ValueError("the machine don't have {} gpus".format(str(len(device_ids))))
     loss_criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(params=model.parameters(), lr=1e-4, weight_decay=5e-4)
+    optimizer = optim.Adam(params=model.parameters(), lr=1e-4, weight_decay=1e-4)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.2, patience=5, verbose=True)
     print("Number of parameters:", sum(param.numel() for param in model.parameters()))
 
