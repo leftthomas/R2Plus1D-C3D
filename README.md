@@ -1,6 +1,6 @@
 # Two-Stream STTS
 A PyTorch implementation of Two-Stream Spatio-Temporal and Temporal-Spatio Convolutional Network based on the paper 
-[Two-Stream Spatio-Temporal and Temporal-Spatio Convolutional Network for Activity Recoginition]().
+[Two-Stream Spatio-Temporal and Temporal-Spatio Convolutional Network for Activity Recognition]().
 
 ## Requirements
 - [Anaconda](https://www.anaconda.com/download/)
