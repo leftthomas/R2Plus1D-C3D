@@ -143,10 +143,10 @@ def download_kinetics(input_csv, split, output_dir='data/kinetics600', trim_form
         in dataset.iterrows())
 
 
-# print('Download test part of kinetics600 dataset')
-# download_kinetics('data/temp/kinetics600/kinetics_600_test.csv', split='test')
-# print('Download val part of kinetics600 dataset')
-# download_kinetics('data/temp/kinetics600/kinetics_val.csv', split='val')
+print('Download test part of kinetics600 dataset')
+download_kinetics('data/temp/kinetics600/kinetics_600_test.csv', split='test')
+print('Download val part of kinetics600 dataset')
+download_kinetics('data/temp/kinetics600/kinetics_val.csv', split='val')
 print('Download train part of kinetics600 dataset')
 download_kinetics('data/temp/kinetics600/kinetics_train.csv', split='train')
 
