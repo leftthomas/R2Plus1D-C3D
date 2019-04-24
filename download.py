@@ -1,8 +1,10 @@
 import os
+import shutil
 import subprocess
 import zipfile
 from collections import OrderedDict
 
+import cv2
 import pandas as pd
 from joblib import Parallel
 from joblib import delayed
@@ -110,7 +112,7 @@ def download_clip(video_identifier, output_filename, start_time, end_time, url_b
     try:
         output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as err:
-        return status, err.output
+        return status, b'ERROR: something is wrong with ffmpeg'
 
     return True, 'Status: Downloaded'
 
@@ -145,10 +147,37 @@ def download_kinetics(input_csv, split, output_dir='data/kinetics600', trim_form
 
 print('Download test part of kinetics600 dataset')
 download_kinetics('data/temp/kinetics600/kinetics_600_test.csv', split='test')
+# clean the corrupted videos
+print('Clean the corrupted videos about test part of kinetics600 dataset')
+for label in os.listdir('data/kinetics600/test'):
+    for video in os.listdir('data/kinetics600/test/{}'.format(label)):
+        try:
+            vid = cv2.VideoCapture('data/kinetics600/test/{}/{}'.format(label, video))
+        except Exception as e:
+            os.remove('data/kinetics600/test/{}/{}'.format(label, video))
+            print('{} is corrupted, have been deleted from local device, try to download it again'.format(video))
+
 print('Download val part of kinetics600 dataset')
 download_kinetics('data/temp/kinetics600/kinetics_val.csv', split='val')
+print('Clean the corrupted videos about val part of kinetics600 dataset')
+for label in os.listdir('data/kinetics600/val'):
+    for video in os.listdir('data/kinetics600/val/{}'.format(label)):
+        try:
+            vid = cv2.VideoCapture('data/kinetics600/val/{}/{}'.format(label, video))
+        except Exception as e:
+            os.remove('data/kinetics600/val/{}/{}'.format(label, video))
+            print('{} is corrupted, have been deleted from local device, try to download it again'.format(video))
+
 print('Download train part of kinetics600 dataset')
 download_kinetics('data/temp/kinetics600/kinetics_train.csv', split='train')
+print('Clean the corrupted videos about train part of kinetics600 dataset')
+for label in os.listdir('data/kinetics600/train'):
+    for video in os.listdir('data/kinetics600/train/{}'.format(label)):
+        try:
+            vid = cv2.VideoCapture('data/kinetics600/train/{}/{}'.format(label, video))
+        except Exception as e:
+            os.remove('data/kinetics600/train/{}/{}'.format(label, video))
+            print('{} is corrupted, have been deleted from local device, try to download it again'.format(video))
 
 # clean tmp dir.
-# shutil.rmtree('data/temp')
+shutil.rmtree('data/temp')
