@@ -149,7 +149,8 @@ for split_file in ['kinetics_val.csv', 'kinetics_600_test.csv', 'kinetics_train.
     print('Download {} part of kinetics600 dataset'.format(split_mode))
     download_kinetics('data/temp/kinetics600/{}'.format(split_file), split=split_mode)
     # clean the corrupted videos
-    print('Clean the corrupted videos about {} part of kinetics600 dataset'.format(split_mode))
+    print('Check the videos about {} part of kinetics600 dataset, '
+          'if the video is corrupted, it will be deleted'.format(split_mode))
     for label in sorted(os.listdir('data/kinetics600/{}'.format(split_mode))):
         for video in sorted(os.listdir('data/kinetics600/{}/{}'.format(split_mode, label))):
 
@@ -162,9 +163,10 @@ for split_file in ['kinetics_val.csv', 'kinetics_600_test.csv', 'kinetics_train.
 
             try:
                 output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
+                print('Clip-Name: %-40s %-50s' % (video, 'Status: Success Saved'))
             except subprocess.CalledProcessError as err:
                 os.remove('data/kinetics600/{}/{}/{}'.format(split_mode, label, video))
-                print('{} is corrupted, have been deleted from local device'.format(video))
+                print('Clip-Name: %-40s %-50s' % (video, 'Status: Corrupted'))
 
 # clean tmp dir.
 shutil.rmtree('data/temp')
