@@ -104,7 +104,7 @@ def download_clip(video_identifier, output_filename, start_time, end_time, url_b
                '-i', "'%s'" % direct_download_url,
                '-c:v', 'libx264',
                '-c:a', 'aac',
-               '-loglevel', 'error',
+               '-loglevel', 'fatal',
                '"%s"' % output_filename]
     command = ' '.join(command)
 
