@@ -4,7 +4,6 @@ import subprocess
 import zipfile
 from collections import OrderedDict
 
-import cv2
 import pandas as pd
 from joblib import Parallel
 from joblib import delayed
@@ -105,14 +104,14 @@ def download_clip(video_identifier, output_filename, start_time, end_time, url_b
                '-i', "'%s'" % direct_download_url,
                '-c:v', 'libx264',
                '-c:a', 'aac',
-               '-loglevel', 'panic',
+               '-loglevel', 'error',
                '"%s"' % output_filename]
     command = ' '.join(command)
 
     try:
         output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as err:
-        return status, b'ERROR: something is wrong with ffmpeg'
+        return status, err.output
 
     return True, 'Status: Downloaded'
 
@@ -151,13 +150,21 @@ for split_file in ['kinetics_600_test.csv', 'kinetics_val.csv', 'kinetics_train.
     download_kinetics('data/temp/kinetics600/{}'.format(split_file), split=split_mode)
     # clean the corrupted videos
     print('Clean the corrupted videos about {} part of kinetics600 dataset'.format(split_mode))
-    for label in os.listdir('data/kinetics600/{}'.format(split_mode)):
-        for video in os.listdir('data/kinetics600/{}/{}'.format(split_mode, label)):
+    for label in sorted(os.listdir('data/kinetics600/{}'.format(split_mode))):
+        for video in sorted(os.listdir('data/kinetics600/{}/{}'.format(split_mode, label))):
+
+            command = ['/usr/local/bin/ffmpeg',
+                       '-loglevel', 'error',
+                       '-i', '"%s"' % 'data/kinetics600/{}/{}/{}'.format(split_mode, label, video),
+                       '-f', 'null',
+                       '- 1>data/temp/error.log']
+            command = ' '.join(command)
+
             try:
-                vid = cv2.VideoCapture('data/kinetics600/{}/{}/{}'.format(split_mode, label, video))
-            except Exception as e:
+                output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
+            except subprocess.CalledProcessError as err:
                 os.remove('data/kinetics600/{}/{}/{}'.format(split_mode, label, video))
-                print('{} is corrupted, have been deleted from local device, try to download it again'.format(video))
+                print('{} is corrupted, have been deleted from local device'.format(video))
 
 # clean tmp dir.
 shutil.rmtree('data/temp')
