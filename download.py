@@ -111,7 +111,7 @@ def download_clip(video_identifier, output_filename, start_time, end_time, url_b
     try:
         output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as err:
-        return status, b'ERROR: something is wrong with ffmpeg'
+        return status, b'ERROR: Something is wrong with ffmpeg'
 
     return True, 'Status: Downloaded'
 
