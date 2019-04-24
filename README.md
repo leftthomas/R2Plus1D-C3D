@@ -40,10 +40,6 @@ pip install joblib
 ```
 pip install git+https://github.com/pytorch/tnt.git@master
 ```
-- capsule-layer
-```
-pip install git+https://github.com/leftthomas/CapsuleLayer.git@master
-```
 
 ## Datasets
 The datasets are coming from [UCF101](http://crcv.ucf.edu/data/UCF101.php)、 
