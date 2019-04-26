@@ -110,20 +110,20 @@ def download_clip(video_identifier, output_filename, start_time, end_time, url_b
     try:
         output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as err:
-        return status, b'ERROR: Something is wrong with ffmpeg'
+        return status, b'ERROR: Something is wrong with ffmpeg.'
 
-    return True, 'Status: Downloaded'
+    return True, 'Status: Downloaded.'
 
 
 def download_clip_wrapper(row, label_to_dir, trim_format, index):
     output_filename = construct_video_filename(row, label_to_dir, trim_format)
     clip_id = os.path.basename(output_filename).split('.mp4')[0]
     if os.path.exists(output_filename):
-        print('Index: %-16s Clip-ID: %-31s %-50s' % (index, clip_id, 'Status: Exists'))
+        print('Index: %-16s Clip-ID: %-31s %-50s' % (index, clip_id, 'Status: Exists.'))
     else:
         downloaded, log = download_clip(row['video-id'], output_filename, row['start-time'], row['end-time'])
         if downloaded:
-            print('Index: %-16s Clip-ID: %-31s %-50s' % (index, clip_id, 'Status: Downloaded'))
+            print('Index: %-16s Clip-ID: %-31s %-50s' % (index, clip_id, 'Status: Downloaded.'))
         else:
             print('Index: %-16s Clip-ID: %-31s %-50s' % (index, clip_id, log.strip().decode('utf-8')))
 
@@ -162,10 +162,10 @@ for split_file in ['kinetics_val.csv', 'kinetics_600_test.csv', 'kinetics_train.
 
             try:
                 output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
-                print('Clip-Name: %-40s %-50s' % (video, 'Status: Success Saved'))
+                print('Clip-Name: %-40s %-50s' % (video, 'Status: Success Saved.'))
             except subprocess.CalledProcessError as err:
                 os.remove('data/kinetics600/{}/{}/{}'.format(split_mode, label, video))
-                print('Clip-Name: %-40s %-50s' % (video, 'Status: Corrupted'))
+                print('Clip-Name: %-40s %-50s' % (video, 'Status: Corrupted.'))
 
 # clean tmp dir.
 shutil.rmtree('data/temp')
