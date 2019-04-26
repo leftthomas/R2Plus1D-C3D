@@ -84,8 +84,7 @@ def download_clip(video_identifier, output_filename, start_time, end_time, url_b
                '"%s"' % (url_base + video_identifier)]
     command = ' '.join(command)
 
-    status = False
-    attempts = 0
+    status, attempts, direct_download_url = False, 0, None
     while True:
         try:
             direct_download_url = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
@@ -101,7 +100,7 @@ def download_clip(video_identifier, output_filename, start_time, end_time, url_b
     command = ['/usr/local/bin/ffmpeg',
                '-ss', str(start_time),
                '-t', str(end_time - start_time),
-               '-i', "'%s'" % direct_download_url,
+               '-i', '"%s"' % direct_download_url,
                '-c:v', 'libx264',
                '-c:a', 'aac',
                '-loglevel', 'fatal',
