@@ -26,11 +26,12 @@ class VideoDataset(Dataset):
         self.crop_size = 112
 
         if not self.check_integrity():
-            raise RuntimeError('Dataset not found or corrupted. You need to download it from official website.')
+            raise RuntimeError('{} split of {} dataset is not found. You need to '
+                               'download it from official website.'.format(split, dataset))
 
         if not self.check_preprocess():
             print('Preprocessing {} split of {} dataset, this will take long, '
-                  'but it will be done only once.'.format(self.split, dataset))
+                  'but it will be done only once.'.format(split, dataset))
             self.preprocess()
 
         self.file_names, labels = [], []
