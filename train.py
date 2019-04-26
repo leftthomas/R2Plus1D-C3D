@@ -120,12 +120,8 @@ if __name__ == '__main__':
     parser.add_argument('--pre_train', default=None, type=str, help='used pre-trained model epoch name')
 
     opt = parser.parse_args()
-    DATA_TYPE = opt.data_type
-    GPU_IDS = opt.gpu_ids
-    BATCH_SIZE = opt.batch_size
-    NUM_EPOCH = opt.num_epochs
-    PRE_TRAIN = opt.pre_train
-    device_ids = [int(gpu) for gpu in GPU_IDS.split(',')]
+    DATA_TYPE, GPU_IDS, BATCH_SIZE, NUM_EPOCH = opt.data_type, opt.gpu_ids, opt.batch_size, opt.num_epochs
+    PRE_TRAIN, device_ids = opt.pre_train, [int(gpu) for gpu in GPU_IDS.split(',')]
     results = {'train_loss': [], 'train_top1_accuracy': [], 'train_top5_accuracy': [], 'val_loss': [],
                'val_top1_accuracy': [], 'val_top5_accuracy': [], 'test_loss': [], 'test_top1_accuracy': [],
                'test_top5_accuracy': []}

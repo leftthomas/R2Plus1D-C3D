@@ -9,8 +9,6 @@ import torch.nn.functional as F
 import utils
 from model import Model
 
-clip_len, resize_height, crop_size = 16, 128, 112
-
 
 def center_crop(image):
     height_index = math.floor((image.shape[0] - crop_size) / 2)
@@ -27,10 +25,9 @@ if __name__ == '__main__':
     parser.add_argument('--model_name', default='ucf101.pth', type=str, help='model epoch name')
     opt = parser.parse_args()
 
-    DATA_TYPE = opt.data_type
-    VIDEO_NAME = opt.video_name
-    MODEL_NAME = opt.model_name
+    DATA_TYPE, VIDEO_NAME, MODEL_NAME = opt.data_type, opt.video_name, opt.model_name
 
+    clip_len, resize_height, crop_size, = utils.CLIP_LEN, utils.RESIZE_HIEGHT, utils.CROP_SIZE
     class_names = utils.get_labels(DATA_TYPE)
 
     DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -40,10 +37,7 @@ if __name__ == '__main__':
     model = model.load_state_dict(checkpoint).to(DEVICE).eval()
 
     # read video
-    cap = cv2.VideoCapture(VIDEO_NAME)
-    retaining = True
-
-    clip = []
+    cap, retaining, clips = cv2.VideoCapture(VIDEO_NAME), True, []
     while retaining:
         retaining, frame = cap.read()
         if not retaining and frame is None:
@@ -55,9 +49,9 @@ if __name__ == '__main__':
             resize_height = math.floor(frame.shape[0] / frame.shape[1] * resize_width)
         tmp_ = center_crop(cv2.resize(frame, (resize_width, resize_height)))
         tmp = tmp_.astype(np.float32) / 255.0
-        clip.append(tmp)
-        if len(clip) == clip_len:
-            inputs = np.array(clip)
+        clips.append(tmp)
+        if len(clips) == clip_len:
+            inputs = np.array(clips)
             inputs = np.expand_dims(inputs, axis=0)
             inputs = np.transpose(inputs, (0, 4, 1, 2, 3))
             inputs = torch.from_numpy(inputs).to(DEVICE)
@@ -70,7 +64,7 @@ if __name__ == '__main__':
             cv2.putText(frame, class_names[label].split(' ')[-1].strip(), (20, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6,
                         (0, 0, 255), 1)
             cv2.putText(frame, "prob: %.4f" % prob[0][label], (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 1)
-            clip.pop(0)
+            clips.pop(0)
 
         cv2.imshow('result', frame)
         cv2.waitKey(30)

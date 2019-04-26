@@ -6,6 +6,9 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 
+# global configs
+CLIP_LEN, RESIZE_HIEGHT, CROP_SIZE = 16, 128, 112
+
 
 class VideoDataset(Dataset):
     r"""A Dataset for a folder of videos. Expects the directory structure to be
@@ -21,9 +24,6 @@ class VideoDataset(Dataset):
         self.original_dir = os.path.join('data', dataset)
         self.preprocessed_dir = os.path.join('data', 'preprocessed_' + dataset)
         self.split = split
-        self.clip_len = 16
-        self.resize_height = 128
-        self.crop_size = 112
 
         if not self.check_integrity():
             raise RuntimeError('{} split of {} dataset is not found. You need to '
@@ -53,7 +53,7 @@ class VideoDataset(Dataset):
     def __getitem__(self, index):
         # load and preprocess.
         buffer = self.load_frames(self.file_names[index])
-        buffer = self.crop(buffer, self.clip_len, self.crop_size)
+        buffer = self.crop(buffer, CLIP_LEN, CROP_SIZE)
         label = np.array(self.label_array[index])
         if self.split == 'train':
             # perform data augmentation (random horizontal flip)
@@ -96,13 +96,13 @@ class VideoDataset(Dataset):
         frame_height = int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
         frame_width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
 
-        # make sure the preprocessed video has at least clip_len frames
+        # make sure the preprocessed video has at least CLIP_LEN frames
         extract_frequency = 4
-        if frame_count // extract_frequency <= self.clip_len:
+        if frame_count // extract_frequency <= CLIP_LEN:
             extract_frequency -= 1
-            if frame_count // extract_frequency <= self.clip_len:
+            if frame_count // extract_frequency <= CLIP_LEN:
                 extract_frequency -= 1
-                if frame_count // extract_frequency <= self.clip_len:
+                if frame_count // extract_frequency <= CLIP_LEN:
                     extract_frequency -= 1
 
         count = 0
@@ -115,11 +115,11 @@ class VideoDataset(Dataset):
                 continue
 
             if count % extract_frequency == 0:
-                resize_height = self.resize_height
+                resize_height = RESIZE_HIEGHT
                 resize_width = math.floor(frame_width / frame_height * resize_height)
                 # make sure resize width >= crop size
-                if resize_width < self.crop_size:
-                    resize_width = self.resize_height
+                if resize_width < CROP_SIZE:
+                    resize_width = RESIZE_HIEGHT
                     resize_height = math.floor(frame_height / frame_width * resize_width)
 
                 frame = cv2.resize(frame, (resize_width, resize_height))
