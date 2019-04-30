@@ -225,6 +225,8 @@ class Model(nn.Module):
         self.pool_ts = nn.AdaptiveAvgPool3d(1)
         self.fc_ts = nn.Linear(512, num_classes)
 
+        self.__init_weight()
+
     def forward(self, x):
         # SpatioTemporal pipeline
         x_st = self.conv1_st(x)
@@ -249,3 +251,11 @@ class Model(nn.Module):
         logits = (logits_st + logits_ts) / 2
 
         return logits
+
+    def __init_weight(self):
+        for m in self.modules():
+            if isinstance(m, nn.Conv3d):
+                nn.init.kaiming_normal_(m.weight)
+            elif isinstance(m, nn.BatchNorm3d):
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
