@@ -77,9 +77,9 @@ def on_end_epoch(state):
     global best_accuracy
     if meter_accuracy.value()[0] > best_accuracy:
         if len(device_ids) > 1:
-            torch.save(model.module.state_dict(), 'epochs/{}.pth'.format(DATA_TYPE))
+            torch.save(model.module.state_dict(), 'epochs/{}_{}.pth'.format(DATA_TYPE, MODEL_TYPE))
         else:
-            torch.save(model.state_dict(), 'epochs/{}.pth'.format(DATA_TYPE))
+            torch.save(model.state_dict(), 'epochs/{}_{}.pth'.format(DATA_TYPE, MODEL_TYPE))
         best_accuracy = meter_accuracy.value()[0]
 
     scheduler.step(meter_loss.value()[0])
@@ -107,7 +107,7 @@ def on_end_epoch(state):
               'test_loss': results['test_loss'], 'test_top1_accuracy': results['test_top1_accuracy'],
               'test_top5_accuracy': results['test_top5_accuracy']},
         index=range(1, state['epoch'] + 1))
-    data_frame.to_csv('statistics/{}_results.csv'.format(DATA_TYPE), index_label='epoch')
+    data_frame.to_csv('statistics/{}_{}_results.csv'.format(DATA_TYPE, MODEL_TYPE), index_label='epoch')
 
 
 if __name__ == '__main__':
@@ -115,13 +115,15 @@ if __name__ == '__main__':
     parser.add_argument('--data_type', default='ucf101', type=str, choices=['ucf101', 'hmdb51', 'kinetics600'],
                         help='dataset type')
     parser.add_argument('--gpu_ids', default='0,1,2', type=str, help='selected gpu')
+    parser.add_argument('--model_type', default='st-ts-a', type=str, choices=['st-ts-a', 'st-ts', 'st', 'ts'],
+                        help='model type')
     parser.add_argument('--batch_size', default=36, type=int, help='training batch size')
     parser.add_argument('--num_epochs', default=100, type=int, help='training epoch number')
     parser.add_argument('--pre_train', default=None, type=str, help='used pre-trained model epoch name')
 
     opt = parser.parse_args()
     DATA_TYPE, GPU_IDS, BATCH_SIZE, NUM_EPOCH = opt.data_type, opt.gpu_ids, opt.batch_size, opt.num_epochs
-    PRE_TRAIN, device_ids = opt.pre_train, [int(gpu) for gpu in GPU_IDS.split(',')]
+    MODEL_TYPE, PRE_TRAIN, device_ids = opt.model_type, opt.pre_train, [int(gpu) for gpu in GPU_IDS.split(',')]
     results = {'train_loss': [], 'train_top1_accuracy': [], 'train_top5_accuracy': [], 'val_loss': [],
                'val_top1_accuracy': [], 'val_top5_accuracy': [], 'test_loss': [], 'test_top1_accuracy': [],
                'test_top5_accuracy': []}
@@ -130,22 +132,30 @@ if __name__ == '__main__':
 
     train_loader, val_loader, test_loader = utils.load_data(DATA_TYPE, BATCH_SIZE)
     NUM_CLASS = len(train_loader.dataset.label2index)
-    model = Model(NUM_CLASS, (2, 2, 2, 2))
+    model = Model(NUM_CLASS, (2, 2, 2, 2), MODEL_TYPE)
 
     if PRE_TRAIN is not None:
         checkpoint = torch.load('epochs/{}'.format(PRE_TRAIN), map_location=lambda storage, loc: storage)
-        # load same dataset pre-trained model
+        # load pre-trained model which trained on the same dataset
         if DATA_TYPE in PRE_TRAIN:
-            model.load_state_dict(checkpoint)
-        # load weights from other dataset pre-trained model, then fine tuning
-        # warm starting model using parameters from a different model
+            # load same type pre-trained model
+            if PRE_TRAIN.split('.')[0].split('_')[1] == MODEL_TYPE:
+                model.load_state_dict(checkpoint)
+            else:
+                raise NotImplementedError('the pre-trained model must be the same model type')
+        # warm starting model by loading weights from a model which trained on other dataset, then fine tuning
         else:
-            # don't load the parameters of last layer
-            checkpoint.pop('fc8a.weight')
-            checkpoint.pop('fc8a.bias')
-            checkpoint.pop('fc8b.weight')
-            checkpoint.pop('fc8b.bias')
-            model.load_state_dict(checkpoint, strict=False)
+            if PRE_TRAIN.split('.')[0].split('_')[1] == MODEL_TYPE:
+                # don't load the parameters of last layer
+                if 'st' in MODEL_TYPE:
+                    checkpoint.pop('fc_st.weight')
+                    checkpoint.pop('fc_st.bias')
+                if 'ts' in MODEL_TYPE:
+                    checkpoint.pop('fc_ts.weight')
+                    checkpoint.pop('fc_ts.bias')
+                model.load_state_dict(checkpoint, strict=False)
+            else:
+                raise NotImplementedError('the pre-trained model must be the same model type')
 
     model = model.to(device_ids[0])
     if len(device_ids) > 1:
@@ -156,7 +166,7 @@ if __name__ == '__main__':
     loss_criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(params=model.parameters(), lr=1e-4, weight_decay=1e-4)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.2, patience=5, verbose=True)
-    print("Number of parameters:", sum(param.numel() for param in model.parameters()))
+    print('Number of parameters:', sum(param.numel() for param in model.parameters()))
 
     engine = Engine()
     meter_loss = tnt.meter.AverageValueMeter()

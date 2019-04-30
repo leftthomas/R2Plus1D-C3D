@@ -202,28 +202,29 @@ class Model(nn.Module):
     Args:
         num_classes(int): Number of classes in the data
         layer_sizes (tuple): An iterable containing the number of blocks in each layer
+        model_type (string): Type of model that is to be used
     """
 
-    def __init__(self, num_classes, layer_sizes):
+    def __init__(self, num_classes, layer_sizes, model_type):
         super(Model, self).__init__()
 
         # SpatioTemporal Stream
-        self.conv1_st = SpatioTemporalConv(3, 64, (3, 7, 7), stride=(1, 2, 2), padding=(1, 3, 3))
-        self.conv2_st = ResLayer(64, 64, 3, layer_sizes[0], block_type=SpatioTemporalConv)
-        self.conv3_st = ResLayer(64, 128, 3, layer_sizes[1], block_type=SpatioTemporalConv, downsample=True)
-        self.conv4_st = ResLayer(128, 256, 3, layer_sizes[2], block_type=SpatioTemporalConv, downsample=True)
-        self.conv5_st = ResLayer(256, 512, 3, layer_sizes[3], block_type=SpatioTemporalConv, downsample=True)
+        self.conv1_st = SpatioTemporalConv(3, 32, (3, 7, 7), stride=(1, 2, 2), padding=(1, 3, 3))
+        self.conv2_st = ResLayer(32, 32, 3, layer_sizes[0], block_type=SpatioTemporalConv)
+        self.conv3_st = ResLayer(32, 64, 3, layer_sizes[1], block_type=SpatioTemporalConv, downsample=True)
+        self.conv4_st = ResLayer(64, 128, 3, layer_sizes[2], block_type=SpatioTemporalConv, downsample=True)
+        self.conv5_st = ResLayer(128, 256, 3, layer_sizes[3], block_type=SpatioTemporalConv, downsample=True)
         self.pool_st = nn.AdaptiveAvgPool3d(1)
-        self.fc_st = nn.Linear(512, num_classes)
+        self.fc_st = nn.Linear(256, num_classes)
 
         # TemporalSpatio Stream
-        self.conv1_ts = TemporalSpatioConv(3, 64, (3, 7, 7), stride=(1, 2, 2), padding=(1, 3, 3))
-        self.conv2_ts = ResLayer(64, 64, 3, layer_sizes[0], block_type=TemporalSpatioConv)
-        self.conv3_ts = ResLayer(64, 128, 3, layer_sizes[1], block_type=TemporalSpatioConv, downsample=True)
-        self.conv4_ts = ResLayer(128, 256, 3, layer_sizes[2], block_type=TemporalSpatioConv, downsample=True)
-        self.conv5_ts = ResLayer(256, 512, 3, layer_sizes[3], block_type=TemporalSpatioConv, downsample=True)
+        self.conv1_ts = TemporalSpatioConv(3, 32, (3, 7, 7), stride=(1, 2, 2), padding=(1, 3, 3))
+        self.conv2_ts = ResLayer(32, 32, 3, layer_sizes[0], block_type=TemporalSpatioConv)
+        self.conv3_ts = ResLayer(32, 64, 3, layer_sizes[1], block_type=TemporalSpatioConv, downsample=True)
+        self.conv4_ts = ResLayer(64, 128, 3, layer_sizes[2], block_type=TemporalSpatioConv, downsample=True)
+        self.conv5_ts = ResLayer(128, 256, 3, layer_sizes[3], block_type=TemporalSpatioConv, downsample=True)
         self.pool_ts = nn.AdaptiveAvgPool3d(1)
-        self.fc_ts = nn.Linear(512, num_classes)
+        self.fc_ts = nn.Linear(256, num_classes)
 
         self.__init_weight()
 
@@ -235,7 +236,7 @@ class Model(nn.Module):
         x_st = self.conv4_st(x_st)
         x_st = self.conv5_st(x_st)
         x_st = self.pool_st(x_st)
-        x_st = x_st.view(-1, 512)
+        x_st = x_st.view(-1, 256)
         logits_st = self.fc_st(x_st)
 
         # TemporalSpatio pipeline
@@ -245,7 +246,7 @@ class Model(nn.Module):
         x_ts = self.conv4_ts(x_ts)
         x_ts = self.conv5_ts(x_ts)
         x_ts = self.pool_ts(x_ts)
-        x_ts = x_ts.view(-1, 512)
+        x_ts = x_ts.view(-1, 256)
         logits_ts = self.fc_ts(x_ts)
 
         logits = (logits_st + logits_ts) / 2
