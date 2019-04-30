@@ -119,129 +119,133 @@ class TemporalSpatioConv(nn.Module):
         return x
 
 
-class Model(nn.Module):
-    def __init__(self, num_classes):
-        super(Model, self).__init__()
+class ResBlock(nn.Module):
+    r"""Single block for the ResNet network. Uses SpatioTemporalConv or TemporalSpatioConv in the standard ResNet
+    block layout (conv->batchnorm->ReLU->conv->batchnorm->sum->ReLU)
+    Args:
+        in_channels (int): Number of channels in the input tensor
+        out_channels (int): Number of channels produced by the convolution
+        kernel_size (int or tuple): Size of the convolving kernel
+        conv_type (Module, optional): Type of conv that is to be used to form the block. Default: SpatioTemporalConv
+        downsample (bool, optional): If ``True``, the output size is to be smaller than the input. Default: ``False``
+    """
 
-        # SpatioTemporal Stream
-        self.conv1a = SpatioTemporalConv(3, 32, kernel_size=(3, 3, 3), padding=(1, 1, 1))
-        self.bn1a = nn.BatchNorm3d(num_features=32)
-        self.pool1a = nn.MaxPool3d(kernel_size=(1, 2, 2), stride=(1, 2, 2))
+    def __init__(self, in_channels, out_channels, kernel_size, conv_type=SpatioTemporalConv, downsample=False):
+        super(ResBlock, self).__init__()
 
-        self.conv2a = SpatioTemporalConv(32, 64, kernel_size=(3, 3, 3), padding=(1, 1, 1))
-        self.bn2a = nn.BatchNorm3d(num_features=64)
-        self.pool2a = nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2))
+        self.downsample = downsample
+        padding = kernel_size // 2
 
-        self.conv3a = SpatioTemporalConv(64, 128, kernel_size=(3, 3, 3), padding=(1, 1, 1))
-        self.bn3a = nn.BatchNorm3d(num_features=128)
-        self.conv3aa = SpatioTemporalConv(128, 128, kernel_size=(3, 3, 3), padding=(1, 1, 1))
-        self.bn3aa = nn.BatchNorm3d(num_features=128)
-        self.pool3a = nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2))
+        if self.downsample:
+            # downsample with stride=2
+            self.conv1 = conv_type(in_channels, out_channels, kernel_size, padding=padding, stride=2)
+            self.downsampleconv = conv_type(in_channels, out_channels, kernel_size=1, stride=2)
+            self.downsamplebn = nn.BatchNorm3d(out_channels)
+        else:
+            self.conv1 = conv_type(in_channels, out_channels, kernel_size, padding=padding)
 
-        self.conv4a = SpatioTemporalConv(128, 256, kernel_size=(3, 3, 3), padding=(1, 1, 1))
-        self.bn4a = nn.BatchNorm3d(num_features=256)
-        self.conv4aa = SpatioTemporalConv(256, 256, kernel_size=(3, 3, 3), padding=(1, 1, 1))
-        self.bn4aa = nn.BatchNorm3d(num_features=256)
-        self.pool4a = nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2))
+        self.bn1 = nn.BatchNorm3d(out_channels)
 
-        self.conv5a = SpatioTemporalConv(256, 256, kernel_size=(3, 3, 3), padding=(1, 1, 1))
-        self.bn5a = nn.BatchNorm3d(num_features=256)
-        self.conv5aa = SpatioTemporalConv(256, 256, kernel_size=(3, 3, 3), padding=(1, 1, 1))
-        self.bn5aa = nn.BatchNorm3d(num_features=256)
-        self.pool5a = nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2), padding=(0, 1, 1))
-
-        self.fc6a = nn.Linear(4096, 2048)
-        self.fc7a = nn.Linear(2048, 2048)
-        self.fc8a = nn.Linear(2048, num_classes)
-
-        # TemporalSpatio Stream
-        self.conv1b = TemporalSpatioConv(3, 32, kernel_size=(3, 3, 3), padding=(1, 1, 1))
-        self.bn1b = nn.BatchNorm3d(num_features=32)
-        self.pool1b = nn.MaxPool3d(kernel_size=(1, 2, 2), stride=(1, 2, 2))
-
-        self.conv2b = TemporalSpatioConv(32, 64, kernel_size=(3, 3, 3), padding=(1, 1, 1))
-        self.bn2b = nn.BatchNorm3d(num_features=64)
-        self.pool2b = nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2))
-
-        self.conv3b = TemporalSpatioConv(64, 128, kernel_size=(3, 3, 3), padding=(1, 1, 1))
-        self.bn3b = nn.BatchNorm3d(num_features=128)
-        self.conv3bb = TemporalSpatioConv(128, 128, kernel_size=(3, 3, 3), padding=(1, 1, 1))
-        self.bn3bb = nn.BatchNorm3d(num_features=128)
-        self.pool3b = nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2))
-
-        self.conv4b = TemporalSpatioConv(128, 256, kernel_size=(3, 3, 3), padding=(1, 1, 1))
-        self.bn4b = nn.BatchNorm3d(num_features=256)
-        self.conv4bb = TemporalSpatioConv(256, 256, kernel_size=(3, 3, 3), padding=(1, 1, 1))
-        self.bn4bb = nn.BatchNorm3d(num_features=256)
-        self.pool4b = nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2))
-
-        self.conv5b = TemporalSpatioConv(256, 256, kernel_size=(3, 3, 3), padding=(1, 1, 1))
-        self.bn5b = nn.BatchNorm3d(num_features=256)
-        self.conv5bb = TemporalSpatioConv(256, 256, kernel_size=(3, 3, 3), padding=(1, 1, 1))
-        self.bn5bb = nn.BatchNorm3d(num_features=256)
-        self.pool5b = nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2), padding=(0, 1, 1))
-
-        self.fc6b = nn.Linear(4096, 2048)
-        self.fc7b = nn.Linear(2048, 2048)
-        self.fc8b = nn.Linear(2048, num_classes)
-
-        # common modules
-        self.dropout = nn.Dropout(p=0.5)
+        self.conv2 = conv_type(out_channels, out_channels, kernel_size, padding=padding)
+        self.bn2 = nn.BatchNorm3d(out_channels)
         self.relu = nn.ReLU()
 
     def forward(self, x):
+        res = self.relu(self.bn1(self.conv1(x)))
+        res = self.bn2(self.conv2(res))
+
+        if self.downsample:
+            x = self.downsamplebn(self.downsampleconv(x))
+
+        return self.relu(x + res)
+
+
+class ResLayer(nn.Module):
+    r"""Forms a single layer of the ResNet network, with a number of repeating
+    blocks of same output size stacked on top of each other
+    Args:
+        in_channels (int): Number of channels in the input tensor.
+        out_channels (int): Number of channels in the output produced by the layer.
+        kernel_size (int or tuple): Size of the convolving kernels.
+        layer_size (int): Number of blocks to be stacked to form the layer
+        block_type (Module, optional): Type of block that is to be used to form the block. Default: SpatioTemporalConv
+        downsample (bool, optional): If ``True``, the first block in the layer will implement downsampling. Default: ``False``
+    """
+
+    def __init__(self, in_channels, out_channels, kernel_size, layer_size, block_type=SpatioTemporalConv,
+                 downsample=False):
+
+        super(ResLayer, self).__init__()
+
+        # implement the first block
+        self.block1 = ResBlock(in_channels, out_channels, kernel_size, block_type, downsample)
+
+        # prepare module list to hold all (layer_size - 1) blocks
+        self.blocks = nn.ModuleList([])
+        for i in range(layer_size - 1):
+            # all these blocks are identical
+            self.blocks += [ResBlock(out_channels, out_channels, kernel_size, block_type)]
+
+    def forward(self, x):
+        x = self.block1(x)
+        for block in self.blocks:
+            x = block(x)
+
+        return x
+
+
+class Model(nn.Module):
+    r"""Forms a complete two-stream ResNet classifier producing vectors of size num_classes, by initializng 5 layers,
+    with the number of blocks in each layer set by layer_sizes, and by performing a global average pool
+    at the end producing a 512-dimensional vector for each element in the batch, and passing them through
+    a Linear layer.
+    Args:
+        num_classes(int): Number of classes in the data
+        layer_sizes (tuple): An iterable containing the number of blocks in each layer
+    """
+
+    def __init__(self, num_classes, layer_sizes):
+        super(Model, self).__init__()
+
+        # SpatioTemporal Stream
+        self.conv1_st = SpatioTemporalConv(3, 64, (3, 7, 7), stride=(1, 2, 2), padding=(1, 3, 3))
+        self.conv2_st = ResLayer(64, 64, 3, layer_sizes[0], block_type=SpatioTemporalConv)
+        self.conv3_st = ResLayer(64, 128, 3, layer_sizes[1], block_type=SpatioTemporalConv, downsample=True)
+        self.conv4_st = ResLayer(128, 256, 3, layer_sizes[2], block_type=SpatioTemporalConv, downsample=True)
+        self.conv5_st = ResLayer(256, 512, 3, layer_sizes[3], block_type=SpatioTemporalConv, downsample=True)
+        self.pool_st = nn.AdaptiveAvgPool3d(1)
+        self.fc_st = nn.Linear(512, num_classes)
+
+        # TemporalSpatio Stream
+        self.conv1_ts = TemporalSpatioConv(3, 64, (3, 7, 7), stride=(1, 2, 2), padding=(1, 3, 3))
+        self.conv2_ts = ResLayer(64, 64, 3, layer_sizes[0], block_type=TemporalSpatioConv)
+        self.conv3_ts = ResLayer(64, 128, 3, layer_sizes[1], block_type=TemporalSpatioConv, downsample=True)
+        self.conv4_ts = ResLayer(128, 256, 3, layer_sizes[2], block_type=TemporalSpatioConv, downsample=True)
+        self.conv5_ts = ResLayer(256, 512, 3, layer_sizes[3], block_type=TemporalSpatioConv, downsample=True)
+        self.pool_ts = nn.AdaptiveAvgPool3d(1)
+        self.fc_ts = nn.Linear(512, num_classes)
+
+    def forward(self, x):
         # SpatioTemporal pipeline
-        x_a = self.relu(self.bn1a(self.conv1a(x)))
-        x_a = self.pool1a(x_a)
-
-        x_a = self.relu(self.bn2a(self.conv2a(x_a)))
-        x_a = self.pool2a(x_a)
-
-        x_a = self.relu(self.bn3a(self.conv3a(x_a)))
-        x_a = self.relu(self.bn3aa(self.conv3aa(x_a)))
-        x_a = self.pool3a(x_a)
-
-        x_a = self.relu(self.bn4a(self.conv4a(x_a)))
-        x_a = self.relu(self.bn4aa(self.conv4aa(x_a)))
-        x_a = self.pool4a(x_a)
-
-        x_a = self.relu(self.bn5a(self.conv5a(x_a)))
-        x_a = self.relu(self.bn5aa(self.conv5aa(x_a)))
-        x_a = self.pool5a(x_a)
-
-        x_a = x_a.view(-1, 4096)
-        x_a = self.relu(self.fc6a(x_a))
-        x_a = self.dropout(x_a)
-        x_a = self.relu(self.fc7a(x_a))
-        x_a = self.dropout(x_a)
-        logits_a = self.fc8a(x_a)
+        x_st = self.conv1_st(x)
+        x_st = self.conv2_st(x_st)
+        x_st = self.conv3_st(x_st)
+        x_st = self.conv4_st(x_st)
+        x_st = self.conv5_st(x_st)
+        x_st = self.pool_st(x_st)
+        x_st = x_st.view(-1, 512)
+        logits_st = self.fc_st(x_st)
 
         # TemporalSpatio pipeline
-        x_b = self.relu(self.bn1b(self.conv1b(x)))
-        x_b = self.pool1b(x_b)
+        x_ts = self.conv1_ts(x)
+        x_ts = self.conv2_ts(x_ts)
+        x_ts = self.conv3_ts(x_ts)
+        x_ts = self.conv4_ts(x_ts)
+        x_ts = self.conv5_ts(x_ts)
+        x_ts = self.pool_ts(x_ts)
+        x_ts = x_ts.view(-1, 512)
+        logits_ts = self.fc_ts(x_ts)
 
-        x_b = self.relu(self.bn2b(self.conv2b(x_b)))
-        x_b = self.pool2b(x_b)
-
-        x_b = self.relu(self.bn3b(self.conv3b(x_b)))
-        x_b = self.relu(self.bn3bb(self.conv3bb(x_b)))
-        x_b = self.pool3b(x_b)
-
-        x_b = self.relu(self.bn4b(self.conv4b(x_b)))
-        x_b = self.relu(self.bn4bb(self.conv4bb(x_b)))
-        x_b = self.pool4b(x_b)
-
-        x_b = self.relu(self.bn5b(self.conv5b(x_b)))
-        x_b = self.relu(self.bn5bb(self.conv5bb(x_b)))
-        x_b = self.pool5b(x_b)
-
-        x_b = x_b.view(-1, 4096)
-        x_b = self.relu(self.fc6b(x_b))
-        x_b = self.dropout(x_b)
-        x_b = self.relu(self.fc7b(x_b))
-        x_b = self.dropout(x_b)
-        logits_b = self.fc8b(x_b)
-
-        logits = (logits_a + logits_b) / 2
+        logits = (logits_st + logits_ts) / 2
 
         return logits
