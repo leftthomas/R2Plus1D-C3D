@@ -26,14 +26,14 @@ class GridAttentionBlock(nn.Module):
 
     def forward(self, l, g):
         N, C, D, H, W = g.size()
-        l_ = F.interpolate(l, size=(D, H, W), mode='trilinear', align_corners=False)
-        l_ = self.W_l(l_)
+        l = F.interpolate(l, size=(D, H, W), mode='trilinear', align_corners=False)
+        l_ = self.W_l(l)
         g_ = self.W_g(g)
         c = self.phi(F.relu(l_ + g_))
         # compute attention map
         a = torch.sigmoid(c)
         # re-weight the local feature
-        f = torch.mul(a.expand_as(l_), l_)
+        f = torch.mul(a.expand_as(l), l)
         return f
 
 
