@@ -1,7 +1,56 @@
 import math
 
+import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.nn.modules.utils import _triple
+
+
+class GridAttentionBlock(nn.Module):
+    r"""Applies an grid attention over an input signal
+    Reference papers
+    Attention-Gated Networks https://arxiv.org/abs/1804.05338 & https://arxiv.org/abs/1808.08114
+    Reference code
+    https://github.com/ozan-oktay/Attention-Gated-Networks
+    Args:
+        in_channels (int): Number of channels in the input tensor
+        out_channels (int): Number of channels produced by the convolution
+        kernel_size (int or tuple): Size of the convolving kernel
+        stride (int or tuple, optional): Stride of the convolution. Default: 1
+        padding (int or tuple, optional): Zero-padding added to the sides of the input during
+              their respective convolutions. Default: 0
+        bias (bool, optional): If ``True``, adds a learnable bias to the output. Default: ``True``
+    """
+
+    def __init__(self, in_features_l, in_features_g, attn_features, up_factor, normalize_attn=False):
+        super(GridAttentionBlock, self).__init__()
+        self.up_factor = up_factor
+        self.normalize_attn = normalize_attn
+        self.W_l = nn.Conv2d(in_channels=in_features_l, out_channels=attn_features, kernel_size=1, padding=0,
+                             bias=False)
+        self.W_g = nn.Conv2d(in_channels=in_features_g, out_channels=attn_features, kernel_size=1, padding=0,
+                             bias=False)
+        self.phi = nn.Conv2d(in_channels=attn_features, out_channels=1, kernel_size=1, padding=0, bias=True)
+
+    def forward(self, l, g):
+        N, C, W, H = l.size()
+        l_ = self.W_l(l)
+        g_ = self.W_g(g)
+        if self.up_factor > 1:
+            g_ = F.interpolate(g_, scale_factor=self.up_factor, mode='bilinear', align_corners=False)
+        c = self.phi(F.relu(l_ + g_))  # batch_sizex1xWxH
+        # compute attn map
+        if self.normalize_attn:
+            a = F.softmax(c.view(N, 1, -1), dim=2).view(N, 1, W, H)
+        else:
+            a = torch.sigmoid(c)
+        # re-weight the local feature
+        f = torch.mul(a.expand_as(l), l)  # batch_sizexCxWxH
+        if self.normalize_attn:
+            output = f.view(N, C, -1).sum(dim=2)  # weighted sum
+        else:
+            output = F.adaptive_avg_pool2d(f, (1, 1)).view(N, C)
+        return c.view(N, 1, W, H), output
 
 
 class SpatioTemporalConv(nn.Module):
@@ -53,7 +102,7 @@ class SpatioTemporalConv(nn.Module):
         self.temporal_conv = nn.Conv3d(intermed_channels, out_channels, temporal_kernel_size,
                                        stride=temporal_stride, padding=temporal_padding, bias=bias)
         self.bn2 = nn.BatchNorm3d(out_channels)
-        self.relu = nn.ReLU()
+        self.relu = nn.ReLU(inplace=True)
 
     def forward(self, x):
         x = self.relu(self.bn1(self.spatial_conv(x)))
@@ -111,7 +160,7 @@ class TemporalSpatioConv(nn.Module):
                                       stride=spatial_stride, padding=spatial_padding, bias=bias)
 
         self.bn2 = nn.BatchNorm3d(out_channels)
-        self.relu = nn.ReLU()
+        self.relu = nn.ReLU(inplace=True)
 
     def forward(self, x):
         x = self.relu(self.bn1(self.temporal_conv(x)))
@@ -138,17 +187,17 @@ class ResBlock(nn.Module):
 
         if self.downsample:
             # downsample with stride=2
-            self.conv1 = conv_type(in_channels, out_channels, kernel_size, padding=padding, stride=2)
-            self.downsampleconv = conv_type(in_channels, out_channels, kernel_size=1, stride=2)
+            self.conv1 = conv_type(in_channels, out_channels, kernel_size, padding=padding, stride=2, bias=False)
+            self.downsampleconv = conv_type(in_channels, out_channels, kernel_size=1, stride=2, bias=False)
             self.downsamplebn = nn.BatchNorm3d(out_channels)
         else:
-            self.conv1 = conv_type(in_channels, out_channels, kernel_size, padding=padding)
+            self.conv1 = conv_type(in_channels, out_channels, kernel_size, padding=padding, bias=False)
 
         self.bn1 = nn.BatchNorm3d(out_channels)
 
-        self.conv2 = conv_type(out_channels, out_channels, kernel_size, padding=padding)
+        self.conv2 = conv_type(out_channels, out_channels, kernel_size, padding=padding, bias=False)
         self.bn2 = nn.BatchNorm3d(out_channels)
-        self.relu = nn.ReLU()
+        self.relu = nn.ReLU(inplace=True)
 
     def forward(self, x):
         res = self.relu(self.bn1(self.conv1(x)))
@@ -212,7 +261,10 @@ class Model(nn.Module):
 
         if 'st' in model_type:
             # SpatioTemporal Stream
-            self.conv1_st = SpatioTemporalConv(3, 64, (3, 7, 7), stride=(1, 2, 2), padding=(1, 3, 3))
+            self.conv1_st = SpatioTemporalConv(3, 64, (3, 7, 7), stride=(1, 2, 2), padding=(1, 3, 3), bias=False)
+            self.bn1_st = nn.BatchNorm3d(64)
+            self.relu_st = nn.ReLU(inplace=True)
+            self.maxpool_st = nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(2, 2, 2), padding=(0, 1, 1))
             self.conv2_st = ResLayer(64, 64, 3, layer_sizes[0], block_type=SpatioTemporalConv)
             self.conv3_st = ResLayer(64, 128, 3, layer_sizes[1], block_type=SpatioTemporalConv, downsample=True)
             self.conv4_st = ResLayer(128, 256, 3, layer_sizes[2], block_type=SpatioTemporalConv, downsample=True)
@@ -222,7 +274,10 @@ class Model(nn.Module):
 
         if 'ts' in model_type:
             # TemporalSpatio Stream
-            self.conv1_ts = TemporalSpatioConv(3, 64, (3, 7, 7), stride=(1, 2, 2), padding=(1, 3, 3))
+            self.conv1_ts = TemporalSpatioConv(3, 64, (3, 7, 7), stride=(1, 2, 2), padding=(1, 3, 3), bias=False)
+            self.bn1_ts = nn.BatchNorm3d(64)
+            self.relu_ts = nn.ReLU(inplace=True)
+            self.maxpool_ts = nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(2, 2, 2), padding=(0, 1, 1))
             self.conv2_ts = ResLayer(64, 64, 3, layer_sizes[0], block_type=TemporalSpatioConv)
             self.conv3_ts = ResLayer(64, 128, 3, layer_sizes[1], block_type=TemporalSpatioConv, downsample=True)
             self.conv4_ts = ResLayer(128, 256, 3, layer_sizes[2], block_type=TemporalSpatioConv, downsample=True)
@@ -235,24 +290,26 @@ class Model(nn.Module):
     def forward(self, x):
         if 'st' in self.model_type:
             # SpatioTemporal pipeline
-            x_st = self.conv1_st(x)
+            x_st = self.relu_st(self.bn1_st(self.conv1_st(x)))
+            x_st = self.maxpool_st(x_st)
             x_st = self.conv2_st(x_st)
             x_st = self.conv3_st(x_st)
             x_st = self.conv4_st(x_st)
             x_st = self.conv5_st(x_st)
             x_st = self.pool_st(x_st)
-            x_st = x_st.view(-1, 512)
+            x_st = x_st.view(x_st.size(0), -1)
             logits_st = self.fc_st(x_st)
 
         if 'ts' in self.model_type:
             # TemporalSpatio pipeline
-            x_ts = self.conv1_ts(x)
+            x_ts = self.relu_ts(self.bn1_ts(self.conv1_ts(x)))
+            x_ts = self.maxpool_ts(x_ts)
             x_ts = self.conv2_ts(x_ts)
             x_ts = self.conv3_ts(x_ts)
             x_ts = self.conv4_ts(x_ts)
             x_ts = self.conv5_ts(x_ts)
             x_ts = self.pool_ts(x_ts)
-            x_ts = x_ts.view(-1, 512)
+            x_ts = x_ts.view(x_ts.size(0), -1)
             logits_ts = self.fc_ts(x_ts)
 
         if 'st' in self.model_type and 'ts' in self.model_type:
@@ -270,7 +327,7 @@ class Model(nn.Module):
     def __init_weight(self):
         for m in self.modules():
             if isinstance(m, nn.Conv3d):
-                nn.init.kaiming_normal_(m.weight)
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
             elif isinstance(m, nn.BatchNorm3d):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)

@@ -132,7 +132,8 @@ if __name__ == '__main__':
 
     train_loader, val_loader, test_loader = utils.load_data(DATA_TYPE, BATCH_SIZE)
     NUM_CLASS = len(train_loader.dataset.label2index)
-    model = Model(NUM_CLASS, (2, 2, 2, 2), MODEL_TYPE)
+    # resnet 50
+    model = Model(NUM_CLASS, (3, 4, 6, 3), MODEL_TYPE)
 
     if PRE_TRAIN is not None:
         checkpoint = torch.load('epochs/{}'.format(PRE_TRAIN), map_location=lambda storage, loc: storage)
