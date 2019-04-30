@@ -21,8 +21,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Test Activity Recognition')
     parser.add_argument('--data_type', default='ucf101', type=str, choices=['ucf101', 'hmdb51', 'kinetics600'],
                         help='dataset type')
-    parser.add_argument('--model_type', default='st-ts-a', type=str, choices=['st-ts-a', 'st-ts', 'st', 'ts'],
-                        help='model type')
+    parser.add_argument('--model_type', default='st-ts-a', type=str,
+                        choices=['st-ts-a', 'st-ts', 'st-a', 'st', 'ts-a', 'ts'], help='model type')
     parser.add_argument('--video_name', type=str, help='test video name')
     parser.add_argument('--model_name', default='ucf101_st-ts-a.pth', type=str, help='model epoch name')
     opt = parser.parse_args()

@@ -13,44 +13,28 @@ class GridAttentionBlock(nn.Module):
     Reference code
     https://github.com/ozan-oktay/Attention-Gated-Networks
     Args:
-        in_channels (int): Number of channels in the input tensor
-        out_channels (int): Number of channels produced by the convolution
-        kernel_size (int or tuple): Size of the convolving kernel
-        stride (int or tuple, optional): Stride of the convolution. Default: 1
-        padding (int or tuple, optional): Zero-padding added to the sides of the input during
-              their respective convolutions. Default: 0
-        bias (bool, optional): If ``True``, adds a learnable bias to the output. Default: ``True``
+        in_features_l (int): Number of channels in the input tensor
+        in_features_g (int): Number of channels in the output tensor
+        attn_features (int): Number of channels in the middle tensor
     """
 
-    def __init__(self, in_features_l, in_features_g, attn_features, up_factor, normalize_attn=False):
+    def __init__(self, in_features_l, in_features_g, attn_features):
         super(GridAttentionBlock, self).__init__()
-        self.up_factor = up_factor
-        self.normalize_attn = normalize_attn
-        self.W_l = nn.Conv2d(in_channels=in_features_l, out_channels=attn_features, kernel_size=1, padding=0,
-                             bias=False)
-        self.W_g = nn.Conv2d(in_channels=in_features_g, out_channels=attn_features, kernel_size=1, padding=0,
-                             bias=False)
-        self.phi = nn.Conv2d(in_channels=attn_features, out_channels=1, kernel_size=1, padding=0, bias=True)
+        self.W_l = nn.Conv3d(in_channels=in_features_l, out_channels=attn_features, kernel_size=1, bias=False)
+        self.W_g = nn.Conv3d(in_channels=in_features_g, out_channels=attn_features, kernel_size=1, bias=False)
+        self.phi = nn.Conv3d(in_channels=attn_features, out_channels=1, kernel_size=1, bias=True)
 
     def forward(self, l, g):
-        N, C, W, H = l.size()
-        l_ = self.W_l(l)
+        N, C, D, H, W = g.size()
+        l_ = F.interpolate(l, size=(D, H, W), mode='trilinear', align_corners=False)
+        l_ = self.W_l(l_)
         g_ = self.W_g(g)
-        if self.up_factor > 1:
-            g_ = F.interpolate(g_, scale_factor=self.up_factor, mode='bilinear', align_corners=False)
-        c = self.phi(F.relu(l_ + g_))  # batch_sizex1xWxH
-        # compute attn map
-        if self.normalize_attn:
-            a = F.softmax(c.view(N, 1, -1), dim=2).view(N, 1, W, H)
-        else:
-            a = torch.sigmoid(c)
+        c = self.phi(F.relu(l_ + g_))
+        # compute attention map
+        a = torch.sigmoid(c)
         # re-weight the local feature
-        f = torch.mul(a.expand_as(l), l)  # batch_sizexCxWxH
-        if self.normalize_attn:
-            output = f.view(N, C, -1).sum(dim=2)  # weighted sum
-        else:
-            output = F.adaptive_avg_pool2d(f, (1, 1)).view(N, C)
-        return c.view(N, 1, W, H), output
+        f = torch.mul(a.expand_as(l_), l_)
+        return f
 
 
 class SpatioTemporalConv(nn.Module):
@@ -66,11 +50,13 @@ class SpatioTemporalConv(nn.Module):
         padding (int or tuple, optional): Zero-padding added to the sides of the input during
               their respective convolutions. Default: 0
         bias (bool, optional): If ``True``, adds a learnable bias to the output. Default: ``True``
+        use_attn (bool, optional): If ``True``, use grid attention to the input. Default: ``True``
     """
 
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True):
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True, use_attn=True):
         super(SpatioTemporalConv, self).__init__()
 
+        self.use_attn = use_attn
         kernel_size = _triple(kernel_size)
         stride = _triple(stride)
         padding = _triple(padding)
@@ -102,12 +88,23 @@ class SpatioTemporalConv(nn.Module):
         self.temporal_conv = nn.Conv3d(intermed_channels, out_channels, temporal_kernel_size,
                                        stride=temporal_stride, padding=temporal_padding, bias=bias)
         self.bn2 = nn.BatchNorm3d(out_channels)
+
+        if use_attn:
+            self.attn = GridAttentionBlock(in_channels, out_channels, out_channels // 2)
+            self.conv = nn.Conv3d(in_channels=in_channels + out_channels, out_channels=out_channels, kernel_size=1,
+                                  bias=False)
+
         self.relu = nn.ReLU(inplace=True)
 
     def forward(self, x):
-        x = self.relu(self.bn1(self.spatial_conv(x)))
-        x = self.relu(self.bn2(self.temporal_conv(x)))
-        return x
+        res = self.relu(self.bn1(self.spatial_conv(x)))
+        res = self.relu(self.bn2(self.temporal_conv(res)))
+        if self.use_attn:
+            attend = self.attn(x, res)
+            out = self.conv(torch.cat((attend, res), 1))
+            return out
+        else:
+            return res
 
 
 class TemporalSpatioConv(nn.Module):
@@ -123,11 +120,13 @@ class TemporalSpatioConv(nn.Module):
         padding (int or tuple, optional): Zero-padding added to the sides of the input during
               their respective convolutions. Default: 0
         bias (bool, optional): If ``True``, adds a learnable bias to the output. Default: ``True``
+        use_attn (bool, optional): If ``True``, use grid attention to the input. Default: ``True``
     """
 
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True):
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True, use_attn=True):
         super(TemporalSpatioConv, self).__init__()
 
+        self.use_attn = use_attn
         kernel_size = _triple(kernel_size)
         stride = _triple(stride)
         padding = _triple(padding)
@@ -158,14 +157,24 @@ class TemporalSpatioConv(nn.Module):
 
         self.spatial_conv = nn.Conv3d(intermed_channels, out_channels, spatial_kernel_size,
                                       stride=spatial_stride, padding=spatial_padding, bias=bias)
-
         self.bn2 = nn.BatchNorm3d(out_channels)
+
+        if use_attn:
+            self.attn = GridAttentionBlock(in_channels, out_channels, out_channels // 2)
+            self.conv = nn.Conv3d(in_channels=in_channels + out_channels, out_channels=out_channels, kernel_size=1,
+                                  bias=False)
+
         self.relu = nn.ReLU(inplace=True)
 
     def forward(self, x):
-        x = self.relu(self.bn1(self.temporal_conv(x)))
-        x = self.relu(self.bn2(self.spatial_conv(x)))
-        return x
+        res = self.relu(self.bn1(self.temporal_conv(x)))
+        res = self.relu(self.bn2(self.spatial_conv(res)))
+        if self.use_attn:
+            attend = self.attn(x, res)
+            out = self.conv(torch.cat((attend, res), 1))
+            return out
+        else:
+            return res
 
 
 class ResBlock(nn.Module):
@@ -177,9 +186,11 @@ class ResBlock(nn.Module):
         kernel_size (int or tuple): Size of the convolving kernel
         conv_type (Module, optional): Type of conv that is to be used to form the block. Default: SpatioTemporalConv
         downsample (bool, optional): If ``True``, the output size is to be smaller than the input. Default: ``False``
+        use_attn (bool, optional): If ``True``, use grid attention to the input. Default: ``True``
     """
 
-    def __init__(self, in_channels, out_channels, kernel_size, conv_type=SpatioTemporalConv, downsample=False):
+    def __init__(self, in_channels, out_channels, kernel_size, conv_type=SpatioTemporalConv, downsample=False,
+                 use_attn=True):
         super(ResBlock, self).__init__()
 
         self.downsample = downsample
@@ -187,15 +198,18 @@ class ResBlock(nn.Module):
 
         if self.downsample:
             # downsample with stride=2
-            self.conv1 = conv_type(in_channels, out_channels, kernel_size, padding=padding, stride=2, bias=False)
-            self.downsampleconv = conv_type(in_channels, out_channels, kernel_size=1, stride=2, bias=False)
+            self.conv1 = conv_type(in_channels, out_channels, kernel_size, padding=padding, stride=2, bias=False,
+                                   use_attn=use_attn)
+            self.downsampleconv = conv_type(in_channels, out_channels, kernel_size=1, stride=2, bias=False,
+                                            use_attn=use_attn)
             self.downsamplebn = nn.BatchNorm3d(out_channels)
         else:
-            self.conv1 = conv_type(in_channels, out_channels, kernel_size, padding=padding, bias=False)
+            self.conv1 = conv_type(in_channels, out_channels, kernel_size, padding=padding, bias=False,
+                                   use_attn=use_attn)
 
         self.bn1 = nn.BatchNorm3d(out_channels)
 
-        self.conv2 = conv_type(out_channels, out_channels, kernel_size, padding=padding, bias=False)
+        self.conv2 = conv_type(out_channels, out_channels, kernel_size, padding=padding, bias=False, use_attn=use_attn)
         self.bn2 = nn.BatchNorm3d(out_channels)
         self.relu = nn.ReLU(inplace=True)
 
@@ -219,21 +233,22 @@ class ResLayer(nn.Module):
         layer_size (int): Number of blocks to be stacked to form the layer
         block_type (Module, optional): Type of block that is to be used to form the block. Default: SpatioTemporalConv
         downsample (bool, optional): If ``True``, the first block in the layer will implement downsampling. Default: ``False``
+        use_attn (bool, optional): If ``True``, use grid attention to the input. Default: ``True``
     """
 
     def __init__(self, in_channels, out_channels, kernel_size, layer_size, block_type=SpatioTemporalConv,
-                 downsample=False):
+                 downsample=False, use_attn=True):
 
         super(ResLayer, self).__init__()
 
         # implement the first block
-        self.block1 = ResBlock(in_channels, out_channels, kernel_size, block_type, downsample)
+        self.block1 = ResBlock(in_channels, out_channels, kernel_size, block_type, downsample, use_attn)
 
         # prepare module list to hold all (layer_size - 1) blocks
         self.blocks = nn.ModuleList([])
         for i in range(layer_size - 1):
             # all these blocks are identical
-            self.blocks += [ResBlock(out_channels, out_channels, kernel_size, block_type)]
+            self.blocks += [ResBlock(out_channels, out_channels, kernel_size, block_type, use_attn=use_attn)]
 
     def forward(self, x):
         x = self.block1(x)
@@ -258,30 +273,42 @@ class Model(nn.Module):
         super(Model, self).__init__()
 
         self.model_type = model_type
+        if 'a' in model_type:
+            use_attn = True
+        else:
+            use_attn = False
 
         if 'st' in model_type:
             # SpatioTemporal Stream
-            self.conv1_st = SpatioTemporalConv(3, 64, (3, 7, 7), stride=(1, 2, 2), padding=(1, 3, 3), bias=False)
+            self.conv1_st = SpatioTemporalConv(3, 64, (3, 7, 7), stride=(1, 2, 2), padding=(1, 3, 3), bias=False,
+                                               use_attn=False)
             self.bn1_st = nn.BatchNorm3d(64)
             self.relu_st = nn.ReLU(inplace=True)
             self.maxpool_st = nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(2, 2, 2), padding=(0, 1, 1))
-            self.conv2_st = ResLayer(64, 64, 3, layer_sizes[0], block_type=SpatioTemporalConv)
-            self.conv3_st = ResLayer(64, 128, 3, layer_sizes[1], block_type=SpatioTemporalConv, downsample=True)
-            self.conv4_st = ResLayer(128, 256, 3, layer_sizes[2], block_type=SpatioTemporalConv, downsample=True)
-            self.conv5_st = ResLayer(256, 512, 3, layer_sizes[3], block_type=SpatioTemporalConv, downsample=True)
+            self.conv2_st = ResLayer(64, 64, 3, layer_sizes[0], block_type=SpatioTemporalConv, use_attn=False)
+            self.conv3_st = ResLayer(64, 128, 3, layer_sizes[1], block_type=SpatioTemporalConv, downsample=True,
+                                     use_attn=use_attn)
+            self.conv4_st = ResLayer(128, 256, 3, layer_sizes[2], block_type=SpatioTemporalConv, downsample=True,
+                                     use_attn=use_attn)
+            self.conv5_st = ResLayer(256, 512, 3, layer_sizes[3], block_type=SpatioTemporalConv, downsample=True,
+                                     use_attn=use_attn)
             self.pool_st = nn.AdaptiveAvgPool3d(1)
             self.fc_st = nn.Linear(512, num_classes)
 
         if 'ts' in model_type:
             # TemporalSpatio Stream
-            self.conv1_ts = TemporalSpatioConv(3, 64, (3, 7, 7), stride=(1, 2, 2), padding=(1, 3, 3), bias=False)
+            self.conv1_ts = TemporalSpatioConv(3, 64, (3, 7, 7), stride=(1, 2, 2), padding=(1, 3, 3), bias=False,
+                                               use_attn=False)
             self.bn1_ts = nn.BatchNorm3d(64)
             self.relu_ts = nn.ReLU(inplace=True)
             self.maxpool_ts = nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(2, 2, 2), padding=(0, 1, 1))
-            self.conv2_ts = ResLayer(64, 64, 3, layer_sizes[0], block_type=TemporalSpatioConv)
-            self.conv3_ts = ResLayer(64, 128, 3, layer_sizes[1], block_type=TemporalSpatioConv, downsample=True)
-            self.conv4_ts = ResLayer(128, 256, 3, layer_sizes[2], block_type=TemporalSpatioConv, downsample=True)
-            self.conv5_ts = ResLayer(256, 512, 3, layer_sizes[3], block_type=TemporalSpatioConv, downsample=True)
+            self.conv2_ts = ResLayer(64, 64, 3, layer_sizes[0], block_type=TemporalSpatioConv, use_attn=False)
+            self.conv3_ts = ResLayer(64, 128, 3, layer_sizes[1], block_type=TemporalSpatioConv, downsample=True,
+                                     use_attn=use_attn)
+            self.conv4_ts = ResLayer(128, 256, 3, layer_sizes[2], block_type=TemporalSpatioConv, downsample=True,
+                                     use_attn=use_attn)
+            self.conv5_ts = ResLayer(256, 512, 3, layer_sizes[3], block_type=TemporalSpatioConv, downsample=True,
+                                     use_attn=use_attn)
             self.pool_ts = nn.AdaptiveAvgPool3d(1)
             self.fc_ts = nn.Linear(512, num_classes)
 
