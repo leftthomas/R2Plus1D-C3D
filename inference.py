@@ -43,6 +43,7 @@ if __name__ == '__main__':
 
     # read video
     cap, retaining, clips = cv2.VideoCapture(VIDEO_NAME), True, []
+    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     while retaining:
         retaining, frame = cap.read()
         if not retaining and frame is None:
@@ -55,7 +56,7 @@ if __name__ == '__main__':
         tmp_ = center_crop(cv2.resize(frame, (resize_width, resize_height)))
         tmp = tmp_.astype(np.float32) / 255.0
         clips.append(tmp)
-        if len(clips) == clip_len:
+        if len(clips) == clip_len or len(clips) == frame_count:
             inputs = np.array(clips)
             inputs = np.expand_dims(inputs, axis=0)
             inputs = np.transpose(inputs, (0, 4, 1, 2, 3))
