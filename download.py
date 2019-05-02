@@ -143,7 +143,7 @@ def download_kinetics(input_csv, split, output_dir='data/kinetics600', trim_form
         in dataset.iterrows())
 
 
-for split_file in ['kinetics_train.csv']:
+for split_file in ['kinetics_val.csv', 'kinetics_600_test.csv', 'kinetics_train.csv']:
     split_mode = split_file.split('_')[-1].split('.')[0]
     print('Download {} part of kinetics600 dataset'.format(split_mode))
     download_kinetics('data/temp/kinetics600/{}'.format(split_file), split=split_mode)
