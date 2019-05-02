@@ -284,7 +284,6 @@ class Model(nn.Module):
                                                use_attn=False)
             self.bn1_st = nn.BatchNorm3d(64)
             self.relu_st = nn.ReLU(inplace=True)
-            self.maxpool_st = nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(2, 2, 2), padding=(0, 1, 1))
             self.conv2_st = ResLayer(64, 64, 3, layer_sizes[0], block_type=SpatioTemporalConv, use_attn=False)
             self.conv3_st = ResLayer(64, 128, 3, layer_sizes[1], block_type=SpatioTemporalConv, downsample=True,
                                      use_attn=use_attn)
@@ -301,7 +300,6 @@ class Model(nn.Module):
                                                use_attn=False)
             self.bn1_ts = nn.BatchNorm3d(64)
             self.relu_ts = nn.ReLU(inplace=True)
-            self.maxpool_ts = nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(2, 2, 2), padding=(0, 1, 1))
             self.conv2_ts = ResLayer(64, 64, 3, layer_sizes[0], block_type=TemporalSpatioConv, use_attn=False)
             self.conv3_ts = ResLayer(64, 128, 3, layer_sizes[1], block_type=TemporalSpatioConv, downsample=True,
                                      use_attn=use_attn)
@@ -318,7 +316,6 @@ class Model(nn.Module):
         if 'st' in self.model_type:
             # SpatioTemporal pipeline
             x_st = self.relu_st(self.bn1_st(self.conv1_st(x)))
-            x_st = self.maxpool_st(x_st)
             x_st = self.conv2_st(x_st)
             x_st = self.conv3_st(x_st)
             x_st = self.conv4_st(x_st)
@@ -330,7 +327,6 @@ class Model(nn.Module):
         if 'ts' in self.model_type:
             # TemporalSpatio pipeline
             x_ts = self.relu_ts(self.bn1_ts(self.conv1_ts(x)))
-            x_ts = self.maxpool_ts(x_ts)
             x_ts = self.conv2_ts(x_ts)
             x_ts = self.conv3_ts(x_ts)
             x_ts = self.conv4_ts(x_ts)
