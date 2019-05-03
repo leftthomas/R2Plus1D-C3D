@@ -1,4 +1,5 @@
 import os
+import random
 import shutil
 import zipfile
 
@@ -22,27 +23,14 @@ if not os.path.exists('data/ucf101_labels.txt'):
         for line in open('data/temp/ucf101/ucfTrainTestlist/classInd.txt', 'r'):
             f.write(line.split(' ')[1])
 
-train_video_files, val_video_files, test_video_files = [], [], []
-val_label, val_group = None, None
+train_video_files, test_video_files = [], []
 for line in open('data/temp/ucf101/ucfTrainTestlist/trainlist01.txt', 'r'):
-    # make sure the train split and val split clips for each class at different group
-    current_group, current_label = line.split(' ')[0].split('/')[1].split('_')[-2], int(
-        line.split(' ')[1].replace('\n', ''))
-    if val_label is None and val_group is None:
-        val_label, val_group = current_label, current_group
-        val_video_files.append(line.split(' ')[0])
-    else:
-        if current_label == val_label:
-            if current_group == val_group:
-                val_video_files.append(line.split(' ')[0])
-            else:
-                train_video_files.append(line.split(' ')[0])
-        else:
-            val_label, val_group = current_label, current_group
-            val_video_files.append(line.split(' ')[0])
+    train_video_files.append(line.split(' ')[0])
 
 for line in open('data/temp/ucf101/ucfTrainTestlist/testlist01.txt', 'r'):
     test_video_files.append(line.replace('\n', ''))
+
+val_video_files = random.sample(test_video_files, int(len(test_video_files) * 0.2))
 
 ucf101_videos = rarfile.RarFile('data/UCF101.rar')
 ucf101_videos.extractall('data/temp/ucf101')

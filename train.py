@@ -12,6 +12,8 @@ from tqdm import tqdm
 import utils
 from model import Model
 
+torch.backends.cudnn.benchmark = True
+
 
 def processor(sample):
     data, labels, training = sample
