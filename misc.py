@@ -41,21 +41,21 @@ if not os.path.exists('data/ucf101/train'):
 for video in train_video_files:
     if not os.path.exists('data/ucf101/train/{}'.format(video.split('/')[0])):
         os.mkdir('data/ucf101/train/{}'.format(video.split('/')[0]))
-    shutil.move('data/temp/ucf101/UCF-101/{}'.format(video), 'data/ucf101/train/{}'.format(video))
+    shutil.copy('data/temp/ucf101/UCF-101/{}'.format(video), 'data/ucf101/train/{}'.format(video))
 
 if not os.path.exists('data/ucf101/val'):
     os.mkdir('data/ucf101/val')
 for video in val_video_files:
     if not os.path.exists('data/ucf101/val/{}'.format(video.split('/')[0])):
         os.mkdir('data/ucf101/val/{}'.format(video.split('/')[0]))
-    shutil.move('data/temp/ucf101/UCF-101/{}'.format(video), 'data/ucf101/val/{}'.format(video))
+    shutil.copy('data/temp/ucf101/UCF-101/{}'.format(video), 'data/ucf101/val/{}'.format(video))
 
 if not os.path.exists('data/ucf101/test'):
     os.mkdir('data/ucf101/test')
 for video in test_video_files:
     if not os.path.exists('data/ucf101/test/{}'.format(video.split('/')[0])):
         os.mkdir('data/ucf101/test/{}'.format(video.split('/')[0]))
-    shutil.move('data/temp/ucf101/UCF-101/{}'.format(video), 'data/ucf101/test/{}'.format(video))
+    shutil.copy('data/temp/ucf101/UCF-101/{}'.format(video), 'data/ucf101/test/{}'.format(video))
 
 # preprocess hmdb51 files
 if not os.path.exists('data/hmdb51'):
@@ -102,21 +102,21 @@ if not os.path.exists('data/hmdb51/train'):
 for video in train_video_files:
     if not os.path.exists('data/hmdb51/train/{}'.format(video.split('/')[0])):
         os.mkdir('data/hmdb51/train/{}'.format(video.split('/')[0]))
-    shutil.move('data/temp/hmdb51/{}'.format(video), 'data/hmdb51/train/{}'.format(video))
+    shutil.copy('data/temp/hmdb51/{}'.format(video), 'data/hmdb51/train/{}'.format(video))
 
 if not os.path.exists('data/hmdb51/val'):
     os.mkdir('data/hmdb51/val')
 for video in val_video_files:
     if not os.path.exists('data/hmdb51/val/{}'.format(video.split('/')[0])):
         os.mkdir('data/hmdb51/val/{}'.format(video.split('/')[0]))
-    shutil.move('data/temp/hmdb51/{}'.format(video), 'data/hmdb51/val/{}'.format(video))
+    shutil.copy('data/temp/hmdb51/{}'.format(video), 'data/hmdb51/val/{}'.format(video))
 
 if not os.path.exists('data/hmdb51/test'):
     os.mkdir('data/hmdb51/test')
 for video in test_video_files:
     if not os.path.exists('data/hmdb51/test/{}'.format(video.split('/')[0])):
         os.mkdir('data/hmdb51/test/{}'.format(video.split('/')[0]))
-    shutil.move('data/temp/hmdb51/{}'.format(video), 'data/hmdb51/test/{}'.format(video))
+    shutil.copy('data/temp/hmdb51/{}'.format(video), 'data/hmdb51/test/{}'.format(video))
 
 # remove the temp dir to make the data dir more clear
 shutil.rmtree('data/temp')
