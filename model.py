@@ -270,7 +270,7 @@ class FeatureLayer(nn.Module):
     def __init__(self, layer_sizes, block_type=SpatioTemporalConv, use_attn=True):
         super(FeatureLayer, self).__init__()
 
-        self.conv1 = block_type(3, 64, (3, 7, 7), stride=(1, 2, 2), padding=(1, 3, 3), bias=False, use_attn=False)
+        self.conv1 = block_type(3, 64, (1, 7, 7), stride=(1, 2, 2), padding=(0, 3, 3), bias=False, use_attn=False)
         self.bn1 = nn.BatchNorm3d(64)
         self.relu = nn.ReLU(inplace=True)
         self.conv2 = ResLayer(64, 64, 3, layer_sizes[0], block_type=block_type, use_attn=False)
@@ -324,13 +324,11 @@ class Model(nn.Module):
         if 'st' in self.model_type:
             # SpatioTemporal pipeline
             x_st = self.feature_st(x)
-            x_st = x_st.view(x_st.size(0), -1)
             logits_st = self.fc_st(x_st)
 
         if 'ts' in self.model_type:
             # TemporalSpatio pipeline
             x_ts = self.feature_ts(x)
-            x_ts = x_ts.view(x_ts.size(0), -1)
             logits_ts = self.fc_ts(x_ts)
 
         if 'st' in self.model_type and 'ts' in self.model_type:
@@ -348,7 +346,7 @@ class Model(nn.Module):
     def __init_weight(self):
         for m in self.modules():
             if isinstance(m, nn.Conv3d):
-                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                nn.init.kaiming_normal_(m.weight)
             elif isinstance(m, nn.BatchNorm3d):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
