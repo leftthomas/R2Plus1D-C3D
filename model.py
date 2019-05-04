@@ -258,11 +258,41 @@ class ResLayer(nn.Module):
         return x
 
 
+class FeatureLayer(nn.Module):
+    r"""Forms a feature layer by initializing 5 layers, with the number of blocks in each layer set by layer_sizes,
+    and by performing a global average pool at the end producing a 512-dimensional vector for each element in the batch.
+    Args:
+        layer_sizes (tuple): An iterable containing the number of blocks in each layer
+        block_type (Module, optional): Type of block that is to be used to form the block. Default: SpatioTemporalConv
+        use_attn (bool, optional): If ``True``, use grid attention to the input. Default: ``True``
+    """
+
+    def __init__(self, layer_sizes, block_type=SpatioTemporalConv, use_attn=True):
+        super(FeatureLayer, self).__init__()
+
+        self.conv1 = block_type(3, 64, (3, 7, 7), stride=(1, 2, 2), padding=(1, 3, 3), bias=False, use_attn=False)
+        self.bn1 = nn.BatchNorm3d(64)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = ResLayer(64, 64, 3, layer_sizes[0], block_type=block_type, use_attn=False)
+        self.conv3 = ResLayer(64, 128, 3, layer_sizes[1], block_type=block_type, downsample=True, use_attn=use_attn)
+        self.conv4 = ResLayer(128, 256, 3, layer_sizes[2], block_type=block_type, downsample=True, use_attn=use_attn)
+        self.conv5 = ResLayer(256, 512, 3, layer_sizes[3], block_type=block_type, downsample=True, use_attn=use_attn)
+        self.pool = nn.AdaptiveAvgPool3d(1)
+
+    def forward(self, x):
+        x = self.relu(self.bn1(self.conv1(x)))
+        x = self.conv2(x)
+        x = self.conv3(x)
+        x = self.conv4(x)
+        x = self.conv5(x)
+        x = self.pool(x)
+        x = x.view(x.size(0), -1)
+        return x
+
+
 class Model(nn.Module):
-    r"""Forms a complete two-stream ResNet classifier producing vectors of size num_classes, by initializng 5 layers,
-    with the number of blocks in each layer set by layer_sizes, and by performing a global average pool
-    at the end producing a 512-dimensional vector for each element in the batch, and passing them through
-    a Linear layer.
+    r"""Forms a complete two-stream ResNet classifier producing vectors of size num_classes, by initializing a feature
+    layers, and passing them through a Linear layer.
     Args:
         num_classes(int): Number of classes in the data
         layer_sizes (tuple): An iterable containing the number of blocks in each layer
@@ -280,34 +310,12 @@ class Model(nn.Module):
 
         if 'st' in model_type:
             # SpatioTemporal Stream
-            self.conv1_st = SpatioTemporalConv(3, 64, (3, 7, 7), stride=(1, 2, 2), padding=(1, 3, 3), bias=False,
-                                               use_attn=False)
-            self.bn1_st = nn.BatchNorm3d(64)
-            self.relu_st = nn.ReLU(inplace=True)
-            self.conv2_st = ResLayer(64, 64, 3, layer_sizes[0], block_type=SpatioTemporalConv, use_attn=False)
-            self.conv3_st = ResLayer(64, 128, 3, layer_sizes[1], block_type=SpatioTemporalConv, downsample=True,
-                                     use_attn=use_attn)
-            self.conv4_st = ResLayer(128, 256, 3, layer_sizes[2], block_type=SpatioTemporalConv, downsample=True,
-                                     use_attn=use_attn)
-            self.conv5_st = ResLayer(256, 512, 3, layer_sizes[3], block_type=SpatioTemporalConv, downsample=True,
-                                     use_attn=use_attn)
-            self.pool_st = nn.AdaptiveAvgPool3d(1)
+            self.feature_st = FeatureLayer(layer_sizes, block_type=SpatioTemporalConv, use_attn=use_attn)
             self.fc_st = nn.Linear(512, num_classes)
 
         if 'ts' in model_type:
             # TemporalSpatio Stream
-            self.conv1_ts = TemporalSpatioConv(3, 64, (3, 7, 7), stride=(1, 2, 2), padding=(1, 3, 3), bias=False,
-                                               use_attn=False)
-            self.bn1_ts = nn.BatchNorm3d(64)
-            self.relu_ts = nn.ReLU(inplace=True)
-            self.conv2_ts = ResLayer(64, 64, 3, layer_sizes[0], block_type=TemporalSpatioConv, use_attn=False)
-            self.conv3_ts = ResLayer(64, 128, 3, layer_sizes[1], block_type=TemporalSpatioConv, downsample=True,
-                                     use_attn=use_attn)
-            self.conv4_ts = ResLayer(128, 256, 3, layer_sizes[2], block_type=TemporalSpatioConv, downsample=True,
-                                     use_attn=use_attn)
-            self.conv5_ts = ResLayer(256, 512, 3, layer_sizes[3], block_type=TemporalSpatioConv, downsample=True,
-                                     use_attn=use_attn)
-            self.pool_ts = nn.AdaptiveAvgPool3d(1)
+            self.feature_ts = FeatureLayer(layer_sizes, block_type=TemporalSpatioConv, use_attn=use_attn)
             self.fc_ts = nn.Linear(512, num_classes)
 
         self.__init_weight()
@@ -315,23 +323,13 @@ class Model(nn.Module):
     def forward(self, x):
         if 'st' in self.model_type:
             # SpatioTemporal pipeline
-            x_st = self.relu_st(self.bn1_st(self.conv1_st(x)))
-            x_st = self.conv2_st(x_st)
-            x_st = self.conv3_st(x_st)
-            x_st = self.conv4_st(x_st)
-            x_st = self.conv5_st(x_st)
-            x_st = self.pool_st(x_st)
+            x_st = self.feature_st(x)
             x_st = x_st.view(x_st.size(0), -1)
             logits_st = self.fc_st(x_st)
 
         if 'ts' in self.model_type:
             # TemporalSpatio pipeline
-            x_ts = self.relu_ts(self.bn1_ts(self.conv1_ts(x)))
-            x_ts = self.conv2_ts(x_ts)
-            x_ts = self.conv3_ts(x_ts)
-            x_ts = self.conv4_ts(x_ts)
-            x_ts = self.conv5_ts(x_ts)
-            x_ts = self.pool_ts(x_ts)
+            x_ts = self.feature_ts(x)
             x_ts = x_ts.view(x_ts.size(0), -1)
             logits_ts = self.fc_ts(x_ts)
 

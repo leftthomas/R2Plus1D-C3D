@@ -159,16 +159,32 @@ if __name__ == '__main__':
             else:
                 raise NotImplementedError('the pre-trained model must be the same model type')
 
+    loss_criterion = nn.CrossEntropyLoss()
+    if 'st' in MODEL_TYPE and 'ts' in MODEL_TYPE:
+        optim_configs = [{'params': model.feature_st.parameters(), 'lr': 1e-4},
+                         {'params': model.feature_ts.parameters(), 'lr': 1e-4},
+                         {'params': model.fc_st.parameters(), 'lr': 1e-4 * 10},
+                         {'params': model.fc_ts.parameters(), 'lr': 1e-4 * 10}]
+    else:
+        if 'st' in MODEL_TYPE:
+            optim_configs = [{'params': model.feature_st.parameters(), 'lr': 1e-4},
+                             {'params': model.fc_st.parameters(), 'lr': 1e-4 * 10}]
+        elif 'ts' in MODEL_TYPE:
+            optim_configs = [{'params': model.feature_ts.parameters(), 'lr': 1e-4},
+                             {'params': model.fc_ts.parameters(), 'lr': 1e-4 * 10}]
+        else:
+            raise NotImplementedError('check the model type')
+
+    optimizer = optim.Adam(optim_configs, lr=1e-4, weight_decay=5e-4)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.1, verbose=True)
+    print('Number of parameters:', sum(param.numel() for param in model.parameters()))
+
     model = model.to(device_ids[0])
     if len(device_ids) > 1:
         if torch.cuda.device_count() >= len(device_ids):
             model = nn.DataParallel(model, device_ids=device_ids)
         else:
             raise ValueError("the machine don't have {} gpus".format(str(len(device_ids))))
-    loss_criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(params=model.parameters(), lr=1e-4, weight_decay=1e-4)
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.1, verbose=True)
-    print('Number of parameters:', sum(param.numel() for param in model.parameters()))
 
     engine = Engine()
     meter_loss = tnt.meter.AverageValueMeter()
