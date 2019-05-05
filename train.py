@@ -136,6 +136,7 @@ if __name__ == '__main__':
     NUM_CLASS = len(train_loader.dataset.label2index)
     model = Model(NUM_CLASS, (2, 2, 2, 2), MODEL_TYPE)
 
+    optim_configs = []
     if PRE_TRAIN is not None:
         checkpoint = torch.load('epochs/{}'.format(PRE_TRAIN), map_location=lambda storage, loc: storage)
         # load pre-trained model which trained on the same dataset
@@ -159,22 +160,17 @@ if __name__ == '__main__':
             else:
                 raise NotImplementedError('the pre-trained model must be the same model type')
 
-    loss_criterion = nn.CrossEntropyLoss()
-    if 'st' in MODEL_TYPE and 'ts' in MODEL_TYPE:
-        optim_configs = [{'params': model.feature_st.parameters(), 'lr': 1e-4},
-                         {'params': model.feature_ts.parameters(), 'lr': 1e-4},
-                         {'params': model.fc_st.parameters(), 'lr': 1e-4 * 10},
-                         {'params': model.fc_ts.parameters(), 'lr': 1e-4 * 10}]
-    else:
         if 'st' in MODEL_TYPE:
-            optim_configs = [{'params': model.feature_st.parameters(), 'lr': 1e-4},
-                             {'params': model.fc_st.parameters(), 'lr': 1e-4 * 10}]
-        elif 'ts' in MODEL_TYPE:
-            optim_configs = [{'params': model.feature_ts.parameters(), 'lr': 1e-4},
-                             {'params': model.fc_ts.parameters(), 'lr': 1e-4 * 10}]
-        else:
-            raise NotImplementedError('check the model type')
+            optim_configs.append({'params': model.feature_st.parameters(), 'lr': 1e-4})
+            optim_configs.append({'params': model.fc_st.parameters(), 'lr': 1e-4 * 10})
+        if 'ts' in MODEL_TYPE:
+            optim_configs.append({'params': model.feature_ts.parameters(), 'lr': 1e-4})
+            optim_configs.append({'params': model.fc_ts.parameters(), 'lr': 1e-4 * 10})
 
+    else:
+        optim_configs.append({'params': model.parameters(), 'lr': 1e-4})
+
+    loss_criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(optim_configs, lr=1e-4, weight_decay=5e-4)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.1, verbose=True)
     print('Number of parameters:', sum(param.numel() for param in model.parameters()))
