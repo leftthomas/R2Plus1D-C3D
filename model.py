@@ -23,10 +23,11 @@ class GridAttentionBlock(nn.Module):
         self.W_l = nn.Conv3d(in_channels=in_features_l, out_channels=attn_features, kernel_size=1, bias=False)
         self.W_g = nn.Conv3d(in_channels=in_features_g, out_channels=attn_features, kernel_size=1, bias=False)
         self.phi = nn.Conv3d(in_channels=attn_features, out_channels=1, kernel_size=1, bias=True)
+        self.pool = nn.MaxPool3d(kernel_size=2, stride=2)
 
     def forward(self, l, g):
-        N, C, D, H, W = g.size()
-        l = F.interpolate(l, size=(D, H, W), mode='trilinear', align_corners=False)
+        if l.size()[1:] != g.size()[1:]:
+            l = self.pool(l)
         l_ = self.W_l(l)
         g_ = self.W_g(g)
         c = self.phi(F.relu(l_ + g_))
