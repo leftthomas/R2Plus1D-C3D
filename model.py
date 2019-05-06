@@ -28,7 +28,7 @@ class GridAttentionBlock(nn.Module):
 
     def forward(self, l, g):
         if l.size()[2:] != g.size()[2:]:
-            l = F.interpolate(l, size=g.size()[2:], mode='trilinear')
+            l = F.interpolate(l, size=g.size()[2:], mode='trilinear', align_corners=False)
         l_ = self.W_l(l)
         g_ = self.W_g(g)
         c = self.phi(F.relu(l_ + g_))
