@@ -20,14 +20,15 @@ class GridAttentionBlock(nn.Module):
 
     def __init__(self, in_features_l, in_features_g, attn_features):
         super(GridAttentionBlock, self).__init__()
-        self.W_l = nn.Conv3d(in_channels=in_features_l, out_channels=attn_features, kernel_size=1, bias=False)
-        self.W_g = nn.Conv3d(in_channels=in_features_g, out_channels=attn_features, kernel_size=1, bias=False)
-        self.phi = nn.Conv3d(in_channels=attn_features, out_channels=1, kernel_size=1, bias=True)
-        self.pool = nn.MaxPool3d(kernel_size=2, stride=2)
+        attn_features = attn_features if attn_features > 0 else 1
+
+        self.W_l = nn.Conv3d(in_features_l, attn_features, kernel_size=1, bias=False)
+        self.W_g = nn.Conv3d(in_features_g, attn_features, kernel_size=1, bias=True)
+        self.phi = nn.Conv3d(attn_features, 1, kernel_size=1, bias=True)
 
     def forward(self, l, g):
-        if l.size()[1:] != g.size()[1:]:
-            l = self.pool(l)
+        if l.size()[2:] != g.size()[2:]:
+            l = F.interpolate(l, size=g.size()[2:], mode='trilinear')
         l_ = self.W_l(l)
         g_ = self.W_g(g)
         c = self.phi(F.relu(l_ + g_))
@@ -91,7 +92,7 @@ class SpatioTemporalConv(nn.Module):
         self.bn2 = nn.BatchNorm3d(out_channels)
 
         if use_attn:
-            self.attn = GridAttentionBlock(in_channels, out_channels, out_channels // 2)
+            self.attn = GridAttentionBlock(in_channels, out_channels, in_channels // 2)
             self.conv = nn.Conv3d(in_channels=in_channels + out_channels, out_channels=out_channels, kernel_size=1,
                                   bias=False)
 
@@ -161,7 +162,7 @@ class TemporalSpatioConv(nn.Module):
         self.bn2 = nn.BatchNorm3d(out_channels)
 
         if use_attn:
-            self.attn = GridAttentionBlock(in_channels, out_channels, out_channels // 2)
+            self.attn = GridAttentionBlock(in_channels, out_channels, in_channels // 2)
             self.conv = nn.Conv3d(in_channels=in_channels + out_channels, out_channels=out_channels, kernel_size=1,
                                   bias=False)
 
