@@ -116,10 +116,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train Activity Recognition Model')
     parser.add_argument('--data_type', default='ucf101', type=str, choices=['ucf101', 'hmdb51', 'kinetics600'],
                         help='dataset type')
-    parser.add_argument('--gpu_ids', default='0,1,2', type=str, help='selected gpu')
+    parser.add_argument('--gpu_ids', default='0,1', type=str, help='selected gpu')
     parser.add_argument('--model_type', default='st-ts-a', type=str,
                         choices=['st-ts-a', 'st-ts', 'st-a', 'st', 'ts-a', 'ts'], help='model type')
-    parser.add_argument('--batch_size', default=36, type=int, help='training batch size')
+    parser.add_argument('--batch_size', default=16, type=int, help='training batch size')
     parser.add_argument('--num_epochs', default=100, type=int, help='training epoch number')
     parser.add_argument('--pre_train', default=None, type=str, help='used pre-trained model epoch name')
 
