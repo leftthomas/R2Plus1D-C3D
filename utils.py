@@ -7,7 +7,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 
 # global configs
-CLIP_LEN, RESIZE_HIEGHT, CROP_SIZE = 24, 128, 112
+CLIP_LEN, RESIZE_HIEGHT, CROP_SIZE = 32, 128, 112
 
 
 class VideoDataset(Dataset):
@@ -184,6 +184,11 @@ class VideoDataset(Dataset):
         buffer = buffer[time_index:time_index + clip_len, height_index:height_index + crop_size,
                  width_index:width_index + crop_size, :]
 
+        # padding zeros to make sure the shape same
+        if buffer.shape[0] < clip_len:
+            pad = np.zeros((clip_len - buffer.shape[0], buffer.shape[1], buffer.shape[2], buffer.shape[3]),
+                           dtype=np.uint8)
+            buffer = np.concatenate((buffer, pad), axis=0)
         return buffer
 
 
