@@ -184,10 +184,14 @@ class VideoDataset(Dataset):
         buffer = buffer[time_index:time_index + clip_len, height_index:height_index + crop_size,
                  width_index:width_index + crop_size, :]
 
-        # padding zeros to make sure the shape same
+        # padding repeated frames to make sure the shape as same
         if buffer.shape[0] < clip_len:
-            pad = np.zeros((clip_len - buffer.shape[0], buffer.shape[1], buffer.shape[2], buffer.shape[3]),
-                           dtype=np.uint8)
+            repeated = clip_len // buffer.shape[0] - 1
+            remainder = clip_len % buffer.shape[0]
+            if repeated > 0:
+                pad = np.concatenate([buffer for _ in range(repeated)], axis=0)
+                buffer = np.concatenate((buffer, pad), axis=0)
+            pad = buffer[:remainder, :, :, :]
             buffer = np.concatenate((buffer, pad), axis=0)
         return buffer
 
