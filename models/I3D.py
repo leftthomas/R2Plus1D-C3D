@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 
 class BasicConv3d(nn.Module):
@@ -281,40 +282,36 @@ class Mixed5C(nn.Module):
 
 class I3D(nn.Module):
 
-    def __init__(self, num_classes, input_channel=3, dropout=0.5, spatial_squeeze=True):
+    def __init__(self, num_classes, input_channel=3, dropout=0.5):
         super(I3D, self).__init__()
         self.features = nn.Sequential(
-            BasicConv3d(input_channel, 64, kernel_size=7, stride=2, padding=3),  # (64, 32, 112, 112)
-            nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(1, 2, 2), padding=(0, 1, 1)),  # (64, 32, 56, 56)
-            BasicConv3d(64, 64, kernel_size=1, stride=1),  # (64, 32, 56, 56)
-            BasicConv3d(64, 192, kernel_size=3, stride=1, padding=1),  # (192, 32, 56, 56)
-            nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(1, 2, 2), padding=(0, 1, 1)),  # (192, 32, 28, 28)
-            Mixed3B(),  # (256, 32, 28, 28)
-            Mixed3C(),  # (480, 32, 28, 28)
-            nn.MaxPool3d(kernel_size=(3, 3, 3), stride=(2, 2, 2), padding=(1, 1, 1)),  # (480, 16, 14, 14)
-            Mixed4B(),  # (512, 16, 14, 14)
-            Mixed4C(),  # (512, 16, 14, 14)
-            Mixed4D(),  # (512, 16, 14, 14)
-            Mixed4E(),  # (528, 16, 14, 14)
-            Mixed4F(),  # (832, 16, 14, 14)
-            nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2), padding=(0, 0, 0)),  # (832, 8, 7, 7)
-            Mixed5B(),  # (832, 8, 7, 7)
-            Mixed5C(),  # (1024, 8, 7, 7)
-            nn.AvgPool3d(kernel_size=(2, 7, 7), stride=1),  # (1024, 8, 1, 1)
+            BasicConv3d(input_channel, 64, kernel_size=7, stride=2, padding=3),
+            nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(1, 2, 2), padding=(0, 1, 1)),
+            BasicConv3d(64, 64, kernel_size=1, stride=1),
+            BasicConv3d(64, 192, kernel_size=3, stride=1, padding=1),
+            nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(1, 2, 2), padding=(0, 1, 1)),
+            Mixed3B(),
+            Mixed3C(),
+            nn.MaxPool3d(kernel_size=(3, 3, 3), stride=(2, 2, 2), padding=(1, 1, 1)),
+            Mixed4B(),
+            Mixed4C(),
+            Mixed4D(),
+            Mixed4E(),
+            Mixed4F(),
+            nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2), padding=(0, 0, 0)),
+            Mixed5B(),
+            Mixed5C()
         )
         self.dropout = nn.Dropout3d(dropout)
-        self.fc = nn.Conv3d(1024, num_classes, kernel_size=1, stride=1, bias=True)  # (num_classes, 8, 1, 1)
-        self.spatial_squeeze = spatial_squeeze
+        self.fc = nn.Conv3d(1024, num_classes, kernel_size=1, stride=1, bias=True)
 
     def forward(self, x):
         feature = self.features(x)
+        feature = F.adaptive_avg_pool3d(feature, output_size=(feature.size(2), 1, 1))
         feature = self.dropout(feature)
         logits = self.fc(feature)
-
-        if self.spatial_squeeze:
-            logits = logits.squeeze(3)
-            logits = logits.squeeze(3)
-
-        logits = torch.mean(logits, 2)
+        logits = logits.squeeze(3)
+        logits = logits.squeeze(3)
+        logits = torch.mean(logits, dim=2)
 
         return logits
