@@ -272,7 +272,7 @@ class FeatureLayer(nn.Module):
     def __init__(self, layer_sizes, block_type=SpatioTemporalConv, use_attn=True):
         super(FeatureLayer, self).__init__()
 
-        self.conv1 = block_type(3, 64, (3, 7, 7), stride=(1, 2, 2), padding=(1, 3, 3), bias=False, use_attn=False)
+        self.conv1 = block_type(3, 64, (1, 7, 7), stride=(1, 2, 2), padding=(0, 3, 3), bias=False, use_attn=False)
         self.conv2 = ResLayer(64, 64, 3, layer_sizes[0], block_type=block_type, use_attn=False)
         self.conv3 = ResLayer(64, 128, 3, layer_sizes[1], block_type=block_type, downsample=True, use_attn=use_attn)
         self.conv4 = ResLayer(128, 256, 3, layer_sizes[2], block_type=block_type, downsample=True, use_attn=use_attn)
