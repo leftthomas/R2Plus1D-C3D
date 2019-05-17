@@ -60,9 +60,9 @@ class ResBlock(nn.Module):
     r"""Single block for the ResNet network. Uses SpatioTemporalConv in
         the standard ResNet block layout (conv->batchnorm->ReLU->conv->batchnorm->sum->ReLU)
         Args:
-            in_channels (int): Number of channels in the input tensor.
-            out_channels (int): Number of channels in the output produced by the block.
-            kernel_size (int or tuple): Size of the convolving kernels.
+            in_channels (int): Number of channels in the input tensor
+            out_channels (int): Number of channels in the output produced by the block
+            kernel_size (int or tuple): Size of the convolving kernels
             downsample (bool, optional): If ``True``, the output size is to be smaller than the input. Default: ``False``
         """
 
@@ -99,9 +99,9 @@ class ResLayer(nn.Module):
     r"""Forms a single layer of the ResNet network, with a number of repeating
     blocks of same output size stacked on top of each other
         Args:
-            in_channels (int): Number of channels in the input tensor.
-            out_channels (int): Number of channels in the output produced by the layer.
-            kernel_size (int or tuple): Size of the convolving kernels.
+            in_channels (int): Number of channels in the input tensor
+            out_channels (int): Number of channels in the output produced by the layer
+            kernel_size (int or tuple): Size of the convolving kernels
             layer_size (int): Number of blocks to be stacked to form the layer
             downsample (bool, optional): If ``True``, the first block in layer will implement downsampling. Default: ``False``
         """
