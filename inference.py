@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
     DATA_TYPE, MODEL_TYPE, VIDEO_NAME, MODEL_NAME = opt.data_type, opt.model_type, opt.video_name, opt.model_name
 
-    clip_len, resize_height, crop_size, = utils.CLIP_LEN, utils.RESIZE_HIEGHT, utils.CROP_SIZE
+    clip_len, resize_height, crop_size, = utils.CLIP_LEN, utils.RESIZE_HEIGHT, utils.CROP_SIZE
     class_names = utils.get_labels(DATA_TYPE)
 
     DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -53,7 +53,7 @@ if __name__ == '__main__':
             resize_width = resize_height
             resize_height = math.floor(frame.shape[0] / frame.shape[1] * resize_width)
         tmp_ = center_crop(cv2.resize(frame, (resize_width, resize_height)))
-        tmp = tmp_.astype(np.float32) / 255.0
+        tmp = (tmp_.astype(np.float32) / 255.0) * 2 - 1
         clips.append(tmp)
         if len(clips) == clip_len or len(clips) == frame_count:
             inputs = np.array(clips)

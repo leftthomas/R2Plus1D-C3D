@@ -7,7 +7,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 
 # global configs
-CLIP_LEN, RESIZE_HIEGHT, CROP_SIZE = 16, 128, 112
+CLIP_LEN, RESIZE_HEIGHT, CROP_SIZE = 16, 128, 112
 
 
 class VideoDataset(Dataset):
@@ -87,9 +87,10 @@ class VideoDataset(Dataset):
                 save_name = os.path.join(self.preprocessed_dir, self.split, file, video)
                 self.process_video(video_name, save_name)
 
-        print('Preprocessing finished.')
+        print('Preprocess finished.')
 
-    def process_video(self, video_name, save_name):
+    @staticmethod
+    def process_video(video_name, save_name):
         # initialize a VideoCapture object to read video data into a numpy array
         capture = cv2.VideoCapture(video_name)
         frame_count = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -105,21 +106,18 @@ class VideoDataset(Dataset):
                 if frame_count // extract_frequency <= CLIP_LEN:
                     extract_frequency -= 1
 
-        count = 0
-        i = 0
-        retaining = True
-
+        count, i, retaining = 0, 0, True
         while count < frame_count and retaining:
             retaining, frame = capture.read()
             if frame is None:
                 continue
 
             if count % extract_frequency == 0:
-                resize_height = RESIZE_HIEGHT
+                resize_height = RESIZE_HEIGHT
                 resize_width = math.floor(frame_width / frame_height * resize_height)
                 # make sure resize width >= crop size
                 if resize_width < CROP_SIZE:
-                    resize_width = RESIZE_HIEGHT
+                    resize_width = RESIZE_HEIGHT
                     resize_height = math.floor(frame_height / frame_width * resize_width)
 
                 frame = cv2.resize(frame, (resize_width, resize_height))
@@ -132,7 +130,8 @@ class VideoDataset(Dataset):
         # release the VideoCapture once it is no longer needed
         capture.release()
 
-    def random_flip(self, buffer):
+    @staticmethod
+    def random_flip(buffer):
         if np.random.random() < 0.5:
             for i, frame in enumerate(buffer):
                 frame = cv2.flip(buffer[i], flipCode=1)
@@ -140,18 +139,21 @@ class VideoDataset(Dataset):
 
         return buffer
 
-    def normalize(self, buffer):
+    @staticmethod
+    def normalize(buffer):
         buffer = buffer.astype(np.float32)
         for i, frame in enumerate(buffer):
-            frame = frame / 255.0
+            frame = (frame / 255.0) * 2 - 1
             buffer[i] = frame
 
         return buffer
 
-    def to_tensor(self, buffer):
+    @staticmethod
+    def to_tensor(buffer):
         return buffer.transpose((3, 0, 1, 2))
 
-    def load_frames(self, file_dir):
+    @staticmethod
+    def load_frames(file_dir):
         frames = sorted([os.path.join(file_dir, img) for img in os.listdir(file_dir)])
         buffer = []
         for i, frame_name in enumerate(frames):
