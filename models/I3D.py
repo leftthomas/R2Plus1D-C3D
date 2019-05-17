@@ -6,9 +6,8 @@ class BasicConv3d(nn.Module):
     def __init__(self, in_planes, out_planes, kernel_size, stride, padding=0):
         super(BasicConv3d, self).__init__()
         self.conv = nn.Conv3d(in_planes, out_planes, kernel_size=kernel_size, stride=stride, padding=padding,
-                              bias=False)  # verify bias false
+                              bias=False)
 
-        # verify defalt value in sonnet
         self.bn = nn.BatchNorm3d(out_planes, eps=1e-3, momentum=0.001, affine=True)
         self.relu = nn.ReLU(inplace=True)
 
@@ -19,9 +18,9 @@ class BasicConv3d(nn.Module):
         return x
 
 
-class Mixed_3b(nn.Module):
+class Mixed3B(nn.Module):
     def __init__(self):
-        super(Mixed_3b, self).__init__()
+        super(Mixed3B, self).__init__()
 
         self.branch0 = nn.Sequential(
             BasicConv3d(192, 64, kernel_size=1, stride=1),
@@ -49,9 +48,9 @@ class Mixed_3b(nn.Module):
         return out
 
 
-class Mixed_3c(nn.Module):
+class Mixed3C(nn.Module):
     def __init__(self):
-        super(Mixed_3c, self).__init__()
+        super(Mixed3C, self).__init__()
         self.branch0 = nn.Sequential(
             BasicConv3d(256, 128, kernel_size=1, stride=1),
         )
@@ -77,9 +76,9 @@ class Mixed_3c(nn.Module):
         return out
 
 
-class Mixed_4b(nn.Module):
+class Mixed4B(nn.Module):
     def __init__(self):
-        super(Mixed_4b, self).__init__()
+        super(Mixed4B, self).__init__()
 
         self.branch0 = nn.Sequential(
             BasicConv3d(480, 192, kernel_size=1, stride=1),
@@ -106,9 +105,9 @@ class Mixed_4b(nn.Module):
         return out
 
 
-class Mixed_4c(nn.Module):
+class Mixed4C(nn.Module):
     def __init__(self):
-        super(Mixed_4c, self).__init__()
+        super(Mixed4C, self).__init__()
 
         self.branch0 = nn.Sequential(
             BasicConv3d(512, 160, kernel_size=1, stride=1),
@@ -135,9 +134,9 @@ class Mixed_4c(nn.Module):
         return out
 
 
-class Mixed_4d(nn.Module):
+class Mixed4D(nn.Module):
     def __init__(self):
-        super(Mixed_4d, self).__init__()
+        super(Mixed4D, self).__init__()
 
         self.branch0 = nn.Sequential(
             BasicConv3d(512, 128, kernel_size=1, stride=1),
@@ -164,9 +163,9 @@ class Mixed_4d(nn.Module):
         return out
 
 
-class Mixed_4e(nn.Module):
+class Mixed4E(nn.Module):
     def __init__(self):
-        super(Mixed_4e, self).__init__()
+        super(Mixed4E, self).__init__()
 
         self.branch0 = nn.Sequential(
             BasicConv3d(512, 112, kernel_size=1, stride=1),
@@ -193,9 +192,9 @@ class Mixed_4e(nn.Module):
         return out
 
 
-class Mixed_4f(nn.Module):
+class Mixed4F(nn.Module):
     def __init__(self):
-        super(Mixed_4f, self).__init__()
+        super(Mixed4F, self).__init__()
 
         self.branch0 = nn.Sequential(
             BasicConv3d(528, 256, kernel_size=1, stride=1),
@@ -222,9 +221,9 @@ class Mixed_4f(nn.Module):
         return out
 
 
-class Mixed_5b(nn.Module):
+class Mixed5B(nn.Module):
     def __init__(self):
-        super(Mixed_5b, self).__init__()
+        super(Mixed5B, self).__init__()
 
         self.branch0 = nn.Sequential(
             BasicConv3d(832, 256, kernel_size=1, stride=1),
@@ -251,9 +250,9 @@ class Mixed_5b(nn.Module):
         return out
 
 
-class Mixed_5c(nn.Module):
+class Mixed5C(nn.Module):
     def __init__(self):
-        super(Mixed_5c, self).__init__()
+        super(Mixed5C, self).__init__()
 
         self.branch0 = nn.Sequential(
             BasicConv3d(832, 384, kernel_size=1, stride=1),
@@ -282,7 +281,7 @@ class Mixed_5c(nn.Module):
 
 class I3D(nn.Module):
 
-    def __init__(self, num_classes=400, dropout_drop_prob=0.5, input_channel=3, spatial_squeeze=True):
+    def __init__(self, num_classes, input_channel=3, dropout=0.5, spatial_squeeze=True):
         super(I3D, self).__init__()
         self.features = nn.Sequential(
             BasicConv3d(input_channel, 64, kernel_size=7, stride=2, padding=3),  # (64, 32, 112, 112)
@@ -290,32 +289,32 @@ class I3D(nn.Module):
             BasicConv3d(64, 64, kernel_size=1, stride=1),  # (64, 32, 56, 56)
             BasicConv3d(64, 192, kernel_size=3, stride=1, padding=1),  # (192, 32, 56, 56)
             nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(1, 2, 2), padding=(0, 1, 1)),  # (192, 32, 28, 28)
-            Mixed_3b(),  # (256, 32, 28, 28)
-            Mixed_3c(),  # (480, 32, 28, 28)
+            Mixed3B(),  # (256, 32, 28, 28)
+            Mixed3C(),  # (480, 32, 28, 28)
             nn.MaxPool3d(kernel_size=(3, 3, 3), stride=(2, 2, 2), padding=(1, 1, 1)),  # (480, 16, 14, 14)
-            Mixed_4b(),  # (512, 16, 14, 14)
-            Mixed_4c(),  # (512, 16, 14, 14)
-            Mixed_4d(),  # (512, 16, 14, 14)
-            Mixed_4e(),  # (528, 16, 14, 14)
-            Mixed_4f(),  # (832, 16, 14, 14)
+            Mixed4B(),  # (512, 16, 14, 14)
+            Mixed4C(),  # (512, 16, 14, 14)
+            Mixed4D(),  # (512, 16, 14, 14)
+            Mixed4E(),  # (528, 16, 14, 14)
+            Mixed4F(),  # (832, 16, 14, 14)
             nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2), padding=(0, 0, 0)),  # (832, 8, 7, 7)
-            Mixed_5b(),  # (832, 8, 7, 7)
-            Mixed_5c(),  # (1024, 8, 7, 7)
+            Mixed5B(),  # (832, 8, 7, 7)
+            Mixed5C(),  # (1024, 8, 7, 7)
             nn.AvgPool3d(kernel_size=(2, 7, 7), stride=1),  # (1024, 8, 1, 1)
-            nn.Dropout3d(dropout_drop_prob),
-            nn.Conv3d(1024, num_classes, kernel_size=1, stride=1, bias=True),  # (400, 8, 1, 1)
         )
+        self.dropout = nn.Dropout3d(dropout)
+        self.fc = nn.Conv3d(1024, num_classes, kernel_size=1, stride=1, bias=True)  # (num_classes, 8, 1, 1)
         self.spatial_squeeze = spatial_squeeze
-        self.softmax = nn.Softmax()
 
     def forward(self, x):
-        logits = self.features(x)
+        feature = self.features(x)
+        feature = self.dropout(feature)
+        logits = self.fc(feature)
 
         if self.spatial_squeeze:
             logits = logits.squeeze(3)
             logits = logits.squeeze(3)
 
-        averaged_logits = torch.mean(logits, 2)
-        predictions = self.softmax(averaged_logits)
+        logits = torch.mean(logits, 2)
 
-        return predictions, averaged_logits
+        return logits
