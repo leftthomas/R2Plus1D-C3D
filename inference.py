@@ -7,7 +7,7 @@ import torch
 import torch.nn.functional as F
 
 import utils
-from model import Model
+from models.STTS import STTS
 
 
 def center_crop(image):
@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
     if '{}_{}.pth'.format(DATA_TYPE, MODEL_TYPE) != MODEL_NAME:
         raise NotImplementedError('the model name must be the same model type and same data type')
-    model = Model(len(class_names), (2, 2, 2, 2), MODEL_TYPE)
+    model = STTS(len(class_names), (2, 2, 2, 2), MODEL_TYPE)
     checkpoint = torch.load('epochs/{}'.format(MODEL_NAME), map_location=lambda storage, loc: storage)
     model = model.load_state_dict(checkpoint).to(DEVICE).eval()
 

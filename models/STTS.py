@@ -290,7 +290,7 @@ class FeatureLayer(nn.Module):
         return x
 
 
-class Model(nn.Module):
+class STTS(nn.Module):
     r"""Forms a complete two-stream ResNet classifier producing vectors of size num_classes, by initializing a feature
     layers, and passing them through a Linear layer.
     Args:
@@ -300,7 +300,7 @@ class Model(nn.Module):
     """
 
     def __init__(self, num_classes, layer_sizes, model_type):
-        super(Model, self).__init__()
+        super(STTS, self).__init__()
 
         self.model_type = model_type
         if 'a' in model_type:
