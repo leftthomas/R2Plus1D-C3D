@@ -191,11 +191,11 @@ class VideoDataset(Dataset):
 
 def load_data(dataset='ucf101', batch_size=16):
     train_data = VideoDataset(dataset=dataset, split='train')
-    train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True, num_workers=4)
+    train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True, num_workers=8)
     val_data = VideoDataset(dataset=dataset, split='val')
-    val_loader = DataLoader(val_data, batch_size=batch_size, shuffle=False, num_workers=4)
+    val_loader = DataLoader(val_data, batch_size=batch_size, shuffle=False, num_workers=8)
     test_data = VideoDataset(dataset=dataset, split='test')
-    test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=False, num_workers=4)
+    test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=False, num_workers=8)
     return train_loader, val_loader, test_loader
 
 
