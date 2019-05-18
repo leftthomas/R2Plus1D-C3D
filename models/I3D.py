@@ -284,7 +284,7 @@ class I3D(nn.Module):
 
     def __init__(self, num_classes, input_channel=3, dropout=0.5):
         super(I3D, self).__init__()
-        self.features = nn.Sequential(
+        self.feature = nn.Sequential(
             BasicConv3d(input_channel, 64, kernel_size=7, stride=2, padding=3),
             nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(1, 2, 2), padding=(0, 1, 1)),
             BasicConv3d(64, 64, kernel_size=1, stride=1),
@@ -306,7 +306,7 @@ class I3D(nn.Module):
         self.fc = nn.Conv3d(1024, num_classes, kernel_size=1, stride=1, bias=True)
 
     def forward(self, x):
-        feature = self.features(x)
+        feature = self.feature(x)
         feature = F.adaptive_avg_pool3d(feature, output_size=(feature.size(2), 1, 1))
         feature = self.dropout(feature)
         logits = self.fc(feature)

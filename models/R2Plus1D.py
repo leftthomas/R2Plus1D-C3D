@@ -172,13 +172,13 @@ class R2Plus1D(nn.Module):
         super(R2Plus1D, self).__init__()
 
         self.feature = FeatureLayer(layer_sizes)
-        self.linear = nn.Linear(512, num_classes)
+        self.fc = nn.Linear(512, num_classes)
 
         self.__init_weight()
 
     def forward(self, x):
         x = self.feature(x)
-        logits = self.linear(x)
+        logits = self.fc(x)
 
         return logits
 
