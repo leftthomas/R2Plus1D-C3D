@@ -143,7 +143,7 @@ class VideoDataset(Dataset):
     def normalize(buffer):
         buffer = buffer.astype(np.float32)
         for i, frame in enumerate(buffer):
-            frame = (frame / 255.0) * 2 - 1
+            frame = frame / 255.0
             buffer[i] = frame
 
         return buffer

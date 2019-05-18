@@ -159,16 +159,8 @@ if __name__ == '__main__':
             else:
                 raise NotImplementedError('the pre-trained model must be the same model type')
 
-    optim_configs = []
-    if 'st' in MODEL_TYPE:
-        optim_configs.append({'params': model.feature_st.parameters(), 'lr': 1e-4})
-        optim_configs.append({'params': model.fc_st.parameters(), 'lr': 1e-4 * 10})
-    if 'ts' in MODEL_TYPE:
-        optim_configs.append({'params': model.feature_ts.parameters(), 'lr': 1e-4})
-        optim_configs.append({'params': model.fc_ts.parameters(), 'lr': 1e-4 * 10})
-
     loss_criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(optim_configs, lr=1e-4, weight_decay=5e-4)
+    optimizer = optim.Adam(model.parameters(), lr=1e-4, weight_decay=5e-4)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.1, verbose=True)
     print('Number of parameters:', sum(param.numel() for param in model.parameters()))
 

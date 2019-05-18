@@ -53,7 +53,7 @@ if __name__ == '__main__':
             resize_width = resize_height
             resize_height = math.floor(frame.shape[0] / frame.shape[1] * resize_width)
         tmp_ = center_crop(cv2.resize(frame, (resize_width, resize_height)))
-        tmp = (tmp_.astype(np.float32) / 255.0) * 2 - 1
+        tmp = tmp_.astype(np.float32) / 255.0
         clips.append(tmp)
         if len(clips) == clip_len or len(clips) == frame_count:
             inputs = np.array(clips)
