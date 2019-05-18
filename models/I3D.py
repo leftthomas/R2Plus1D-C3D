@@ -282,7 +282,7 @@ class Mixed5C(nn.Module):
 
 class I3D(nn.Module):
 
-    def __init__(self, num_classes, input_channel=3, dropout=0.5):
+    def __init__(self, num_classes, input_channel=3):
         super(I3D, self).__init__()
         self.feature = nn.Sequential(
             BasicConv3d(input_channel, 64, kernel_size=7, stride=2, padding=3),
@@ -302,7 +302,7 @@ class I3D(nn.Module):
             Mixed5B(),
             Mixed5C()
         )
-        self.dropout = nn.Dropout3d(dropout)
+        self.dropout = nn.Dropout3d(0.5)
         self.fc = nn.Conv3d(1024, num_classes, kernel_size=1, stride=1, bias=True)
 
     def forward(self, x):

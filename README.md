@@ -54,11 +54,11 @@ then run `download.py` to download and preprocess this dataset.
 ## Usage
 ### Train Model
 ```
-visdom -logging_level WARNING & python train.py --num_epochs 20 --pre_train kinetics600_st-ts-a.pth
+visdom -logging_level WARNING & python train.py --num_epochs 20 --pre_train kinetics600_stts-a.pth
 optional arguments:
 --data_type                   dataset type [default value is 'ucf101'](choices=['ucf101', 'hmdb51', 'kinetics600'])
 --gpu_ids                     selected gpu [default value is '0,1']
---model_type                  model type [default value is 'st-ts-a'](choices=['st-ts-a', 'st-ts', 'st-a', 'st', 'ts-a', 'ts'])
+--model_type                  model type [default value is 'stts-a'](choices=['stts-a', 'stts', 'i3d', 'r2plus1d', 'c3d'])
 --batch_size                  training batch size [default value is 16]
 --num_epochs                  training epochs number [default value is 100]
 --pre_train                   used pre-trained model epoch name [default value is None]
@@ -70,7 +70,7 @@ Visdom now can be accessed by going to `127.0.0.1:8097` in your browser.
 python inference.py --video_name data/ucf101/ApplyLipstick/v_ApplyLipstick_g04_c02.avi
 optional arguments:
 --data_type                   dataset type [default value is 'ucf101'](choices=['ucf101', 'hmdb51', 'kinetics600'])
---model_type                  model type [default value is 'st-ts-a'](choices=['st-ts-a', 'st-ts', 'st-a', 'st', 'ts-a', 'ts'])
+--model_type                  model type [default value is 'stts-a'](choices=['stts-a', 'stts', 'i3d', 'r2plus1d', 'c3d'])
 --video_name                  test video name
 --model_name                  model epoch name [default value is 'ucf101_st-ts-a.pth']
 ```

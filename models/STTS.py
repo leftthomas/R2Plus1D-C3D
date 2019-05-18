@@ -292,10 +292,11 @@ class FeatureLayer(nn.Module):
         use_attn (bool, optional): If ``True``, use grid attention to the input. Default: ``True``
     """
 
-    def __init__(self, layer_sizes, use_attn=True):
+    def __init__(self, layer_sizes, use_attn=True, input_channel=3):
         super(FeatureLayer, self).__init__()
 
-        self.conv1 = STTSConv(3, 64, (1, 7, 7), stride=(1, 2, 2), padding=(0, 3, 3), bias=False, use_attn=False)
+        self.conv1 = STTSConv(input_channel, 64, (1, 7, 7), stride=(1, 2, 2), padding=(0, 3, 3), bias=False,
+                              use_attn=False)
         self.conv2 = ResLayer(64, 64, 3, layer_sizes[0], use_attn=False)
         self.conv3 = ResLayer(64, 128, 3, layer_sizes[1], downsample=True, use_attn=use_attn)
         self.conv4 = ResLayer(128, 256, 3, layer_sizes[2], downsample=True, use_attn=use_attn)
@@ -322,7 +323,7 @@ class STTS(nn.Module):
         model_type (string): Type of model that is to be used
     """
 
-    def __init__(self, num_classes, layer_sizes, model_type):
+    def __init__(self, num_classes, layer_sizes, model_type, input_channel=3):
         super(STTS, self).__init__()
 
         if 'a' in model_type:
@@ -330,7 +331,7 @@ class STTS(nn.Module):
         else:
             use_attn = False
 
-        self.feature = FeatureLayer(layer_sizes, use_attn=use_attn)
+        self.feature = FeatureLayer(layer_sizes, use_attn=use_attn, input_channel=input_channel)
         self.fc = nn.Linear(512, num_classes)
 
         self.__init_weight()

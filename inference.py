@@ -7,6 +7,9 @@ import torch
 import torch.nn.functional as F
 
 import utils
+from models.C3D import C3D
+from models.I3D import I3D
+from models.R2Plus1D import R2Plus1D
 from models.STTS import STTS
 
 
@@ -21,10 +24,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Test Activity Recognition')
     parser.add_argument('--data_type', default='ucf101', type=str, choices=['ucf101', 'hmdb51', 'kinetics600'],
                         help='dataset type')
-    parser.add_argument('--model_type', default='st-ts-a', type=str,
-                        choices=['st-ts-a', 'st-ts', 'st-a', 'st', 'ts-a', 'ts'], help='model type')
+    parser.add_argument('--model_type', default='stts-a', type=str,
+                        choices=['stts-a', 'stts', 'i3d', 'r2plus1d', 'c3d'], help='model type')
     parser.add_argument('--video_name', type=str, help='test video name')
-    parser.add_argument('--model_name', default='ucf101_st-ts-a.pth', type=str, help='model epoch name')
+    parser.add_argument('--model_name', default='ucf101_stts-a.pth', type=str, help='model epoch name')
     opt = parser.parse_args()
 
     DATA_TYPE, MODEL_TYPE, VIDEO_NAME, MODEL_NAME = opt.data_type, opt.model_type, opt.video_name, opt.model_name
@@ -36,7 +39,16 @@ if __name__ == '__main__':
 
     if '{}_{}.pth'.format(DATA_TYPE, MODEL_TYPE) != MODEL_NAME:
         raise NotImplementedError('the model name must be the same model type and same data type')
-    model = STTS(len(class_names), (2, 2, 2, 2), MODEL_TYPE)
+
+    if MODEL_TYPE == 'stts-a' or MODEL_TYPE == 'stts':
+        model = STTS(len(class_names), (2, 2, 2, 2), MODEL_TYPE)
+    elif MODEL_TYPE == 'i3d':
+        model = I3D(len(class_names))
+    elif MODEL_TYPE == 'r2plus1d':
+        model = R2Plus1D(len(class_names), (2, 2, 2, 2))
+    else:
+        model = C3D(len(class_names))
+
     checkpoint = torch.load('epochs/{}'.format(MODEL_NAME), map_location=lambda storage, loc: storage)
     model = model.load_state_dict(checkpoint).to(DEVICE).eval()
 
