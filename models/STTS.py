@@ -55,7 +55,8 @@ class SpatioTemporalConv(nn.Module):
         use_attn (bool, optional): If ``True``, use grid attention to the input. Default: ``True``
     """
 
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True, use_attn=True):
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True, use_attn=True,
+                 first_conv=False):
         super(SpatioTemporalConv, self).__init__()
 
         self.use_attn = use_attn
@@ -74,14 +75,17 @@ class SpatioTemporalConv(nn.Module):
         temporal_padding = (padding[0], 0, 0)
 
         # compute the number of intermediary channels (M)
-        if bias is True:
-            intermed_channels = int(math.floor(
-                (kernel_size[0] * kernel_size[1] * kernel_size[2] * in_channels * out_channels) / (
-                        1 + kernel_size[1] * kernel_size[2] * in_channels + kernel_size[0] * out_channels)))
+        if first_conv:
+            intermed_channels = 45
         else:
-            intermed_channels = int(math.floor(
-                (kernel_size[0] * kernel_size[1] * kernel_size[2] * in_channels * out_channels) / (
-                        kernel_size[1] * kernel_size[2] * in_channels + kernel_size[0] * out_channels)))
+            if bias is True:
+                intermed_channels = int(math.floor(
+                    (kernel_size[0] * kernel_size[1] * kernel_size[2] * in_channels * out_channels) / (
+                            1 + kernel_size[1] * kernel_size[2] * in_channels + kernel_size[0] * out_channels)))
+            else:
+                intermed_channels = int(math.floor(
+                    (kernel_size[0] * kernel_size[1] * kernel_size[2] * in_channels * out_channels) / (
+                            kernel_size[1] * kernel_size[2] * in_channels + kernel_size[0] * out_channels)))
 
         self.spatial_conv = nn.Conv3d(in_channels, intermed_channels, spatial_kernel_size,
                                       stride=spatial_stride, padding=spatial_padding, bias=bias)
@@ -125,7 +129,8 @@ class TemporalSpatioConv(nn.Module):
         use_attn (bool, optional): If ``True``, use grid attention to the input. Default: ``True``
     """
 
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True, use_attn=True):
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True, use_attn=True,
+                 first_conv=False):
         super(TemporalSpatioConv, self).__init__()
 
         self.use_attn = use_attn
@@ -144,14 +149,17 @@ class TemporalSpatioConv(nn.Module):
         spatial_padding = (0, padding[1], padding[2])
 
         # compute the number of intermediary channels (M)
-        if bias is True:
-            intermed_channels = int(math.floor(
-                (kernel_size[0] * kernel_size[1] * kernel_size[2] * in_channels * out_channels) / (
-                        1 + kernel_size[1] * kernel_size[2] * out_channels + kernel_size[0] * in_channels)))
+        if first_conv:
+            intermed_channels = 45
         else:
-            intermed_channels = int(math.floor(
-                (kernel_size[0] * kernel_size[1] * kernel_size[2] * in_channels * out_channels) / (
-                        kernel_size[1] * kernel_size[2] * out_channels + kernel_size[0] * in_channels)))
+            if bias is True:
+                intermed_channels = int(math.floor(
+                    (kernel_size[0] * kernel_size[1] * kernel_size[2] * in_channels * out_channels) / (
+                            1 + kernel_size[1] * kernel_size[2] * out_channels + kernel_size[0] * in_channels)))
+            else:
+                intermed_channels = int(math.floor(
+                    (kernel_size[0] * kernel_size[1] * kernel_size[2] * in_channels * out_channels) / (
+                            kernel_size[1] * kernel_size[2] * out_channels + kernel_size[0] * in_channels)))
 
         self.temporal_conv = nn.Conv3d(in_channels, intermed_channels, temporal_kernel_size,
                                        stride=temporal_stride, padding=temporal_padding, bias=bias)
@@ -193,11 +201,14 @@ class STTSConv(nn.Module):
         use_attn (bool, optional): If ``True``, use grid attention to the input. Default: ``True``
     """
 
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True, use_attn=True):
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True, use_attn=True,
+                 first_conv=False):
         super(STTSConv, self).__init__()
 
-        self.st_conv = SpatioTemporalConv(in_channels, out_channels // 2, kernel_size, stride, padding, bias, use_attn)
-        self.ts_conv = TemporalSpatioConv(in_channels, out_channels // 2, kernel_size, stride, padding, bias, use_attn)
+        self.st_conv = SpatioTemporalConv(in_channels, out_channels // 2, kernel_size, stride, padding, bias, use_attn,
+                                          first_conv)
+        self.ts_conv = TemporalSpatioConv(in_channels, out_channels // 2, kernel_size, stride, padding, bias, use_attn,
+                                          first_conv)
         self.conv = nn.Conv3d(out_channels, out_channels, kernel_size=1, bias=False)
 
     def forward(self, x):
@@ -296,7 +307,7 @@ class FeatureLayer(nn.Module):
         super(FeatureLayer, self).__init__()
 
         self.conv1 = STTSConv(input_channel, 64, (1, 7, 7), stride=(1, 2, 2), padding=(0, 3, 3), bias=False,
-                              use_attn=False)
+                              use_attn=False, first_conv=True)
         self.conv2 = ResLayer(64, 64, 3, layer_sizes[0], use_attn=False)
         self.conv3 = ResLayer(64, 128, 3, layer_sizes[1], downsample=True, use_attn=use_attn)
         self.conv4 = ResLayer(128, 256, 3, layer_sizes[2], downsample=True, use_attn=use_attn)

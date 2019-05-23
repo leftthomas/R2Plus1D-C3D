@@ -7,7 +7,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 
 # global configs
-CLIP_LEN, RESIZE_HEIGHT, CROP_SIZE = 24, 128, 112
+CLIP_LEN, RESIZE_HEIGHT, CROP_SIZE = 16, 128, 112
 
 
 class VideoDataset(Dataset):
@@ -189,7 +189,7 @@ class VideoDataset(Dataset):
         return buffer
 
 
-def load_data(dataset='ucf101', batch_size=16):
+def load_data(dataset='ucf101', batch_size=128):
     train_data = VideoDataset(dataset=dataset, split='train')
     train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True, num_workers=8)
     val_data = VideoDataset(dataset=dataset, split='val')
