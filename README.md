@@ -16,6 +16,14 @@ conda install opencv
 ```
 pip install rarfile
 ```
+- rar
+```
+sudo apt install rar
+```
+- unrar
+```
+sudo apt install unrar
+```
 - ffmpeg
 ```
 sudo apt install build-essential openssl libssl-dev autoconf automake cmake git-core libass-dev libfreetype6-dev libsdl2-dev libtool libva-dev libvdpau-dev libvorbis-dev libxcb1-dev libxcb-shm0-dev libxcb-xfixes0-dev pkg-config texinfo wget zlib1g-dev nasm yasm libx264-dev libx265-dev libnuma-dev libvpx-dev libfdk-aac-dev libmp3lame-dev libopus-dev
@@ -59,7 +67,7 @@ optional arguments:
 --data_type                   dataset type [default value is 'ucf101'](choices=['ucf101', 'hmdb51', 'kinetics600'])
 --gpu_ids                     selected gpu [default value is '0,1,2,3']
 --model_type                  model type [default value is 'stts-a'](choices=['stts-a', 'stts', 'i3d', 'r2plus1d', 'c3d'])
---batch_size                  training batch size [default value is 128]
+--batch_size                  training batch size [default value is 64]
 --num_epochs                  training epochs number [default value is 100]
 --pre_train                   used pre-trained model epoch name [default value is None]
 ```
