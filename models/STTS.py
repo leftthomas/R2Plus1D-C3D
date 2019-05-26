@@ -205,11 +205,11 @@ class STTSConv(nn.Module):
                  first_conv=False):
         super(STTSConv, self).__init__()
 
-        self.st_conv = SpatioTemporalConv(in_channels, out_channels, kernel_size, stride, padding, bias, use_attn,
+        self.st_conv = SpatioTemporalConv(in_channels, out_channels // 2, kernel_size, stride, padding, bias, use_attn,
                                           first_conv)
-        self.ts_conv = TemporalSpatioConv(in_channels, out_channels, kernel_size, stride, padding, bias, use_attn,
+        self.ts_conv = TemporalSpatioConv(in_channels, out_channels // 2, kernel_size, stride, padding, bias, use_attn,
                                           first_conv)
-        self.conv = nn.Conv3d(out_channels * 2, out_channels, kernel_size=1, bias=False)
+        self.conv = nn.Conv3d(out_channels, out_channels, kernel_size=1, bias=False)
 
     def forward(self, x):
         res_st = self.st_conv(x)
