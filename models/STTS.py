@@ -197,19 +197,15 @@ class STTSConv(nn.Module):
         super(STTSConv, self).__init__()
 
         self.conv1 = nn.Conv3d(in_channels, in_channels, kernel_size=1, bias=False)
-        self.bn1 = nn.BatchNorm3d(in_channels)
         self.st_conv = SpatioTemporalConv(in_channels, out_channels // 2, kernel_size, stride, padding, bias, use_attn)
         self.ts_conv = TemporalSpatioConv(in_channels, out_channels // 2, kernel_size, stride, padding, bias, use_attn)
         self.conv2 = nn.Conv3d(out_channels, out_channels, kernel_size=1, bias=False)
-        self.bn2 = nn.BatchNorm3d(out_channels)
-
-        self.relu = nn.ReLU(inplace=True)
 
     def forward(self, x):
-        x = self.relu(self.bn1(self.conv1(x)))
+        x = self.conv1(x)
         res_st = self.st_conv(x)
         res_ts = self.ts_conv(x)
-        out = self.relu(self.bn2(self.conv2(torch.cat((res_st, res_ts), 1))))
+        out = self.conv2(torch.cat((res_st, res_ts), 1))
         return out
 
 
