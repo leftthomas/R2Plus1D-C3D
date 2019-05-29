@@ -7,7 +7,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 
 # global configs
-CLIP_LEN, RESIZE_HEIGHT, CROP_SIZE = 24, 128, 112
+CLIP_LEN, RESIZE_HEIGHT, CROP_SIZE = 32, 128, 112
 
 
 class VideoDataset(Dataset):
@@ -186,6 +186,28 @@ class VideoDataset(Dataset):
         buffer = buffer[time_index:time_index + clip_len, height_index:height_index + crop_size,
                  width_index:width_index + crop_size, :]
 
+        # padding repeated frames to make sure the shape as same
+        if buffer.shape[0] < clip_len:
+            repeated = clip_len // buffer.shape[0] - 1
+            remainder = clip_len % buffer.shape[0]
+            buffered, reverse = buffer, True
+            if repeated > 0:
+                padded = []
+                for i in repeated:
+                    if reverse:
+                        pad = buffer[::-1, :, :, :][1:, :, :, :]
+                        reverse = False
+                    else:
+                        pad = buffer[1:, :, :, :]
+                        reverse = True
+                    padded.append(pad)
+                padded = np.concatenate(padded, axis=0)
+                buffer = np.concatenate((buffer, padded), axis=0)
+            if reverse:
+                pad = buffered[::-1, :, :, :][1:remainder + 1, :, :, :]
+            else:
+                pad = buffered[1:remainder + 1, :, :, :]
+            buffer = np.concatenate((buffer, pad), axis=0)
         return buffer
 
 
