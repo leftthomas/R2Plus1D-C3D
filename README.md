@@ -67,7 +67,7 @@ optional arguments:
 --data_type                   dataset type [default value is 'ucf101'](choices=['ucf101', 'hmdb51', 'kinetics600'])
 --gpu_ids                     selected gpu [default value is '0,1,2,3']
 --model_type                  model type [default value is 'stts-a'](choices=['stts-a', 'stts', 'i3d', 'r2plus1d', 'c3d'])
---batch_size                  training batch size [default value is 64]
+--batch_size                  training batch size [default value is 32]
 --num_epochs                  training epochs number [default value is 100]
 --pre_train                   used pre-trained model epoch name [default value is None]
 ```

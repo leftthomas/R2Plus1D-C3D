@@ -124,7 +124,7 @@ if __name__ == '__main__':
                         choices=['stts-a', 'stts', 'i3d', 'r2plus1d', 'c3d'], help='model type')
     # parser.add_argument('--input_type', default='rgb', type=str,
     #                     choices=['rgb', 'flow', 'rgb+flow'], help='input frame type')
-    parser.add_argument('--batch_size', default=64, type=int, help='training batch size')
+    parser.add_argument('--batch_size', default=32, type=int, help='training batch size')
     parser.add_argument('--num_epochs', default=100, type=int, help='training epoch number')
     parser.add_argument('--pre_train', default=None, type=str, help='used pre-trained model epoch name')
 
