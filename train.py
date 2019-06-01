@@ -168,9 +168,13 @@ if __name__ == '__main__':
                 model.load_state_dict(checkpoint, strict=False)
             else:
                 raise NotImplementedError('the pre-trained model must be the same model type')
+        optim_configs = [{'params': model.feature.parameters(), 'lr': 1e-4},
+                         {'params': model.fc.parameters(), 'lr': 1e-4 * 10}]
+    else:
+        optim_configs = [{'params': model.parameters(), 'lr': 1e-4}]
 
     loss_criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=1e-4, weight_decay=5e-4)
+    optimizer = optim.Adam(optim_configs, lr=1e-4, weight_decay=5e-4)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.1, verbose=True)
     print('Number of parameters:', sum(param.numel() for param in model.parameters()))
 
