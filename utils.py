@@ -195,18 +195,18 @@ class VideoDataset(Dataset):
                 padded = []
                 for i in range(repeated):
                     if reverse:
-                        pad = buffer[::-1, :, :, :][1:, :, :, :]
+                        pad = buffer[::-1, :, :, :]
                         reverse = False
                     else:
-                        pad = buffer[1:, :, :, :]
+                        pad = buffer
                         reverse = True
                     padded.append(pad)
                 padded = np.concatenate(padded, axis=0)
                 buffer = np.concatenate((buffer, padded), axis=0)
             if reverse:
-                pad = buffered[::-1, :, :, :][1:remainder + 1, :, :, :]
+                pad = buffered[::-1, :, :, :][:remainder, :, :, :]
             else:
-                pad = buffered[1:remainder + 1, :, :, :]
+                pad = buffered[:remainder, :, :, :]
             buffer = np.concatenate((buffer, pad), axis=0)
         return buffer
 
