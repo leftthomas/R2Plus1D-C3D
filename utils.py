@@ -193,7 +193,7 @@ class VideoDataset(Dataset):
             buffered, reverse = buffer, True
             if repeated > 0:
                 padded = []
-                for i in repeated:
+                for i in range(repeated):
                     if reverse:
                         pad = buffer[::-1, :, :, :][1:, :, :, :]
                         reverse = False
