@@ -7,7 +7,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 
 # global configs
-CLIP_LEN, RESIZE_HEIGHT, CROP_SIZE = 64, 256, 224
+CLIP_LEN, RESIZE_HEIGHT, CROP_SIZE = 32, 128, 112
 
 
 class VideoDataset(Dataset):
