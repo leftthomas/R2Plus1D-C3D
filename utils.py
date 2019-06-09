@@ -1,6 +1,8 @@
 import math
 import os
 
+import cv2
+import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 
@@ -16,14 +18,12 @@ class VideoDataset(Dataset):
         Args:
             dataset (str): Name of dataset. Defaults to 'ucf101'.
             split (str): Determines which folder of the directory the dataset will read from. Defaults to 'train'.
-            with_flow (bool): Determines use optical flow or not. Defaults to False.
     """
 
-    def __init__(self, dataset='ucf101', split='train', with_flow=False):
+    def __init__(self, dataset='ucf101', split='train'):
         self.original_dir = os.path.join('data', dataset)
         self.preprocessed_dir = os.path.join('data', 'preprocessed_' + dataset)
         self.split = split
-        self.with_flow = with_flow
 
         if not self.check_integrity():
             raise RuntimeError('{} split of {} dataset is not found. You need to '
@@ -230,31 +230,3 @@ def get_labels(dataset='ucf101'):
     return sorted(labels)
 
 
-if __name__ == '__main__':
-    import cv2
-    import numpy as np
-
-    cap = cv2.VideoCapture("/home/rh/Downloads/v_CricketShot_g04_c01.avi")
-    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    size = (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
-    videoWrite = cv2.VideoWriter('/home/rh/Downloads/MySaveVideo.avi', cv2.VideoWriter_fourcc('I', '4', '2', '0'), 30,
-                                 size)
-    flow_comp = cv2.createOptFlow_DualTVL1()
-    ret, frame1 = cap.read()
-    prvs = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)
-    hsv = np.zeros_like(frame1)
-    hsv[..., 1] = 255
-    count, retaining = 0, True
-    while count < frame_count and retaining:
-        retaining, frame2 = cap.read()
-        if frame2 is None:
-            continue
-        next = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY)
-        flow = flow_comp.calc(prvs, next, None)
-        mag, ang = cv2.cartToPolar(flow[..., 0], flow[..., 1])
-        hsv[..., 0] = ang * 180 / np.pi / 2
-        hsv[..., 2] = cv2.normalize(mag, None, 0, 255, cv2.NORM_MINMAX)
-        rgb = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
-        videoWrite.write(rgb)
-        prvs = next
-    cap.release()
