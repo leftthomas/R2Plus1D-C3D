@@ -1,6 +1,7 @@
-# Two-Stream STTS
-A PyTorch implementation of Two-Stream Spatio-Temporal and Temporal-Spatio Convolutional Network based on the paper 
-[Two-Stream Spatio-Temporal and Temporal-Spatio Convolutional Network for Activity Recognition]().
+# C3D
+A PyTorch implementation of C3D and R2Plus1D based on the paper 
+[Learning Spatiotemporal Features with 3D Convolutional Networks](https://arxiv.org/abs/1412.0767) and 
+[A Closer Look at Spatiotemporal Convolutions for Action Recognition](https://arxiv.org/abs/1711.11248).
 
 ## Requirements
 - [Anaconda](https://www.anaconda.com/download/)
@@ -56,18 +57,18 @@ and [KINETICS600](https://deepmind.com/research/open-source/open-source-datasets
 Download `UCF101` and `HMDB51` datasets with `train/val/test` split files into `data` directory.
 We use the `split1` to split files. Run `misc.py` to preprocess these datasets.
 
-For `KINETICS600` dataset, first download `train/val/test` split files into `data` directory, and 
-then run `download.py` to download and preprocess this dataset.
+For `KINETICS600` dataset, first download `train/val/test` split files into `data` directory, then 
+run `download.py` to download and preprocess this dataset.
 
 ## Usage
 ### Train Model
 ```
-visdom -logging_level WARNING & python train.py --num_epochs 20 --pre_train kinetics600_stts-a.pth
+visdom -logging_level WARNING & python train.py --num_epochs 20 --pre_train kinetics600_r2plus1d.pth
 optional arguments:
 --data_type                   dataset type [default value is 'ucf101'](choices=['ucf101', 'hmdb51', 'kinetics600'])
 --gpu_ids                     selected gpu [default value is '0,1,2,3']
---model_type                  model type [default value is 'stts-a'](choices=['stts-a', 'stts', 'i3d', 'r2plus1d', 'c3d'])
---batch_size                  training batch size [default value is 16]
+--model_type                  model type [default value is 'r2plus1d'](choices=['r2plus1d', 'c3d'])
+--batch_size                  training batch size [default value is 64]
 --num_epochs                  training epochs number [default value is 100]
 --pre_train                   used pre-trained model epoch name [default value is None]
 ```
@@ -78,9 +79,9 @@ Visdom now can be accessed by going to `127.0.0.1:8097` in your browser.
 python inference.py --video_name data/ucf101/ApplyLipstick/v_ApplyLipstick_g04_c02.avi
 optional arguments:
 --data_type                   dataset type [default value is 'ucf101'](choices=['ucf101', 'hmdb51', 'kinetics600'])
---model_type                  model type [default value is 'stts-a'](choices=['stts-a', 'stts', 'i3d', 'r2plus1d', 'c3d'])
+--model_type                  model type [default value is 'r2plus1d'](choices=['r2plus1d', 'c3d'])
 --video_name                  test video name
---model_name                  model epoch name [default value is 'ucf101_st-ts-a.pth']
+--model_name                  model epoch name [default value is 'ucf101_r2plus1d.pth']
 ```
 The inferences will show in a pop up window.
 

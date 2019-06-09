@@ -11,9 +11,7 @@ from tqdm import tqdm
 
 import utils
 from models.C3D import C3D
-from models.I3D import I3D
 from models.R2Plus1D import R2Plus1D
-from models.STTS import STTS
 
 torch.backends.cudnn.benchmark = True
 
@@ -120,18 +118,14 @@ if __name__ == '__main__':
     parser.add_argument('--data_type', default='ucf101', type=str, choices=['ucf101', 'hmdb51', 'kinetics600'],
                         help='dataset type')
     parser.add_argument('--gpu_ids', default='0,1,2,3', type=str, help='selected gpu')
-    parser.add_argument('--model_type', default='stts-a', type=str,
-                        choices=['stts-a', 'stts', 'i3d', 'r2plus1d', 'c3d'], help='model type')
-    # parser.add_argument('--input_type', default='rgb', type=str,
-    #                     choices=['rgb', 'flow', 'rgb+flow'], help='input frame type')
-    parser.add_argument('--batch_size', default=16, type=int, help='training batch size')
+    parser.add_argument('--model_type', default='r2plus1d', type=str, choices=['r2plus1d', 'c3d'], help='model type')
+    parser.add_argument('--batch_size', default=64, type=int, help='training batch size')
     parser.add_argument('--num_epochs', default=100, type=int, help='training epoch number')
     parser.add_argument('--pre_train', default=None, type=str, help='used pre-trained model epoch name')
 
     opt = parser.parse_args()
     DATA_TYPE, GPU_IDS, BATCH_SIZE, NUM_EPOCH = opt.data_type, opt.gpu_ids, opt.batch_size, opt.num_epochs
     MODEL_TYPE, PRE_TRAIN, device_ids = opt.model_type, opt.pre_train, [int(gpu) for gpu in GPU_IDS.split(',')]
-    # INPUT_TYPE = opt.input_type
     results = {'train_loss': [], 'train_top1_accuracy': [], 'train_top5_accuracy': [], 'val_loss': [],
                'val_top1_accuracy': [], 'val_top5_accuracy': [], 'test_loss': [], 'test_top1_accuracy': [],
                'test_top5_accuracy': []}
@@ -141,11 +135,7 @@ if __name__ == '__main__':
     train_loader, val_loader, test_loader = utils.load_data(DATA_TYPE, BATCH_SIZE)
     NUM_CLASS = len(train_loader.dataset.label2index)
 
-    if MODEL_TYPE == 'stts-a' or MODEL_TYPE == 'stts':
-        model = STTS(NUM_CLASS, (2, 2, 2, 2), MODEL_TYPE)
-    elif MODEL_TYPE == 'i3d':
-        model = I3D(NUM_CLASS)
-    elif MODEL_TYPE == 'r2plus1d':
+    if MODEL_TYPE == 'r2plus1d':
         model = R2Plus1D(NUM_CLASS, (2, 2, 2, 2))
     else:
         model = C3D(NUM_CLASS)
