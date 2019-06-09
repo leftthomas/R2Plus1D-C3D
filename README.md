@@ -166,10 +166,22 @@ The videos are preprocessed as 32 frames of 128x128, and cropped to 112x112.
 
 ## Results
 The train/val/test loss、accuracy and confusion matrix are showed on visdom. 
+
 ### UCF101
+**R2Plus1D**
 ![result](results/ucf101.png)
+**C3D** 
+![result](results/ucf101.png)
+
 ### HMDB51
+**R2Plus1D**
 ![result](results/hmdb51.png)
+**C3D** 
+![result](results/hmdb51.png)
+
 ### KINETICS600
+**R2Plus1D**
+![result](results/kinetics600.png)
+**C3D** 
 ![result](results/kinetics600.png)
 
