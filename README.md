@@ -1,7 +1,7 @@
 # C3D
-A PyTorch implementation of C3D and R2Plus1D based on the paper 
-[Learning Spatiotemporal Features with 3D Convolutional Networks](https://arxiv.org/abs/1412.0767) and 
-[A Closer Look at Spatiotemporal Convolutions for Action Recognition](https://arxiv.org/abs/1711.11248).
+A PyTorch implementation of C3D and R2Plus1D based on CVPR 2014 paper 
+[Learning Spatiotemporal Features with 3D Convolutional Networks](https://arxiv.org/abs/1412.0767) and CVPR 2017
+paper [A Closer Look at Spatiotemporal Convolutions for Action Recognition](https://arxiv.org/abs/1711.11248).
 
 ## Requirements
 - [Anaconda](https://www.anaconda.com/download/)
