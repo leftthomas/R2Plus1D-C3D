@@ -122,8 +122,8 @@ The videos are preprocessed as 32 frames of 128x128, and cropped to 112x112.
     <tr>
       <td align="center">Num. of Classes</td>
       <td align="center">101</td>
-      <td align="center">2</td>
-      <td align="center">2</td>
+      <td align="center">51</td>
+      <td align="center">600</td>
     </tr>
     <tr>
       <td align="center">R2Plus1D</td>
@@ -151,7 +151,7 @@ The videos are preprocessed as 32 frames of 128x128, and cropped to 112x112.
     </tr>
     <tr>
       <td align="center">Training Time (R2Plus1D)</td>
-      <td align="center">3min</td>
+      <td align="center">5h</td>
       <td align="center">6.77s</td>
       <td align="center">61.04s</td>
     </tr>
