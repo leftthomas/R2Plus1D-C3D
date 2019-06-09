@@ -85,6 +85,55 @@ optional arguments:
 ```
 The inferences will show in a pop up window.
 
+## Benchmarks
+Adam optimizer (lr=0.0001) were used with learning rate scheduling. 
+The model was trained with 100 epochs and batch size of 64 on 4 NVIDIA Tesla V100 (32G) GPUs. 
+
+The videos are preprocessed as 32 frames of 128*128, and cropped to 112*112.
+
+<table>
+  <thead>
+    <tr>
+      <th>Dataset</th>
+      <th>UCF101</th>
+      <th>HMDB51</th>
+      <th>Kinetics600</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="center">Num. of Train Videos</td>
+      <td align="center">188</td>
+      <td align="center">344</td>
+      <td align="center">4,110</td>
+    </tr>
+    <tr>
+      <td align="center">Num. of Test Videos</td>
+      <td align="center">188</td>
+      <td align="center">344</td>
+      <td align="center">4,110</td>
+    </tr>
+    <tr>
+      <td align="center">Num. of Classes</td>
+      <td align="center">2</td>
+      <td align="center">2</td>
+      <td align="center">2</td>
+    </tr>
+    <tr>
+      <td align="center">R2Plus1D</td>
+      <td align="center"><b>85.83±1.66</b></td>
+      <td align="center"><b>58.59±2.47</b></td>
+      <td align="center"><b>74.44±0.47</b></td>
+    </tr>
+    <tr>
+      <td align="center">C3D</td>
+      <td align="center">81.67±9.64</td>
+      <td align="center">59.12±11.27</td>
+      <td align="center">75.72±3.13</td>
+    </tr>
+  </tbody>
+</table>
+
 ## Results
 The train/val/test loss、accuracy and confusion matrix are showed on visdom. 
 ### UCF101
