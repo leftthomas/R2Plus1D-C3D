@@ -103,19 +103,25 @@ The videos are preprocessed as 32 frames of 128*128, and cropped to 112*112.
   <tbody>
     <tr>
       <td align="center">Num. of Train Videos</td>
-      <td align="center">188</td>
+      <td align="center">9,537</td>
+      <td align="center">756</td>
+      <td align="center">4,110</td>
+    </tr>
+    <tr>
+      <td align="center">Num. of Val Videos</td>
+      <td align="center">756</td>
       <td align="center">344</td>
       <td align="center">4,110</td>
     </tr>
     <tr>
       <td align="center">Num. of Test Videos</td>
-      <td align="center">188</td>
+      <td align="center">3,783</td>
       <td align="center">344</td>
       <td align="center">4,110</td>
     </tr>
     <tr>
       <td align="center">Num. of Classes</td>
-      <td align="center">2</td>
+      <td align="center">101</td>
       <td align="center">2</td>
       <td align="center">2</td>
     </tr>
@@ -130,6 +136,30 @@ The videos are preprocessed as 32 frames of 128*128, and cropped to 112*112.
       <td align="center">81.67±9.64</td>
       <td align="center">59.12±11.27</td>
       <td align="center">75.72±3.13</td>
+    </tr>
+    <tr>
+      <td align="center">Num. of Parameters (R2Plus1D)</td>
+      <td align="center">33,220,990</td>
+      <td align="center">52,387</td>
+      <td align="center">52,995</td>
+    </tr>
+    <tr>
+      <td align="center">Num. of Parameters (C3D)</td>
+      <td align="center">52,035</td>
+      <td align="center">52,387</td>
+      <td align="center">52,995</td>
+    </tr>
+    <tr>
+      <td align="center">Training Time (R2Plus1D)</td>
+      <td align="center">3min</td>
+      <td align="center">6.77s</td>
+      <td align="center">61.04s</td>
+    </tr>
+    <tr>
+      <td align="center">Training Time (C3D)</td>
+      <td align="center">4.48s</td>
+      <td align="center">6.77s</td>
+      <td align="center">61.04s</td>
     </tr>
   </tbody>
 </table>
