@@ -126,13 +126,13 @@ The videos are preprocessed as 32 frames of 128x128, and cropped to 112x112.
       <td align="center">600</td>
     </tr>
     <tr>
-      <td align="center">R2Plus1D</td>
-      <td align="center"><b>85.83±1.66</b></td>
+      <td align="center">Accuracy (R2Plus1D)</td>
+      <td align="center"><b>49.22%</b></td>
       <td align="center"><b>58.59±2.47</b></td>
       <td align="center"><b>74.44±0.47</b></td>
     </tr>
     <tr>
-      <td align="center">C3D</td>
+      <td align="center">Accuracy (C3D)</td>
       <td align="center">81.67±9.64</td>
       <td align="center">59.12±11.27</td>
       <td align="center">75.72±3.13</td>
