@@ -66,9 +66,9 @@ run `download.py` to download and preprocess this dataset.
 visdom -logging_level WARNING & python train.py --num_epochs 20 --pre_train kinetics600_r2plus1d.pth
 optional arguments:
 --data_type                   dataset type [default value is 'ucf101'](choices=['ucf101', 'hmdb51', 'kinetics600'])
---gpu_ids                     selected gpu [default value is '0,1,2,3']
+--gpu_ids                     selected gpu [default value is '0,1']
 --model_type                  model type [default value is 'r2plus1d'](choices=['r2plus1d', 'c3d'])
---batch_size                  training batch size [default value is 64]
+--batch_size                  training batch size [default value is 8]
 --num_epochs                  training epochs number [default value is 100]
 --pre_train                   used pre-trained model epoch name [default value is None]
 ```
