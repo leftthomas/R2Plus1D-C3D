@@ -87,7 +87,7 @@ The inferences will show in a pop up window.
 
 ## Benchmarks
 Adam optimizer (lr=0.0001) is used with learning rate scheduling. 
-The models are trained with 100 epochs and batch size of 64 on 4 NVIDIA Tesla V100 (32G) GPUs. 
+The models are trained with 100 epochs and batch size of 8 on one NVIDIA Tesla V100 (32G) GPU. 
 
 The videos are preprocessed as 32 frames of 128x128, and cropped to 112x112.
 
