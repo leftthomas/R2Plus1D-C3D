@@ -134,7 +134,7 @@ The videos are preprocessed as 32 frames of 128x128, and cropped to 112x112.
     <tr>
       <td align="center">Accuracy (C3D)</td>
       <td align="center">81.67±9.64</td>
-      <td align="center">59.12±11.27</td>
+      <td align="center">25.10%</td>
       <td align="center">75.72±3.13</td>
     </tr>
     <tr>
@@ -177,7 +177,7 @@ The train/val/test loss、accuracy and confusion matrix are showed on visdom.
 **R2Plus1D**
 ![result](results/hmdb51.png)
 **C3D** 
-![result](results/hmdb51.png)
+![result](results/hmdb51_c3d.png)
 
 ### KINETICS600
 **R2Plus1D**
