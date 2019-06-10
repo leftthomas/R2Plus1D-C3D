@@ -169,7 +169,7 @@ The train/val/test loss、accuracy and confusion matrix are showed on visdom.
 
 ### UCF101
 **R2Plus1D**
-![result](results/ucf101.png)
+![result](results/ucf101_r2plus1d.png)
 **C3D** 
 ![result](results/ucf101.png)
 
