@@ -145,7 +145,7 @@ The videos are preprocessed as 32 frames of 128x128, and cropped to 112x112.
     </tr>
     <tr>
       <td align="center">Num. of Parameters (C3D)</td>
-      <td align="center">52,035</td>
+      <td align="center">78,409,573</td>
       <td align="center">52,387</td>
       <td align="center">52,995</td>
     </tr>
@@ -157,7 +157,7 @@ The videos are preprocessed as 32 frames of 128x128, and cropped to 112x112.
     </tr>
     <tr>
       <td align="center">Training Time (C3D)</td>
-      <td align="center">4.48s</td>
+      <td align="center">2.9h</td>
       <td align="center">6.77s</td>
       <td align="center">61.04s</td>
     </tr>
