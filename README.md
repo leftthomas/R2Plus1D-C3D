@@ -127,14 +127,14 @@ The videos are preprocessed as 32 frames of 128x128, and cropped to 112x112.
     </tr>
     <tr>
       <td align="center">Accuracy (R2Plus1D)</td>
-      <td align="center"><b>49.22%</b></td>
-      <td align="center"><b>58.59±2.47</b></td>
+      <td align="center"><b>63.60%</b></td>
+      <td align="center">24.97%</td>
       <td align="center"><b>74.44±0.47</b></td>
     </tr>
     <tr>
       <td align="center">Accuracy (C3D)</td>
-      <td align="center">81.67±9.64</td>
-      <td align="center">25.10%</td>
+      <td align="center">51.63%</td>
+      <td align="center"><b>25.10%</b></td>
       <td align="center">75.72±3.13</td>
     </tr>
     <tr>
@@ -171,11 +171,11 @@ The train/val/test loss、accuracy and confusion matrix are showed on visdom.
 **R2Plus1D**
 ![result](results/ucf101_r2plus1d.png)
 **C3D** 
-![result](results/ucf101.png)
+![result](results/ucf101_c3d.png)
 
 ### HMDB51
 **R2Plus1D**
-![result](results/hmdb51.png)
+![result](results/hmdb51_r2plus1d.png)
 **C3D** 
 ![result](results/hmdb51_c3d.png)
 
