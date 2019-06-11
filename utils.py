@@ -91,6 +91,7 @@ class VideoDataset(Dataset):
 
     @staticmethod
     def process_video(video_name, save_name):
+        print('Preprocess {}'.format(video_name))
         # initialize a VideoCapture object to read video data into a numpy array
         capture = cv2.VideoCapture(video_name)
         frame_count = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
