@@ -1,4 +1,4 @@
-## R2Plus1D&C3D
+## R2Plus1D-C3D
 A PyTorch implementation of R2Plus1D and C3D based on CVPR 2017
 paper [A Closer Look at Spatiotemporal Convolutions for Action Recognition](https://arxiv.org/abs/1711.11248)
 and CVPR 2014 paper [Learning Spatiotemporal Features with 3D Convolutional Networks](https://arxiv.org/abs/1412.0767).
