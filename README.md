@@ -92,7 +92,8 @@ For `ucf101` and `hmdb51` dataset, the models are trained with 100 epochs and
 batch size of 8 on one NVIDIA Tesla V100 (32G) GPU. 
 
 For `kinetics600` dataset, the models are trained with 100 epochs and 
-batch size of 32 on two NVIDIA Tesla V100 (32G) GPU. 
+batch size of 32 on two NVIDIA Tesla V100 (32G) GPU. Because the training time
+is too long, so this experiment have not been finished.
 
 The videos are preprocessed as 32 frames of 128x128, and cropped to 112x112.
 
@@ -134,13 +135,13 @@ The videos are preprocessed as 32 frames of 128x128, and cropped to 112x112.
       <td align="center">Accuracy (R2Plus1D)</td>
       <td align="center"><b>63.60%</b></td>
       <td align="center">24.97%</td>
-      <td align="center"><b>74.44±0.47</b></td>
+      <td align="center"><b>\</b></td>
     </tr>
     <tr>
       <td align="center">Accuracy (C3D)</td>
       <td align="center">51.63%</td>
       <td align="center"><b>25.10%</b></td>
-      <td align="center">75.72±3.13</td>
+      <td align="center">\</td>
     </tr>
     <tr>
       <td align="center">Num. of Parameters (R2Plus1D)</td>
@@ -158,19 +159,21 @@ The videos are preprocessed as 32 frames of 128x128, and cropped to 112x112.
       <td align="center">Training Time (R2Plus1D)</td>
       <td align="center">19.3h</td>
       <td align="center">7.3h</td>
-      <td align="center">61.04s</td>
+      <td align="center">350h</td>
     </tr>
     <tr>
       <td align="center">Training Time (C3D)</td>
       <td align="center">10.9h</td>
       <td align="center">4.1h</td>
-      <td align="center">61.04s</td>
+      <td align="center">190h</td>
     </tr>
   </tbody>
 </table>
 
 ## Results
 The train/val/test loss、accuracy and confusion matrix are showed on visdom. 
+The pretrained models can be downloaded from [BaiduYun](https://pan.baidu.com/s/1uz-g1HEehY5uziycbXNC8A)
+(access code: ducr).
 
 ### UCF101
 **R2Plus1D**
@@ -183,10 +186,4 @@ The train/val/test loss、accuracy and confusion matrix are showed on visdom.
 ![result](results/hmdb51_r2plus1d.png)
 **C3D** 
 ![result](results/hmdb51_c3d.png)
-
-### KINETICS600
-**R2Plus1D**
-![result](results/kinetics600.png)
-**C3D** 
-![result](results/kinetics600.png)
 
