@@ -135,7 +135,7 @@ The videos are preprocessed as 32 frames of 128x128, and cropped to 112x112.
       <td align="center">Accuracy (R2Plus1D)</td>
       <td align="center"><b>63.60%</b></td>
       <td align="center">24.97%</td>
-      <td align="center"><b>\</b></td>
+      <td align="center">\</td>
     </tr>
     <tr>
       <td align="center">Accuracy (C3D)</td>
