@@ -1,7 +1,7 @@
-# C3D
-A PyTorch implementation of C3D and R2Plus1D based on CVPR 2014 paper 
-[Learning Spatiotemporal Features with 3D Convolutional Networks](https://arxiv.org/abs/1412.0767) and CVPR 2017
-paper [A Closer Look at Spatiotemporal Convolutions for Action Recognition](https://arxiv.org/abs/1711.11248).
+## R2Plus1D&C3D
+A PyTorch implementation of R2Plus1D and C3D based on CVPR 2017
+paper [A Closer Look at Spatiotemporal Convolutions for Action Recognition](https://arxiv.org/abs/1711.11248)
+and CVPR 2014 paper [Learning Spatiotemporal Features with 3D Convolutional Networks](https://arxiv.org/abs/1412.0767).
 
 ## Requirements
 - [Anaconda](https://www.anaconda.com/download/)
@@ -87,7 +87,12 @@ The inferences will show in a pop up window.
 
 ## Benchmarks
 Adam optimizer (lr=0.0001) is used with learning rate scheduling. 
-The models are trained with 100 epochs and batch size of 8 on one NVIDIA Tesla V100 (32G) GPU. 
+
+For `ucf101` and `hmdb51` dataset, the models are trained with 100 epochs and 
+batch size of 8 on one NVIDIA Tesla V100 (32G) GPU. 
+
+For `kinetics600` dataset, the models are trained with 100 epochs and 
+batch size of 32 on two NVIDIA Tesla V100 (32G) GPU. 
 
 The videos are preprocessed as 32 frames of 128x128, and cropped to 112x112.
 
@@ -105,19 +110,19 @@ The videos are preprocessed as 32 frames of 128x128, and cropped to 112x112.
       <td align="center">Num. of Train Videos</td>
       <td align="center">9,537</td>
       <td align="center">3,570</td>
-      <td align="center">4,110</td>
+      <td align="center">375,008</td>
     </tr>
     <tr>
       <td align="center">Num. of Val Videos</td>
       <td align="center">756</td>
       <td align="center">1,666</td>
-      <td align="center">4,110</td>
+      <td align="center">28,638</td>
     </tr>
     <tr>
       <td align="center">Num. of Test Videos</td>
       <td align="center">3,783</td>
       <td align="center">1,530</td>
-      <td align="center">4,110</td>
+      <td align="center">56,982</td>
     </tr>
     <tr>
       <td align="center">Num. of Classes</td>
@@ -141,13 +146,13 @@ The videos are preprocessed as 32 frames of 128x128, and cropped to 112x112.
       <td align="center">Num. of Parameters (R2Plus1D)</td>
       <td align="center">33,220,990</td>
       <td align="center">33,195,340</td>
-      <td align="center">52,995</td>
+      <td align="center">33,476,977</td>
     </tr>
     <tr>
       <td align="center">Num. of Parameters (C3D)</td>
       <td align="center">78,409,573</td>
       <td align="center">78,204,723</td>
-      <td align="center">52,995</td>
+      <td align="center">80,453,976</td>
     </tr>
     <tr>
       <td align="center">Training Time (R2Plus1D)</td>
